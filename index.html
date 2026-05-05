@@ -98,6 +98,69 @@
             padding: 0;
             font-family: inherit;
         }
+
+        /* ✅ Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: var(--bg-panel);
+            border-top: var(--border);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            height: 100%;
+            cursor: pointer;
+            transition: all 0.2s var(--easing);
+            opacity: 0.5;
+        }
+
+        .nav-item.active {
+            opacity: 1;
+            color: var(--primary);
+        }
+
+        .nav-icon {
+            font-size: 22px;
+            margin-bottom: 4px;
+        }
+
+        .nav-label {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tab-view {
+            display: none;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .tab-view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        body {
+            padding-bottom: 100px;
+        }
     </style>
 </head>
 <body>
@@ -170,88 +233,118 @@
         <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">🌙</button>
     </header>
 
-    <div class="dashboard">
+    <!-- ✅ TAB 1: HOME -->
+    <div id="tab-home" class="tab-view active">
+        <div class="dashboard">
+            <div class="card">
+                <div id="streak-container" class="streak-badge" style="display:none">🔥 <span id="dash-streak">0</span> SESSIES</div>
+                <span class="dash-val" id="dash-total">0.0</span><br><span class="dash-label">Totaal KM</span>
+            </div>
+            <div class="card"><span class="dash-val" id="dash-pb">--</span><br><span class="dash-label">Snelste Pace</span></div>
+        </div>
+
         <div class="card">
-            <div id="streak-container" class="streak-badge" style="display:none">🔥 <span id="dash-streak">0</span> SESSIES</div>
-            <span class="dash-val" id="dash-total">0.0</span><br><span class="dash-label">Totaal KM</span>
+            <span class="dash-label">🏆 Persoonlijke Records</span>
+            <div class="pr-list">
+                <div class="pr-card">
+                    <span class="dash-label">1 KM</span>
+                    <span class="pr-val" id="pr-1k">--</span>
+                </div>
+                <div class="pr-card">
+                    <span class="dash-label">3 KM</span>
+                    <span class="pr-val" id="pr-3k">--</span>
+                </div>
+                <div class="pr-card">
+                    <span class="dash-label">5 KM</span>
+                    <span class="pr-val" id="pr-5k">--</span>
+                </div>
+            </div>
         </div>
-        <div class="card"><span class="dash-val" id="dash-pb">--</span><br><span class="dash-label">Snelste Pace</span></div>
-    </div>
 
-    <div class="card">
-        <span class="dash-label">🏆 Persoonlijke Records</span>
-        <div class="pr-list">
-            <div class="pr-card">
-                <span class="dash-label">1 KM</span>
-                <span class="pr-val" id="pr-1k">--</span>
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
+                <span class="dash-label" style="margin-bottom:0">Recente Activiteit</span>
+                <button class="clear-history-btn" onclick="clearAllHistory()">Wis alles</button>
             </div>
-            <div class="pr-card">
-                <span class="dash-label">3 KM</span>
-                <span class="pr-val" id="pr-3k">--</span>
-            </div>
-            <div class="pr-card">
-                <span class="dash-label">5 KM</span>
-                <span class="pr-val" id="pr-5k">--</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="card">
-        <span class="dash-label">Kies je Plan</span>
-        <select id="plan-select" onchange="saveSelectedPlan()"></select>
-        
-        <span class="dash-label" style="margin-top:15px">Warming-up tijd</span>
-        <input type="range" id="warmup-time" min="1" max="15" value="5" oninput="updateWarmupCoolDown()"><div style="text-align:center; font-weight:700; font-size:14px; margin-top:5px"><span id="warmup-val">5</span> minuten</div>
-        
-        <span class="dash-label" style="margin-top:15px">Cool-down tijd</span>
-        <input type="range" id="cooldown-time" min="1" max="15" value="5" oninput="updateWarmupCoolDown()"><div style="text-align:center; font-weight:700; font-size:14px; margin-top:5px"><span id="cooldown-val">5</span> minuten</div>
-        
-        <span class="dash-label" style="margin-top:15px">Coach Stem</span>
-        <select id="voice-select"></select>
-        
-        <span class="dash-label" style="margin-top:25px">⚙️ Gebruikers Profiel</span>
-        <div style="display: grid; grid-template-columns: 1fr 70px; gap: 10px; align-items: center;">
-            <span style="font-size: 13px; color: var(--text-muted)">Lichaamsgewicht</span>
-            <input type="number" id="user-weight" min="30" max="200" value="75" style="background: rgba(120,120,120,0.1); border: var(--border); color: var(--text-main); border-radius: 8px; padding: 6px; text-align: center; font-weight: 700;" onchange="saveUserProfile()">
-            <span style="font-size: 12px; color: var(--text-muted)">Lengte</span>
-            <input type="number" id="user-height" min="100" max="220" value="175" style="background: rgba(120,120,120,0.1); border: var(--border); color: var(--text-main); border-radius: 8px; padding: 6px; text-align: center; font-weight: 700;" onchange="saveUserProfile()">
-            <span style="font-size: 12px; color: var(--text-muted)">Leeftijd</span>
-            <input type="number" id="user-age" min="12" max="99" value="30" style="background: rgba(120,120,120,0.1); border: var(--border); color: var(--text-main); border-radius: 8px; padding: 6px; text-align: center; font-weight: 700;" onchange="saveUserProfile()">
-            <span style="font-size: 12px; color: var(--text-muted)">Geslacht</span>
-            <select id="user-gender" style="background: rgba(120,120,120,0.1); border: var(--border); color: var(--text-main); border-radius: 8px; padding: 6px; font-weight: 700;" onchange="saveUserProfile()">
-                <option value="male">Man</option>
-                <option value="female">Vrouw</option>
-            </select>
-        </div>
-        <div style="font-size: 12px; color: var(--text-muted); margin-top: 10px; text-align: center;">
-            ✅ Wordt gebruikt voor wetenschappelijk accurate calorie berekening<br>
-            Je kan dit op ieder moment aanpassen
+            <div id="history-list"></div>
         </div>
     </div>
 
-    <div class="card">
-        <span class="dash-label">📊 Baseline Test & Custom Plan</span>
-        
-        <button class="btn btn-primary" onclick="startBaselineTest()" style="margin-bottom:15px">🏃 START 30 MINUTEN BASELINE TEST</button>
-        
-        <div id="baseline-setup" style="margin-top:15px">
-            <span class="dash-label">Training per week</span>
-            <select id="train-frequency">
-                <option value="2">2 keer per week</option>
-                <option value="3" selected>3 keer per week</option>
-                <option value="4">4 keer per week</option>
-                <option value="5">5 keer per week</option>
-            </select>
+    <!-- ✅ TAB 2: TRAINING -->
+    <div id="tab-training" class="tab-view">
+        <div class="card">
+            <span class="dash-label">Kies je Plan</span>
+            <select id="plan-select" onchange="saveSelectedPlan()"></select>
+        </div>
+
+        <div id="app-list"></div>
+
+        <div class="card">
+            <span class="dash-label">📊 Baseline Test & Custom Plan</span>
             
-            <span class="dash-label" style="margin-top:15px">Einddoel</span>
-            <select id="train-goal">
-                <option value="3km">3 Kilometer</option>
-                <option value="5km" selected>5 Kilometer</option>
-                <option value="10km">10 Kilometer</option>
-                <option value="halve">Halve Marathon</option>
-            </select>
+            <button class="btn btn-primary" onclick="startBaselineTest()" style="margin-bottom:15px">🏃 START 30 MINUTEN BASELINE TEST</button>
             
-            <button class="btn" style="margin-top:15px" onclick="generateCustomPlan()">📅 Genereer Eigen Plan</button>
+            <div id="baseline-setup" style="margin-top:15px">
+                <span class="dash-label">Training per week</span>
+                <select id="train-frequency">
+                    <option value="2">2 keer per week</option>
+                    <option value="3" selected>3 keer per week</option>
+                    <option value="4">4 keer per week</option>
+                    <option value="5">5 keer per week</option>
+                </select>
+                
+                <span class="dash-label" style="margin-top:15px">Einddoel</span>
+                <select id="train-goal">
+                    <option value="3km">3 Kilometer</option>
+                    <option value="5km" selected>5 Kilometer</option>
+                    <option value="10km">10 Kilometer</option>
+                    <option value="halve">Halve Marathon</option>
+                </select>
+                
+                <button class="btn" style="margin-top:15px" onclick="generateCustomPlan()">📅 Genereer Eigen Plan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ TAB 3: PROFIEL -->
+    <div id="tab-profile" class="tab-view">
+        <div class="card">
+            <span class="dash-label">⚙️ Gebruikers Profiel</span>
+            <div style="display: grid; grid-template-columns: 1fr 70px; gap: 10px; align-items: center;">
+                <span style="font-size: 13px; color: var(--text-muted)">Lichaamsgewicht</span>
+                <input type="number" id="user-weight" min="30" max="200" value="75" style="background: rgba(120,120,120,0.1); border: var(--border); color: var(--text-main); border-radius: 8px; padding: 6px; text-align: center; font-weight: 700;" onchange="saveUserProfile()">
+                <span style="font-size: 12px; color: var(--text-muted)">Lengte</span>
+                <input type="number" id="user-height" min="100" max="220" value="175" style="background: rgba(120,120,120,0.1); border: var(--border); color: var(--text-main); border-radius: 8px; padding: 6px; text-align: center; font-weight: 700;" onchange="saveUserProfile()">
+                <span style="font-size: 12px; color: var(--text-muted)">Leeftijd</span>
+                <input type="number" id="user-age" min="12" max="99" value="30" style="background: rgba(120,120,120,0.1); border: var(--border); color: var(--text-main); border-radius: 8px; padding: 6px; text-align: center; font-weight: 700;" onchange="saveUserProfile()">
+                <span style="font-size: 12px; color: var(--text-muted)">Geslacht</span>
+                <select id="user-gender" style="background: rgba(120,120,120,0.1); border: var(--border); color: var(--text-main); border-radius: 8px; padding: 6px; font-weight: 700;" onchange="saveUserProfile()">
+                    <option value="male">Man</option>
+                    <option value="female">Vrouw</option>
+                </select>
+            </div>
+            <div style="font-size: 12px; color: var(--text-muted); margin-top: 10px; text-align: center;">
+                ✅ Wordt gebruikt voor wetenschappelijk accurate calorie berekening<br>
+                Je kan dit op ieder moment aanpassen
+            </div>
+        </div>
+
+        <div class="card">
+            <span class="dash-label">App Instellingen</span>
+            
+            <span class="dash-label" style="margin-top:15px">Warming-up tijd</span>
+            <input type="range" id="warmup-time" min="1" max="15" value="5" oninput="updateWarmupCoolDown()"><div style="text-align:center; font-weight:700; font-size:14px; margin-top:5px"><span id="warmup-val">5</span> minuten</div>
+            
+            <span class="dash-label" style="margin-top:15px">Cool-down tijd</span>
+            <input type="range" id="cooldown-time" min="1" max="15" value="5" oninput="updateWarmupCoolDown()"><div style="text-align:center; font-weight:700; font-size:14px; margin-top:5px"><span id="cooldown-val">5</span> minuten</div>
+            
+            <span class="dash-label" style="margin-top:15px">Coach Stem</span>
+            <select id="voice-select"></select>
+        </div>
+
+        <div class="card">
+            <span class="dash-label">⚡ Geavanceerd</span>
+            <button class="btn" style="margin-top:10px; color: var(--danger); background: rgba(231,76,60,0.1)" onclick="clearAllHistory()">🗑️ Wis Alle Gegevens</button>
         </div>
     </div>
 
@@ -268,17 +361,23 @@
             <button class="btn" style="background:rgba(231, 76, 60, 0.2); color:var(--danger)" onclick="confirmStop()">STOP</button>
         </div>
     </div>
-
-    <div id="app-list"></div>
-    
-    <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
-            <span class="dash-label" style="margin-bottom:0">Recente Activiteit</span>
-            <button class="clear-history-btn" onclick="clearAllHistory()">Wis alles</button>
-        </div>
-        <div id="history-list"></div>
-    </div>
 </div>
+
+<!-- ✅ Bottom Navigation -->
+<nav class="bottom-nav">
+    <div class="nav-item active" onclick="openTab('home')">
+        <div class="nav-icon">🏠</div>
+        <div class="nav-label">Home</div>
+    </div>
+    <div class="nav-item" onclick="openTab('training')">
+        <div class="nav-icon">📅</div>
+        <div class="nav-label">Training</div>
+    </div>
+    <div class="nav-item" onclick="openTab('profile')">
+        <div class="nav-icon">👤</div>
+        <div class="nav-label">Profiel</div>
+    </div>
+</nav>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
@@ -1142,6 +1241,19 @@
             
             speak("Je persoonlijke trainingsschema is gegenereerd!");
         };
+    }
+
+    // ✅ Bottom Navigation Tab Switching
+    function openTab(tabName) {
+        // Hide all tabs
+        document.querySelectorAll('.tab-view').forEach(tab => tab.classList.remove('active'));
+        // Remove active state from nav items
+        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+        
+        // Show selected tab
+        document.getElementById(`tab-${tabName}`).classList.add('active');
+        // Mark nav item as active
+        event.currentTarget.classList.add('active');
     }
 
     window.speechSynthesis.onvoiceschanged = () => { voices = window.speechSynthesis.getVoices(); const dutch = voices.filter(v => v.lang.includes('nl')); const select = document.getElementById('voice-select'); if(select) select.innerHTML = dutch.map(v => `<option value="${v.name}">${v.name}</option>`).join('') || '<option>Standaard Stem</option>'; };
