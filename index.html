@@ -7,6 +7,8 @@
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#121214">
+    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -233,6 +235,8 @@
 
         <div class="chart-container card"><canvas id="paceChart"></canvas></div>
         <button id="res-btn" class="btn btn-primary" onclick="location.reload()">OPSLAAN & SLUITEN</button>
+        <button class="btn" style="margin-top: 10px; background: rgba(52, 152, 219, 0.2); color: var(--accent)" onclick="shareResult()">📤 Deel resultaat</button>
+        <button class="btn" style="margin-top: 10px" onclick="exportAsGPX(currentRoute)">📍 Exporteer als .GPX (Strava/Garmin)</button>
     </div>
 </div>
 
@@ -332,6 +336,7 @@
                     <option value="female">Vrouw</option>
                 </select>
             </div>
+            <div id="save-feedback" style="color: var(--primary); text-align: center; font-size: 13px; font-weight: 700; margin-top: 8px; opacity: 0; transition: opacity 0.4s ease, transform 0.4s ease; transform: translateY(10px);">Opgeslagen ✔️</div>
             <div style="font-size: 12px; color: var(--text-muted); margin-top: 10px; text-align: center;">
                 ✅ Wordt gebruikt voor wetenschappelijk accurate calorie berekening<br>
                 Je kan dit op ieder moment aanpassen
@@ -353,6 +358,7 @@
 
         <div class="card">
             <span class="dash-label">⚡ Geavanceerd</span>
+            <button class="btn btn-primary" style="margin-top:10px;" onclick="connectHeartRateMonitor()">❤️ Koppel Hartslagmeter</button>
             <button class="btn" style="margin-top:10px; color: var(--danger); background: rgba(231,76,60,0.1)" onclick="clearAllHistory()">🗑️ Wis Alle Gegevens</button>
         </div>
     </div>
@@ -744,7 +750,13 @@
         synth.speak(u);
     }
 
-    function applyTheme(isLight) { document.body.classList.toggle('light-mode', isLight); document.getElementById('theme-btn').innerText = isLight ? "☀️" : "🌙"; localStorage.setItem('strive_theme', isLight ? 'light' : 'dark'); }
+    function applyTheme(isLight) { 
+        document.body.classList.toggle('light-mode', isLight); 
+        document.getElementById('theme-btn').innerText = isLight ? "☀️" : "🌙"; 
+        localStorage.setItem('strive_theme', isLight ? 'light' : 'dark');
+        // Dynamische Theme Color voor statusbalk
+        document.querySelector('meta[name="theme-color"]').setAttribute('content', isLight ? '#f0f2f5' : '#121214');
+    }
     function toggleTheme() { applyTheme(!document.body.classList.contains('light-mode')); }
     function formatT(s) { return Math.floor(s/60)+":"+(s%60).toString().padStart(2,'0'); }
     function calcDist(l1,ln1,l2,ln2) { const R=6371; const dLat=(l2-l1)*Math.PI/180; const dLon=(ln2-ln1)*Math.PI/180; const a=Math.sin(dLat/2)**2 + Math.cos(l1*Math.PI/180)*Math.cos(l2*Math.PI/180)*Math.sin(dLon/2)**2; return R*2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); }
@@ -912,6 +924,16 @@
     }
 
     async function init() {
+        // Service Worker registratie voor PWA
+        if ('serviceWorker' in navigator) {
+            try {
+                await navigator.serviceWorker.register('/sw.js');
+                console.log('✅ Service Worker geregistreerd (Full PWA mode)');
+            } catch (err) {
+                console.warn('⚠️ Service Worker registratie mislukt:', err);
+            }
+        }
+        
         // FIX: Removed requestWakeLock() from init — wake lock is only needed during active training
         applyTheme(localStorage.getItem('strive_theme') === 'light');
         const ps = document.getElementById('plan-select');
@@ -1112,6 +1134,16 @@
         localStorage.setItem('user_height', document.getElementById('user-height').value);
         localStorage.setItem('user_age', document.getElementById('user-age').value);
         localStorage.setItem('user_gender', document.getElementById('user-gender').value);
+        
+        // Visuele feedback aan gebruiker
+        vibrate([50]);
+        const feedback = document.getElementById('save-feedback');
+        feedback.style.opacity = '1';
+        feedback.style.transform = 'translateY(0)';
+        setTimeout(() => { 
+            feedback.style.opacity = '0'; 
+            feedback.style.transform = 'translateY(10px)';
+        }, 1700);
     }
     
     // Load saved values on init
@@ -1267,6 +1299,129 @@
     }
 
     window.speechSynthesis.onvoiceschanged = () => { voices = window.speechSynthesis.getVoices(); const dutch = voices.filter(v => v.lang.includes('nl')); const select = document.getElementById('voice-select'); if(select) select.innerHTML = dutch.map(v => `<option value="${v.name}">${v.name}</option>`).join('') || '<option>Standaard Stem</option>'; };
+
+    // ==============================================
+    // ✅ NIEUWE FEATURES: Web Bluetooth, Web Share, View Transitions, GPX Export
+    // ==============================================
+
+    // 1. ❤️ Hartslagmeter via Web Bluetooth API
+    let heartRateDevice = null;
+    let heartRateCharacteristic = null;
+    let currentHeartRate = 0;
+
+    async function connectHeartRateMonitor() {
+        try {
+            if (!navigator.bluetooth) {
+                alert("Hartslagmeter wordt niet ondersteund in deze browser");
+                return;
+            }
+
+            vibrate([100,50,100]);
+            heartRateDevice = await navigator.bluetooth.requestDevice({
+                filters: [{ services: ['heart_rate'] }],
+                optionalServices: ['battery_service']
+            });
+
+            const server = await heartRateDevice.gatt.connect();
+            const service = await server.getPrimaryService('heart_rate');
+            heartRateCharacteristic = await service.getCharacteristic('heart_rate_measurement');
+            
+            await heartRateCharacteristic.startNotifications();
+            heartRateCharacteristic.addEventListener('characteristicvaluechanged', handleHeartRateUpdate);
+            
+            speak("Hartslagmeter verbonden!");
+            alert("✅ Hartslagmeter succesvol verbonden!");
+
+        } catch (err) {
+            console.warn("Hartslagmeter fout:", err);
+            speak("Kon geen verbinding maken met de hartslagmeter");
+        }
+    }
+
+    function handleHeartRateUpdate(event) {
+        const value = event.target.value;
+        const flags = value.getUint8(0);
+        const rate16Bits = flags & 0x1;
+        currentHeartRate = rate16Bits ? value.getUint16(1, true) : value.getUint8(1);
+        
+        // Audio coach feedback
+        if (currentHeartRate > 175) {
+            speak(`Je hartslag is nu ${currentHeartRate}, probeer iets rustiger te lopen.`);
+        } else if (currentHeartRate > 165) {
+            speak(`Goed bezig, hartslag op ${currentHeartRate}`);
+        }
+    }
+
+    // 2. 📤 Web Share API voor het delen van resultaten
+    async function shareResult() {
+        if (!navigator.share) {
+            alert("Delen wordt niet ondersteund in deze browser");
+            return;
+        }
+
+        try {
+            await navigator.share({
+                title: "🏃 Mijn Strive run!",
+                text: `Ik heb net ${document.getElementById('res-d').innerText} km gerund in ${document.getElementById('res-time').innerText}! Gemiddeld tempo: ${document.getElementById('res-p').innerText} min/km`,
+                url: window.location.href
+            });
+        } catch (err) {
+            console.log("Delen geannuleerd");
+        }
+    }
+
+    // 3. ✨ View Transitions API voor vloeiende tab animaties
+    function openTab(tabName, element) {
+        const switchTab = () => {
+            // Hide all tabs
+            document.querySelectorAll('.tab-view').forEach(tab => tab.classList.remove('active'));
+            // Remove active state from nav items
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            // Mark nav item as active
+            element.classList.add('active');
+            vibrate([30]);
+        };
+
+        if ('startViewTransition' in document) {
+            document.startViewTransition(switchTab);
+        } else {
+            switchTab();
+        }
+    }
+
+    // 4. 📍 GPX File Export (voor Strava, Garmin, etc)
+    function exportAsGPX(route) {
+        if (!route || route.length < 2) {
+            alert("Geen GPS data aanwezig om te exporteren");
+            return;
+        }
+
+        let gpxContent = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Strive Ultimate Pro+" xmlns="http://www.topografix.com/GPX/1/1">
+  <trk>
+    <name>${document.getElementById('res-title').innerText}</name>
+    <trkseg>
+`;
+
+        route.forEach((point, index) => {
+            gpxContent += `      <trkpt lat="${point[0]}" lon="${point[1]}"></trkpt>\n`;
+        });
+
+        gpxContent += `    </trkseg>
+  </trk>
+</gpx>`;
+
+        const blob = new Blob([gpxContent], {type: 'application/gpx+xml'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `strive-run-${new Date().toISOString().split('T')[0]}.gpx`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
 </script>
 </body>
 </html>
