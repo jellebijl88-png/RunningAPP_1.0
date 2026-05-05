@@ -208,6 +208,25 @@
         
         <span class="dash-label" style="margin-top:15px">Coach Stem</span>
         <select id="voice-select"></select>
+        
+        <span class="dash-label" style="margin-top:25px">⚙️ Gebruikers Profiel</span>
+        <div style="display: grid; grid-template-columns: 1fr 70px; gap: 10px; align-items: center;">
+            <span style="font-size: 13px; color: var(--text-muted)">Lichaamsgewicht</span>
+            <input type="number" id="user-weight" min="30" max="200" value="75" style="background: rgba(120,120,120,0.1); border: var(--border); color: var(--text-main); border-radius: 8px; padding: 6px; text-align: center; font-weight: 700;" onchange="saveUserProfile()">
+            <span style="font-size: 12px; color: var(--text-muted)">Lengte</span>
+            <input type="number" id="user-height" min="100" max="220" value="175" style="background: rgba(120,120,120,0.1); border: var(--border); color: var(--text-main); border-radius: 8px; padding: 6px; text-align: center; font-weight: 700;" onchange="saveUserProfile()">
+            <span style="font-size: 12px; color: var(--text-muted)">Leeftijd</span>
+            <input type="number" id="user-age" min="12" max="99" value="30" style="background: rgba(120,120,120,0.1); border: var(--border); color: var(--text-main); border-radius: 8px; padding: 6px; text-align: center; font-weight: 700;" onchange="saveUserProfile()">
+            <span style="font-size: 12px; color: var(--text-muted)">Geslacht</span>
+            <select id="user-gender" style="background: rgba(120,120,120,0.1); border: var(--border); color: var(--text-main); border-radius: 8px; padding: 6px; font-weight: 700;" onchange="saveUserProfile()">
+                <option value="male">Man</option>
+                <option value="female">Vrouw</option>
+            </select>
+        </div>
+        <div style="font-size: 12px; color: var(--text-muted); margin-top: 10px; text-align: center;">
+            ✅ Wordt gebruikt voor wetenschappelijk accurate calorie berekening<br>
+            Je kan dit op ieder moment aanpassen
+        </div>
     </div>
 
     <div class="card">
@@ -492,7 +511,10 @@
         lastPaceTime: 0,
         calories: 0,
         currentPace: 0,
-        speedBuffer: [] // for Kalman filter
+        lastGpsTime: 0,
+        lastGpsPosition: null,
+        smoothedDistance: 0,
+        speedEMA: 0
     };
 
     // Only allowed state transitions
@@ -518,11 +540,27 @@
     }
     const synth = window.speechSynthesis;
     
-    // Calculate estimated calories burned (based on weight: 75kg default)
+    // ✅ Officiële Harris-Benedict formule voor BMR + MET waarde voor hardlopen
     function calculateCalories(distanceKm, durationMin) {
-        const weightKg = 75;
-        const metValue = 9.8; // MET value for running 9km/h
-        return Math.round(metValue * weightKg * (durationMin / 60));
+        const weightKg = parseInt(localStorage.getItem('user_weight')) || 75;
+        const heightCm = parseInt(localStorage.getItem('user_height')) || 175;
+        const age = parseInt(localStorage.getItem('user_age')) || 30;
+        const gender = localStorage.getItem('user_gender') || 'male';
+        const metValue = 9.8; // MET value voor hardlopen 9km/h
+        
+        // Basal Metabolic Rate berekening
+        let bmr;
+        if(gender === 'male') {
+            bmr = 88.362 + (13.397 * weightKg) + (4.799 * heightCm) - (5.677 * age);
+        } else {
+            bmr = 447.593 + (9.247 * weightKg) + (3.098 * heightCm) - (4.330 * age);
+        }
+        
+        const activityMultiplier = 1.375; // Licht actief
+        const dailyCalories = bmr * activityMultiplier;
+        const perMinuteCalories = dailyCalories / 1440;
+        
+        return Math.round(perMinuteCalories * durationMin + (metValue * weightKg * (durationMin / 60)));
     }
     
     // Vibrate device for feedback
@@ -662,7 +700,15 @@
                 const d = calcDist(last[0], last[1], lat, lng);
                 if (d > 0.005) { 
                     totalDist += d;
-                    if(Math.floor(totalDist) > lastKMSpeech) { lastKMSpeech = Math.floor(totalDist); speak(`${lastKMSpeech} kilometer.`); }
+                    
+                    // ✅ Kilometer Milestones Functionaliteit
+                    const currentKM = Math.floor(totalDist);
+                    if(currentKM > lastKMSpeech && currentKM > 0) { 
+                        lastKMSpeech = currentKM; 
+                        vibrate([300, 100, 300, 100, 300]);
+                        speak(`${currentKM} kilometer gerend! Goed bezig!`);
+                    }
+                    
                     // FIX: Time-based pace sampling (every 30 seconds) instead of every 5 GPS points
                     const now = Date.now();
                     if (now - lastPaceTime >= 30000) {
@@ -953,12 +999,29 @@
             </div>`).join('');
     };
     
+    function saveUserProfile() {
+        localStorage.setItem('user_weight', document.getElementById('user-weight').value);
+        localStorage.setItem('user_height', document.getElementById('user-height').value);
+        localStorage.setItem('user_age', document.getElementById('user-age').value);
+        localStorage.setItem('user_gender', document.getElementById('user-gender').value);
+    }
+    
     // Load saved values on init
     document.addEventListener('DOMContentLoaded', () => {
         const savedWarmup = localStorage.getItem('warmup_time');
         const savedCooldown = localStorage.getItem('cooldown_time');
+        const savedWeight = localStorage.getItem('user_weight');
+        const savedHeight = localStorage.getItem('user_height');
+        const savedAge = localStorage.getItem('user_age');
+        const savedGender = localStorage.getItem('user_gender');
+        
         if(savedWarmup) document.getElementById('warmup-time').value = savedWarmup;
         if(savedCooldown) document.getElementById('cooldown-time').value = savedCooldown;
+        if(savedWeight) document.getElementById('user-weight').value = savedWeight;
+        if(savedHeight) document.getElementById('user-height').value = savedHeight;
+        if(savedAge) document.getElementById('user-age').value = savedAge;
+        if(savedGender) document.getElementById('user-gender').value = savedGender;
+        
         updateWarmupCoolDown();
     });
 
