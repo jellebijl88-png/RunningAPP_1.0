@@ -125,6 +125,15 @@
             cursor: pointer;
             transition: all 0.2s var(--easing);
             opacity: 0.5;
+            background: none;
+            border: none;
+            color: inherit;
+            font-family: inherit;
+            padding: 0;
+            margin: 0;
+            appearance: none;
+            outline: none;
+            -webkit-appearance: none;
         }
 
         .nav-item.active {
@@ -365,18 +374,18 @@
 
 <!-- ✅ Bottom Navigation -->
 <nav class="bottom-nav">
-    <div class="nav-item active" onclick="openTab('home')">
+    <button class="nav-item active" onclick="openTab('home', this)">
         <div class="nav-icon">🏠</div>
         <div class="nav-label">Home</div>
-    </div>
-    <div class="nav-item" onclick="openTab('training')">
+    </button>
+    <button class="nav-item" onclick="openTab('training', this)">
         <div class="nav-icon">📅</div>
         <div class="nav-label">Training</div>
-    </div>
-    <div class="nav-item" onclick="openTab('profile')">
+    </button>
+    <button class="nav-item" onclick="openTab('profile', this)">
         <div class="nav-icon">👤</div>
         <div class="nav-label">Profiel</div>
-    </div>
+    </button>
 </nav>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -1244,7 +1253,7 @@
     }
 
     // ✅ Bottom Navigation Tab Switching
-    function openTab(tabName) {
+    function openTab(tabName, element) {
         // Hide all tabs
         document.querySelectorAll('.tab-view').forEach(tab => tab.classList.remove('active'));
         // Remove active state from nav items
@@ -1253,7 +1262,8 @@
         // Show selected tab
         document.getElementById(`tab-${tabName}`).classList.add('active');
         // Mark nav item as active
-        event.currentTarget.classList.add('active');
+        element.classList.add('active');
+        vibrate([30]);
     }
 
     window.speechSynthesis.onvoiceschanged = () => { voices = window.speechSynthesis.getVoices(); const dutch = voices.filter(v => v.lang.includes('nl')); const select = document.getElementById('voice-select'); if(select) select.innerHTML = dutch.map(v => `<option value="${v.name}">${v.name}</option>`).join('') || '<option>Standaard Stem</option>'; };
