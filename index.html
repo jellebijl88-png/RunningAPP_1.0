@@ -172,6 +172,60 @@
         body {
             padding-bottom: 100px;
         }
+
+        /* Toggle Switch Styling */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            cursor: pointer;
+        }
+
+        .toggle-switch {
+            width: 50px;
+            height: 28px;
+            background: rgba(120,120,120,0.2);
+            border-radius: 14px;
+            position: relative;
+            transition: all 0.3s var(--easing);
+        }
+
+        .toggle-switch.active {
+            background: var(--primary);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+            transition: all 0.3s var(--easing);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .toggle-switch.active::after {
+            left: 25px;
+        }
+
+        /* Live training map */
+        #live-training-map {
+            width: 100%;
+            height: 220px;
+            margin-bottom: 10px;
+            border-radius: 15px;
+            background: #ffffff;
+            display: none;
+        }
+        
+        body.light-mode #live-training-map {
+            background: #ffffff;
+        }
+        
+        .leaflet-tile-pane { filter: none !important; }
     </style>
 </head>
 <body>
@@ -292,7 +346,7 @@
 
         <div id="app-list"></div>
 
-        <div class="card">
+        <div class="card" id="baseline-card">
             <span class="dash-label">📊 Baseline Test & Custom Plan</span>
             
             <button class="btn btn-primary" onclick="startBaselineTest()" style="margin-bottom:15px">🏃 START 30 MINUTEN BASELINE TEST</button>
@@ -354,6 +408,12 @@
             
             <span class="dash-label" style="margin-top:15px">Coach Stem</span>
             <select id="voice-select"></select>
+            
+            <span class="dash-label" style="margin-top:15px">📍 Live Kaart Tijdens Training</span>
+            <div class="toggle-container" onclick="toggleLiveMap()">
+                <div class="toggle-switch" id="live-map-toggle"></div>
+                <span style="margin-left: 10px;">Toon live route op kaart tijdens hardlopen</span>
+            </div>
         </div>
 
         <div class="card">
@@ -364,9 +424,20 @@
     </div>
 
     <div id="timer-display" class="card">
+        <div id="live-training-map"></div>
         <div style="display:flex; justify-content: space-between; color:var(--primary); font-weight:900; font-size:14px">
             <span id="live-dist">0.00 km</span>
             <span id="total-time-left">00:00</span>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px">
+            <div style="text-align:center">
+                <div class="dash-val" id="live-pace" style="font-size:18px">--:--</div>
+                <span class="dash-label">HUIDIG PACE</span>
+            </div>
+            <div style="text-align:center">
+                <div class="dash-val" id="avg-pace" style="font-size:18px">--:--</div>
+                <span class="dash-label">GEMIDDELD PACE</span>
+            </div>
         </div>
         <div id="timer-status" style="margin-top:10px; font-size:12px; font-weight:700; color:var(--text-muted)">MAAK JE KLAAR...</div>
         <div id="timer-time" class="timer-big">00:05</div>
@@ -802,11 +873,16 @@
         document.getElementById('preview-overlay').style.display = 'none';
         document.getElementById('timer-display').style.display = 'block';
         document.getElementById('app-list').style.display = 'none';
+        
+        // Verberg Baseline Test blok tijdens training (alleen zichtbaar in overzicht en baseline test)
+        if(!document.getElementById('pre-title').innerText.includes('BASELINE') && !document.getElementById('pre-title').innerText.includes('Baseline')) {
+            document.getElementById('baseline-card').style.display = 'none';
+        }
         let count = 5; speak("Training begint over 5 seconden");
         const cdInterval = setInterval(() => {
             count--; document.getElementById('timer-time').innerText = "00:0" + count;
             if(count > 0) speak(count.toString());
-            if(count <= 0) { clearInterval(cdInterval); totalDist = 0; currentRoute = []; paceData = []; lastKMSpeech = 0; lastPaceTime = Date.now(); startTime = Date.now(); isPaused = false; currentBIdx = 0; totalRem = sessionBlocks.reduce((a,b)=>a+b.t, 0); startGPS(); startBlock(); }
+            if(count <= 0) { clearInterval(cdInterval); totalDist = 0; currentRoute = []; paceData = []; lastKMSpeech = 0; lastPaceTime = Date.now(); startTime = Date.now(); isPaused = false; currentBIdx = 0; totalRem = sessionBlocks.reduce((a,b)=>a+b.t, 0); initLiveMap(); startGPS(); startBlock(); }
         }, 1000);
     }
 
@@ -815,6 +891,8 @@
             // FIX: Tightened accuracy filter from 40m to 25m for better GPS quality
             if(isPaused || p.coords.accuracy > 25) return;
             const lat=p.coords.latitude, lng=p.coords.longitude;
+            const now = Date.now();
+            
             if(currentRoute.length > 0) {
                 const last=currentRoute[currentRoute.length-1];
                 const d = calcDist(last[0], last[1], lat, lng);
@@ -829,16 +907,48 @@
                         speak(`${currentKM} kilometer gerend! Goed bezig!`);
                     }
                     
-                    // FIX: Time-based pace sampling (every 30 seconds) instead of every 5 GPS points
-                    const now = Date.now();
-                    if (now - lastPaceTime >= 30000) {
-                        lastPaceTime = now;
-                        paceData.push(totalDist > 0.05 ? ((now - startTime) / 60000 / totalDist).toFixed(2) : 0);
+                    // ✅ Huidige en gemiddelde pace berekenen
+                    const elapsedMinutes = (now - startTime) / 60000;
+                    
+                    // Gemiddelde pace
+                    if(totalDist > 0.05) {
+                        const avgPace = elapsedMinutes / totalDist;
+                        const avgMins = Math.floor(avgPace);
+                        const avgSecs = Math.round((avgPace - avgMins) * 60);
+                        document.getElementById('avg-pace').innerText = `${avgMins}:${avgSecs.toString().padStart(2, '0')}`;
+                        
+                        // Pace sampling voor grafiek
+                        if (now - lastPaceTime >= 30000) {
+                            lastPaceTime = now;
+                            paceData.push(avgPace.toFixed(2));
+                        }
                     }
+                    
+                    // Huidige pace (laatste punt)
+                    const timeDiff = (now - session.lastGpsTime) / 1000;
+                    if(session.lastGpsTime && timeDiff > 0 && timeDiff < 30) {
+                        const speed = d / (timeDiff / 3600); // km/h
+                        const currentPace = 60 / speed; // min/km
+                        
+                        if(currentPace > 2 && currentPace < 20) { // Realistische grenzen
+                            session.speedEMA = session.speedEMA * 0.7 + currentPace * 0.3;
+                            const currMins = Math.floor(session.speedEMA);
+                            const currSecs = Math.round((session.speedEMA - currMins) * 60);
+                            document.getElementById('live-pace').innerText = `${currMins}:${currSecs.toString().padStart(2, '0')}`;
+                        }
+                    }
+                    
                     document.getElementById('live-dist').innerText = totalDist.toFixed(2) + " km";
+                    
+                    session.lastGpsTime = now;
                 }
+            } else {
+                session.lastGpsTime = now;
             }
             currentRoute.push([lat, lng]);
+            
+            // ✅ Update de live kaart DIRECT na elk nieuw GPS punt
+            updateLiveMap(currentRoute);
         }, null, {enableHighAccuracy: true});
     }
 
@@ -862,6 +972,10 @@
 
     async function finishTraining() {
         releaseWakeLock(); clearInterval(timerId); navigator.geolocation.clearWatch(watchId);
+        
+        // ✅ FIX: Toon baseline blok weer na afloop sessie
+        document.getElementById('baseline-card').style.display = 'block';
+        document.getElementById('app-list').style.display = 'block';
         const durationMin = (Date.now() - startTime) / 60000;
         const pace = totalDist > 0.1 ? (durationMin / totalDist).toFixed(2) : "0.00";
         if(activePlanKey !== undefined) localStorage.setItem(`done_${activePlanKey}_${activeWeekIdx}_${activeType}`, "true");
@@ -1079,7 +1193,12 @@
     // FIX: confirmStop only calls finishTraining if a session is actually active
     function confirmStop() {
         if (!startTime) return;
-        if(confirm("Stoppen?")) finishTraining();
+        if(confirm("Stoppen?")) {
+            // ✅ FIX: Toon baseline blok weer bij stoppen sessie
+            document.getElementById('baseline-card').style.display = 'block';
+            document.getElementById('app-list').style.display = 'block';
+            finishTraining();
+        }
     }
 
     function updateWarmupCoolDown() {
@@ -1161,6 +1280,11 @@
         if(savedHeight) document.getElementById('user-height').value = savedHeight;
         if(savedAge) document.getElementById('user-age').value = savedAge;
         if(savedGender) document.getElementById('user-gender').value = savedGender;
+        
+        // ✅ Initialiseer live map toggle status
+        if (localStorage.getItem('live_map_enabled') === 'true') {
+            document.getElementById('live-map-toggle').classList.add('active');
+        }
         
         updateWarmupCoolDown();
     });
@@ -1421,6 +1545,50 @@
         a.download = `strive-run-${new Date().toISOString().split('T')[0]}.gpx`;
         a.click();
         URL.revokeObjectURL(url);
+    }
+
+    // ✅ LIVE KAART FUNCTIE
+    let liveMapEnabled = localStorage.getItem('live_map_enabled') === 'true';
+    let liveMapInstance = null;
+    let livePolyline = null;
+
+    function toggleLiveMap() {
+        liveMapEnabled = !liveMapEnabled;
+        localStorage.setItem('live_map_enabled', liveMapEnabled);
+        document.getElementById('live-map-toggle').classList.toggle('active', liveMapEnabled);
+        vibrate([50]);
+    }
+
+    function initLiveMap() {
+        if (!liveMapEnabled) return;
+        
+        const mapElement = document.getElementById('live-training-map');
+        mapElement.style.display = 'block';
+        
+        if (liveMapInstance) liveMapInstance.remove();
+        
+        liveMapInstance = L.map('live-training-map', {zoomControl: false, attributionControl: false});
+        
+        // ✅ Standaard OpenStreetMap tiles (precies zoals voorbeeld)
+        const tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+            
+        L.tileLayer(tileUrl).addTo(liveMapInstance);
+        livePolyline = L.polyline([], {color: '#2ecc71', weight: 5}).addTo(liveMapInstance);
+    }
+
+    function updateLiveMap(route) {
+        if (!liveMapEnabled || !liveMapInstance || !livePolyline) return;
+        
+        livePolyline.setLatLngs(route);
+        
+        if (route.length >= 2) {
+            const bounds = livePolyline.getBounds();
+            if (bounds.isValid()) {
+                liveMapInstance.fitBounds(bounds, {padding: [30, 30], maxZoom: 16});
+            }
+        } else if (route.length === 1) {
+            liveMapInstance.setView(route[0], 16);
+        }
     }
 </script>
 </body>
