@@ -696,16 +696,10 @@
 
     // All session data in single state object
     const session = {
-        totalDist: 0,
-        currentRoute: [],
-        startTime: null,
         blocks: [],
         currentBlockIndex: 0,
         blockRemaining: 0,
         totalRemaining: 0,
-        paceData: [],
-        lastKmSpeech: 0,
-        lastPaceTime: 0,
         calories: 0,
         currentPace: 0,
         lastGpsTime: 0,
@@ -945,8 +939,7 @@
             if(currentRoute.length > 0) {
                 const last=currentRoute[currentRoute.length-1];
                 const d = calcDist(last[0], last[1], lat, lng);
-                if (d > 0.005) { 
-                    totalDist += d;
+                totalDist += d;
                     
                     // ✅ Kilometer Milestones Functionaliteit
                     const currentKM = Math.floor(totalDist);
