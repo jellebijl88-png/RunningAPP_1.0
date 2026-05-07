@@ -1028,17 +1028,50 @@
         // ✅ FIX: Toon baseline blok weer na afloop sessie
         document.getElementById('baseline-card').style.display = 'block';
         document.getElementById('app-list').style.display = 'block';
-        const durationMin = (Date.now() - startTime) / 60000;
+
+        const totalDurationMs = Date.now() - startTime;
+        const durationMin = totalDurationMs / 60000;
+        const totalSeconds = Math.round(totalDurationMs / 1000);
         const pace = totalDist > 0.1 ? (durationMin / totalDist).toFixed(2) : "0.00";
+        const calories = calculateCalories(totalDist, durationMin);
+
+        // ✅ ✅ ✅ Vul ALLE resultaat velden
+        document.getElementById('res-d').innerText = totalDist.toFixed(2);
+        document.getElementById('res-p').innerText = pace;
+        document.getElementById('res-time').innerText = formatT(totalSeconds);
+        document.getElementById('res-cal').innerText = calories;
+        
+        // ✅ Training Breakdown statistieken
+        const totalRunTime = sessionBlocks.filter(b => b.m === 'run').reduce((a,b) => a + b.t, 0);
+        const totalWalkTime = sessionBlocks.filter(b => b.m === 'walk').reduce((a,b) => a + b.t, 0);
+        const totalSessionTime = totalRunTime + totalWalkTime;
+        
+        const runPercent = totalSessionTime > 0 ? Math.round((totalRunTime / totalSessionTime) * 100) : 0;
+        const walkPercent = 100 - runPercent;
+        
+        document.getElementById('stat-run-percent').innerText = runPercent + '%';
+        document.getElementById('stat-walk-percent').innerText = walkPercent + '%';
+        document.getElementById('stat-run-bar').style.width = runPercent + '%';
+        document.getElementById('stat-walk-bar').style.width = walkPercent + '%';
+        document.getElementById('stat-run-time').innerText = formatT(totalRunTime);
+        document.getElementById('stat-walk-time').innerText = formatT(totalWalkTime);
+
         if(activePlanKey !== undefined) localStorage.setItem(`done_${activePlanKey}_${activeWeekIdx}_${activeType}`, "true");
-        const run = { d: new Date().toLocaleDateString('nl-NL'), n: document.getElementById('pre-title').innerText, dist: totalDist.toFixed(2), pace, route: currentRoute, paceHistory: paceData };
+        const run = { 
+            d: new Date().toLocaleDateString('nl-NL'), 
+            n: document.getElementById('pre-title').innerText, 
+            dist: totalDist.toFixed(2), 
+            pace, 
+            duration: totalSeconds,
+            calories,
+            route: currentRoute, 
+            paceHistory: paceData 
+        };
         const tx = db.transaction("runs", "readwrite");
         tx.objectStore("runs").add(run);
         tx.oncomplete = () => {
             document.getElementById('res-btn').onclick = () => location.reload();
             document.getElementById('result-screen').style.display='flex';
-            document.getElementById('res-d').innerText = totalDist.toFixed(2);
-            document.getElementById('res-p').innerText = pace;
             setTimeout(() => { initMap(currentRoute); renderPaceChart(paceData); }, 100);
         };
     }
