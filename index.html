@@ -941,49 +941,48 @@
                 const d = calcDist(last[0], last[1], lat, lng);
                 totalDist += d;
                     
-                    // ✅ Kilometer Milestones Functionaliteit
-                    const currentKM = Math.floor(totalDist);
-                    if(currentKM > lastKMSpeech && currentKM > 0) { 
-                        lastKMSpeech = currentKM; 
-                        vibrate([300, 100, 300, 100, 300]);
-                        speak(`${currentKM} kilometer gerend! Goed bezig!`);
-                    }
-                    
-                    // ✅ Huidige en gemiddelde pace berekenen
-                    const elapsedMinutes = (now - startTime) / 60000;
-                    
-                    // Gemiddelde pace
-                    if(totalDist > 0.05) {
-                        const avgPace = elapsedMinutes / totalDist;
-                        const avgMins = Math.floor(avgPace);
-                        const avgSecs = Math.round((avgPace - avgMins) * 60);
-                        document.getElementById('avg-pace').innerText = `${avgMins}:${avgSecs.toString().padStart(2, '0')}`;
-                        
-                        // Pace sampling voor grafiek
-                        if (now - lastPaceTime >= 30000) {
-                            lastPaceTime = now;
-                            paceData.push(avgPace.toFixed(2));
-                        }
-                    }
-                    
-                    // Huidige pace (laatste punt)
-                    const timeDiff = (now - session.lastGpsTime) / 1000;
-                    if(session.lastGpsTime && timeDiff > 0 && timeDiff < 30) {
-                        const speed = d / (timeDiff / 3600); // km/h
-                        const currentPace = 60 / speed; // min/km
-                        
-                        if(currentPace > 2 && currentPace < 20) { // Realistische grenzen
-                            session.speedEMA = session.speedEMA * 0.7 + currentPace * 0.3;
-                            const currMins = Math.floor(session.speedEMA);
-                            const currSecs = Math.round((session.speedEMA - currMins) * 60);
-                            document.getElementById('live-pace').innerText = `${currMins}:${currSecs.toString().padStart(2, '0')}`;
-                        }
-                    }
-                    
-                    document.getElementById('live-dist').innerText = totalDist.toFixed(2) + " km";
-                    
-                    session.lastGpsTime = now;
+                // ✅ Kilometer Milestones Functionaliteit
+                const currentKM = Math.floor(totalDist);
+                if(currentKM > lastKMSpeech && currentKM > 0) { 
+                    lastKMSpeech = currentKM; 
+                    vibrate([300, 100, 300, 100, 300]);
+                    speak(`${currentKM} kilometer gerend! Goed bezig!`);
                 }
+                
+                // ✅ Huidige en gemiddelde pace berekenen
+                const elapsedMinutes = (now - startTime) / 60000;
+                
+                // Gemiddelde pace
+                if(totalDist > 0.05) {
+                    const avgPace = elapsedMinutes / totalDist;
+                    const avgMins = Math.floor(avgPace);
+                    const avgSecs = Math.round((avgPace - avgMins) * 60);
+                    document.getElementById('avg-pace').innerText = `${avgMins}:${avgSecs.toString().padStart(2, '0')}`;
+                    
+                    // Pace sampling voor grafiek
+                    if (now - lastPaceTime >= 30000) {
+                        lastPaceTime = now;
+                        paceData.push(avgPace.toFixed(2));
+                    }
+                }
+                
+                // Huidige pace (laatste punt)
+                const timeDiff = (now - session.lastGpsTime) / 1000;
+                if(session.lastGpsTime && timeDiff > 0 && timeDiff < 30) {
+                    const speed = d / (timeDiff / 3600); // km/h
+                    const currentPace = 60 / speed; // min/km
+                    
+                    if(currentPace > 2 && currentPace < 20) { // Realistische grenzen
+                        session.speedEMA = session.speedEMA * 0.7 + currentPace * 0.3;
+                        const currMins = Math.floor(session.speedEMA);
+                        const currSecs = Math.round((session.speedEMA - currMins) * 60);
+                        document.getElementById('live-pace').innerText = `${currMins}:${currSecs.toString().padStart(2, '0')}`;
+                    }
+                }
+                
+                document.getElementById('live-dist').innerText = totalDist.toFixed(2) + " km";
+                
+                session.lastGpsTime = now;
             } else {
                 session.lastGpsTime = now;
             }
