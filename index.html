@@ -10,35 +10,69 @@
     <meta name="theme-color" content="#121214">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         :root {
             --primary: #27ae60; --warning: #f39c12; --danger: #e74c3c; --accent: #3498db;
-            --bg-dark: #121214; --bg-panel: rgba(30, 30, 35, 0.95);
+            --bg-dark: #121214; --bg-panel: rgba(30, 30, 35, 0.85);
             --text-main: #f5f6fa; --text-muted: #a4b0be;
-            --border: 1px solid rgba(255,255,255,0.1);
-            --card-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            --border: 1px solid rgba(255,255,255,0.08);
+            --card-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            --card-glass-bg: rgba(30, 30, 35, 0.75);
+            --card-glass-border: 1px solid rgba(255,255,255,0.06);
             --streak-color: #ff4757;
             --easing: cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         body.light-mode {
-            --bg-dark: #f0f2f5; --bg-panel: #ffffff;
+            --bg-dark: #f0f2f5; --bg-panel: rgba(255,255,255,0.8);
             --text-main: #2f3542; --text-muted: #747d8c;
-            --border: 1px solid rgba(0,0,0,0.05);
-            --card-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            --border: 1px solid rgba(0,0,0,0.04);
+            --card-shadow: 0 5px 20px rgba(0,0,0,0.06);
+            --card-glass-bg: rgba(255,255,255,0.65);
+            --card-glass-border: 1px solid rgba(255,255,255,0.7);
         }
 
         body { font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(--text-main); margin: 0; padding-bottom: 80px; -webkit-tap-highlight-color: transparent; transition: background 0.3s var(--easing); line-height: 1.5; }
         .container { width: 100%; max-width: 480px; margin: 0 auto; padding: 20px; box-sizing: border-box; }
 
-        .card { background: var(--bg-panel); padding: 20px; border-radius: 25px; border: var(--border); margin-bottom: 15px; box-shadow: var(--card-shadow); position: relative; }
-        .dash-label { font-size: 14px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 1px; display: block; margin-bottom: 12px; line-height: 1.4; }
+        .card {
+            background: var(--card-glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 20px;
+            border-radius: 25px;
+            border: var(--card-glass-border);
+            margin-bottom: 15px;
+            box-shadow: var(--card-shadow), inset 0 1px 0 rgba(255,255,255,0.05);
+            position: relative;
+            transition: transform 0.2s var(--easing), box-shadow 0.2s var(--easing);
+        }
+        .card:active { transform: scale(0.98); }
+        .dash-label { font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 800; letter-spacing: 1.5px; display: block; margin-bottom: 8px; line-height: 1.4; }
+        .dash-val { font-size: 26px; font-weight: 900; color: var(--primary); letter-spacing: -0.5px; }
+        
+        /* ✅ Sparkline container */
+        .sparkline-wrap {
+            margin-top: 8px;
+            height: 28px;
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+        }
+        .sparkline-wrap .bar {
+            flex: 1;
+            min-height: 2px;
+            border-radius: 2px 2px 0 0;
+            background: var(--primary);
+            opacity: 0.5;
+            transition: opacity 0.2s;
+        }
+        .sparkline-wrap .bar.highlight { opacity: 1; }
         
         .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .dash-val { font-size: 24px; font-weight: 900; color: var(--primary); }
 
         .streak-badge { background: var(--streak-color); color: white; padding: 5px 12px; border-radius: 50px; font-size: 11px; font-weight: 900; display: inline-flex; align-items: center; gap: 5px; margin-bottom: 10px; }
 
@@ -47,12 +81,15 @@
             text-align: center; 
             padding: 15px 5px; 
             background: rgba(255,255,255,0.03); 
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             border-radius: 20px; 
             border: 1px solid rgba(255,255,255,0.05);
-            transition: transform 0.2s ease;
+            transition: transform 0.2s ease, background 0.2s ease;
         }
-        .pr-val { font-size: 18px; font-weight: 900; color: var(--accent); letter-spacing: -0.5px; display: block; margin-top: 4px; }
-        .pr-card .dash-label { margin-bottom: 0; font-size: 9px; opacity: 0.8; }
+        .pr-card:active { transform: scale(0.95); background: rgba(255,255,255,0.06); }
+        .pr-val { font-size: 18px; font-weight: 800; color: var(--accent); letter-spacing: -0.5px; display: block; margin-top: 4px; }
+        .pr-card .dash-label { margin-bottom: 0; font-size: 9px; opacity: 0.7; letter-spacing: 1.2px; }
 
         select, .btn { width: 100%; padding: 15px; border-radius: 15px; border: var(--border); background: rgba(120,120,120,0.1); color: var(--text-main); font-weight: 700; font-family: inherit; margin-top: 5px; appearance: none; outline: none; }
         .btn-primary { background: var(--primary); color: #000; border: none; cursor: pointer; }
@@ -70,10 +107,98 @@
         .dot { width: 10px; height: 10px; border-radius: 50%; }
 
         #timer-display { position: sticky; top: 10px; z-index: 2000; display: none; text-align: center; }
-        .timer-big { font-size: 65px; font-weight: 900; letter-spacing: -3px; margin: 5px 0; }
+        .timer-big { font-size: 65px; font-weight: 800; letter-spacing: -3px; margin: 5px 0; }
 
-        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(120,120,120,0.05); border-radius: 15px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
+        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(120,120,120,0.05); border-radius: 15px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; position: relative; overflow: hidden; }
         .delete-btn { color: var(--danger); background: none; border: none; font-size: 18px; cursor: pointer; padding: 10px; }
+
+        /* ✅ Swipe-to-delete */
+        .history-item .swipe-delete-overlay {
+            position: absolute;
+            top: 0;
+            right: -100px;
+            height: 100%;
+            width: 100px;
+            background: var(--danger);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0 15px 15px 0;
+            transition: right 0.3s var(--easing);
+            font-size: 14px;
+            font-weight: 900;
+            color: #fff;
+            cursor: pointer;
+        }
+        .history-item.swiped .swipe-delete-overlay {
+            right: 0;
+        }
+        .history-item.swiped .history-item-content {
+            transform: translateX(-100px);
+            transition: transform 0.3s var(--easing);
+        }
+        .history-item .history-item-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            transition: transform 0.3s var(--easing);
+        }
+
+        /* ✅ Settings gear for clear history */
+        .settings-gear-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 8px;
+            transition: 0.2s ease;
+            color: var(--text-muted);
+            font-family: inherit;
+        }
+        .settings-gear-btn:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        /* ✅ Clear history dropdown */
+        .clear-history-dropdown {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: var(--bg-panel);
+            border: var(--border);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 100;
+            min-width: 180px;
+            overflow: hidden;
+        }
+        .clear-history-dropdown.show {
+            display: block;
+        }
+        .clear-history-dropdown button {
+            display: block;
+            width: 100%;
+            padding: 12px 16px;
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+            transition: background 0.2s;
+        }
+        .clear-history-dropdown button:hover {
+            background: rgba(231,76,60,0.1);
+            color: var(--danger);
+        }
+        .clear-history-dropdown button:first-child {
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
 
         #preview-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 3000; display: none; align-items: center; padding: 20px; }
         .preview-chart { display: flex; align-items: flex-end; gap: 3px; height: 100px; margin: 20px 0; background: rgba(120,120,120,0.1); padding: 25px 10px 10px 10px; border-radius: 12px; box-sizing: border-box; }
@@ -84,29 +209,8 @@
         .bar.warmup { background: var(--accent); }
 
         #result-screen { position: fixed; inset: 0; background: var(--bg-dark); z-index: 4000; display: none; flex-direction: column; overflow-y: auto; }
-        #map { width: 100%; min-height: 300px; background: #1a1a1c; flex-shrink: 0; }
+        #map { width: 100%; min-height: 300px; background: #ffffff; flex-shrink: 0; }
         .chart-container { height: 200px; padding: 10px; margin-bottom: 20px; }
-
-        /* Clear history button styled as inline text */
-        .clear-history-btn {
-            background: rgba(231, 76, 60, 0.1);
-            border: none;
-            font-size: 13px;
-            text-transform: uppercase;
-            color: var(--danger);
-            font-weight: 700;
-            letter-spacing: 1px;
-            cursor: pointer;
-            padding: 8px 14px;
-            border-radius: 8px;
-            font-family: inherit;
-            transition: 0.2s ease;
-        }
-        
-        .clear-history-btn:hover {
-            background: rgba(231, 76, 60, 0.15);
-            transform: scale(1.05);
-        }
 
         /* ✅ Bottom Navigation */
         .bottom-nav {
@@ -312,10 +416,10 @@
     <div id="tab-home" class="tab-view active">
         <div class="dashboard">
             <div class="card">
-                <div id="streak-container" class="streak-badge" style="display:none">🔥 <span id="dash-streak">0</span> SESSIES</div>
+                <div id="streak-container" class="streak-badge" style="display:none">🔥 <span id="dash-streak">0</span> <span id="dash-streak-label">SESSIES</span></div>
                 <span class="dash-val" id="dash-total">0.0</span><br><span class="dash-label">Totaal KM</span>
             </div>
-            <div class="card"><span class="dash-val" id="dash-pb">--</span><br><span class="dash-label">Snelste Pace</span></div>
+            <div class="card"><span class="dash-val" id="dash-pb" style="font-size:14px; line-height:1.3">Je eerste record wacht op je!</span><br><span class="dash-label">Snelste Pace</span></div>
         </div>
 
         <div class="card">
@@ -323,23 +427,27 @@
             <div class="pr-list">
                 <div class="pr-card">
                     <span class="dash-label">1 KM</span>
-                    <span class="pr-val" id="pr-1k">--</span>
+                    <span class="pr-val" id="pr-1k" style="font-size:10px; letter-spacing:normal">Je eerste record wacht op je!</span>
                 </div>
                 <div class="pr-card">
                     <span class="dash-label">3 KM</span>
-                    <span class="pr-val" id="pr-3k">--</span>
+                    <span class="pr-val" id="pr-3k" style="font-size:10px; letter-spacing:normal">Je eerste record wacht op je!</span>
                 </div>
                 <div class="pr-card">
                     <span class="dash-label">5 KM</span>
-                    <span class="pr-val" id="pr-5k">--</span>
+                    <span class="pr-val" id="pr-5k" style="font-size:10px; letter-spacing:normal">Je eerste record wacht op je!</span>
                 </div>
             </div>
         </div>
 
         <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; position:relative">
                 <span class="dash-label" style="margin-bottom:0">Recente Activiteit</span>
-                <button class="clear-history-btn" onclick="clearAllHistory()">Wis alles</button>
+                <button class="settings-gear-btn" onclick="toggleClearHistoryDropdown(event)" title="Instellingen">⚙️</button>
+                <div class="clear-history-dropdown" id="clear-history-dropdown">
+                    <button onclick="clearAllHistory(); closeClearHistoryDropdown()">🗑️ Wis alle activiteiten</button>
+                    <button onclick="exportHistory(); closeClearHistoryDropdown()">📥 Exporteer als JSON</button>
+                </div>
             </div>
             <div id="history-list"></div>
         </div>
@@ -429,9 +537,20 @@
         </div>
 
         <div class="card">
+            <span class="dash-label">📦 Versie</span>
+            <div style="display:flex; align-items:center; justify-content:space-between">
+                <div>
+                    <div style="font-size:22px; font-weight:900; color:var(--primary)">v1.2.0</div>
+                    <div style="font-size:11px; color:var(--text-muted); margin-top:2px">Laatste update: 08-05-2026</div>
+                </div>
+                <button class="clear-history-btn" style="color:var(--accent); background:rgba(52,152,219,0.1)" onclick="showChangelog()">📜 Wijzigingen</button>
+            </div>
+        </div>
+
+        <div class="card">
             <span class="dash-label">⚡ Geavanceerd</span>
             <button class="btn btn-primary" style="margin-top:10px;" onclick="connectHeartRateMonitor()">❤️ Koppel Hartslagmeter</button>
-            <button class="btn" style="margin-top:10px; color: var(--danger); background: rgba(231,76,60,0.1)" onclick="clearAllHistory()">🗑️ Wis Alle Gegevens</button>
+            <button class="btn" style="margin-top:10px; color: var(--danger); background: rgba(231,76,60,0.1)" onclick="confirmClearAll()">🗑️ Wis Alle Gegevens</button>
         </div>
     </div>
 
@@ -816,50 +935,15 @@
 
     function releaseWakeLock() { if (wakeLock) { wakeLock.release(); wakeLock = null; } }
     
-    // ✅ Audio Ducking implementatie: Verlaag systeem volume tijdelijk tijdens spraak
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    let audioDuckingCtx = null;
-    let duckingGainNode = null;
-
-    function initAudioDucking() {
-        try {
-            audioDuckingCtx = new AudioContext();
-            // Maak een bijna stil geluid die we kunnen gebruiken om audio focus te krijgen
-            const oscillator = audioDuckingCtx.createOscillator();
-            duckingGainNode = audioDuckingCtx.createGain();
-            oscillator.connect(duckingGainNode);
-            duckingGainNode.connect(audioDuckingCtx.destination);
-            duckingGainNode.gain.value = 0.001;
-            oscillator.frequency.value = 20;
-            oscillator.start();
-        } catch(e) {
-            console.warn('Audio ducking niet beschikbaar:', e);
-        }
-    }
-
-    // FIX: Only cancel if already speaking, don't cancel when t is falsy
     function speak(t) {
         if (!t) return;
         if (synth.speaking) synth.cancel();
-        
-        // ✅ Activeer Audio Ducking: Verkrijg audio focus van systeem
-        // Dit zorgt er automatisch voor dat muziek volume verlaagd wordt op Android & iOS
-        if(audioDuckingCtx && audioDuckingCtx.state === 'suspended') {
-            audioDuckingCtx.resume();
-        }
         
         const u = new SpeechSynthesisUtterance(t);
         u.voice = voices.find(v => v.name === document.getElementById('voice-select').value) || null;
         u.lang = 'nl-NL';
         u.rate = 0.95;
         u.volume = 1.0;
-        
-        // Als stem klaar is geven we audio focus weer vrij
-        u.onend = () => {
-            if(audioDuckingCtx) {
-                setTimeout(() => audioDuckingCtx.suspend(), 500);
-            }
-        };
         
         synth.speak(u);
     }
@@ -1033,20 +1117,64 @@
         document.getElementById('res-time').innerText = formatT(totalSeconds);
         document.getElementById('res-cal').innerText = calories;
         
-        // ✅ Training Breakdown statistieken
-        const totalRunTime = sessionBlocks.filter(b => b.m === 'run').reduce((a,b) => a + b.t, 0);
-        const totalWalkTime = sessionBlocks.filter(b => b.m === 'walk').reduce((a,b) => a + b.t, 0);
-        const totalSessionTime = totalRunTime + totalWalkTime;
+        // ✅ Training Breakdown berekend op basis van daadwerkelijke pace (i.p.v. blok-types)
+        // Dit is eerlijker: als je wandelt tijdens een "run" blok, telt dat als wandelen
+        const PACE_THRESHOLD = 8.0; // min/km — alles sneller dan 8:00 = hardlopen, langzamer = wandelen
+        const SAMPLE_INTERVAL = 30; // seconden — paceData wordt elke 30s gesampled
         
-        const runPercent = totalSessionTime > 0 ? Math.round((totalRunTime / totalSessionTime) * 100) : 0;
+        let finalRunTime = 0;
+        let finalWalkTime = 0;
+        
+        if (paceData.length > 0) {
+            // Bepaal run/walk op basis van pace samples
+            const samples = paceData.map(p => parseFloat(p));
+            samples.forEach(p => {
+                if (p > 0 && p < PACE_THRESHOLD) {
+                    finalRunTime += SAMPLE_INTERVAL; // hardlopen
+                } else if (p >= PACE_THRESHOLD) {
+                    finalWalkTime += SAMPLE_INTERVAL; // wandelen
+                }
+            });
+            
+            // Verdeel de resterende tijd (niet gesampled) proportioneel
+            const sampledTime = samples.length * SAMPLE_INTERVAL;
+            const remainingTime = totalSeconds - sampledTime;
+            if (remainingTime > 0 && (finalRunTime + finalWalkTime) > 0) {
+                const runRatio = finalRunTime / (finalRunTime + finalWalkTime);
+                finalRunTime += Math.round(remainingTime * runRatio);
+                finalWalkTime += remainingTime - Math.round(remainingTime * runRatio);
+            } else if (remainingTime > 0) {
+                // Geen samples, val terug op totale tijd
+                finalRunTime = Math.round(remainingTime * 0.7);
+                finalWalkTime = remainingTime - finalRunTime;
+            }
+        } else {
+            // Fallback: gebruik blok-types als er geen GPS/pace data is
+            const executedBlocks = sessionBlocks.slice(0, currentBIdx);
+            finalRunTime = executedBlocks.filter(b => b.m === 'run').reduce((a,b) => a + b.t, 0);
+            finalWalkTime = executedBlocks.filter(b => b.m === 'walk').reduce((a,b) => a + b.t, 0);
+            // Voeg de bestede tijd van het huidige (onafgemaakte) blok toe
+            if (currentBIdx < sessionBlocks.length) {
+                const currentBlock = sessionBlocks[currentBIdx];
+                const spentInCurrent = currentBlock.t - blockRem;
+                if (currentBlock.m === 'run') finalRunTime += Math.max(0, spentInCurrent);
+                else if (currentBlock.m === 'walk') finalWalkTime += Math.max(0, spentInCurrent);
+            }
+        }
+        
+        const totalSessionTime = finalRunTime + finalWalkTime;
+        
+        const runPercent = totalSessionTime > 0 ? Math.round((finalRunTime / totalSessionTime) * 100) : 0;
         const walkPercent = 100 - runPercent;
+        
+        // Update de DOM
+        document.getElementById('stat-run-time').innerText = formatT(finalRunTime);
+        document.getElementById('stat-walk-time').innerText = formatT(finalWalkTime);
         
         document.getElementById('stat-run-percent').innerText = runPercent + '%';
         document.getElementById('stat-walk-percent').innerText = walkPercent + '%';
         document.getElementById('stat-run-bar').style.width = runPercent + '%';
         document.getElementById('stat-walk-bar').style.width = walkPercent + '%';
-        document.getElementById('stat-run-time').innerText = formatT(totalRunTime);
-        document.getElementById('stat-walk-time').innerText = formatT(totalWalkTime);
 
         if(activePlanKey !== undefined) localStorage.setItem(`done_${activePlanKey}_${activeWeekIdx}_${activeType}`, "true");
         const run = { 
@@ -1114,9 +1242,57 @@
         document.getElementById('preview-overlay').style.display = 'flex';
     }
 
+    // ✅ Swipe-to-delete: setup touch events on history items
+    let swipeStartX = 0;
+    let swipeCurrentItem = null;
+
+    function handleSwipeStart(e, item) {
+        const touch = e.touches ? e.touches[0] : e;
+        swipeStartX = touch.clientX;
+        swipeCurrentItem = item;
+    }
+
+    function handleSwipeEnd(e, runId) {
+        if (!swipeCurrentItem) return;
+        const touch = e.changedTouches ? e.changedTouches[0] : e;
+        const deltaX = swipeStartX - touch.clientX;
+        swipeStartX = 0;
+        swipeCurrentItem = null;
+
+        if (deltaX > 80) {
+            // Swipe left enough → toggle delete overlay
+            swipeCurrentItem.classList.toggle('swiped');
+        } else if (deltaX < -30) {
+            // Swipe right → close overlay
+            swipeCurrentItem.classList.remove('swiped');
+        }
+    }
+
+    function confirmSwipeDelete(e, runId) {
+        e.stopPropagation();
+        deleteRun(e, runId);
+    }
+
+    // ✅ Clear history settings dropdown
+    function toggleClearHistoryDropdown(e) {
+        e.stopPropagation();
+        const dropdown = document.getElementById('clear-history-dropdown');
+        dropdown.classList.toggle('show');
+    }
+
+    function closeClearHistoryDropdown() {
+        document.getElementById('clear-history-dropdown').classList.remove('show');
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        const dropdown = document.getElementById('clear-history-dropdown');
+        if (dropdown && !e.target.closest('.settings-gear-btn') && !e.target.closest('.clear-history-dropdown')) {
+            dropdown.classList.remove('show');
+        }
+    });
+
     async function init() {
-        // Initialiseer Audio Ducking
-        initAudioDucking();
         
         // Service Worker registratie voor PWA
         if ('serviceWorker' in navigator) {
@@ -1143,38 +1319,62 @@
             // Total KM
             document.getElementById('dash-total').innerText = allRuns.reduce((a,b)=>a+parseFloat(b.dist),0).toFixed(1);
 
-            // FIX: Populate best pace (dash-pb)
+            // FIX: Populate best pace (dash-pb) — use inspirational text when empty
             const validPaces = allRuns.map(r => parseFloat(r.pace)).filter(p => p > 0);
             if (validPaces.length > 0) {
                 const best = Math.min(...validPaces);
                 const mins = Math.floor(best);
                 const secs = Math.round((best - mins) * 60);
                 document.getElementById('dash-pb').innerText = `${mins}:${secs.toString().padStart(2,'0')}`;
+                document.getElementById('dash-pb').style.fontSize = '';
+                document.getElementById('dash-pb').style.lineHeight = '';
             } else {
-                document.getElementById('dash-pb').innerText = '--';
+                document.getElementById('dash-pb').innerText = 'Je eerste record wacht op je!';
+                document.getElementById('dash-pb').style.fontSize = '14px';
+                document.getElementById('dash-pb').style.lineHeight = '1.3';
             }
 
-            // FIX: Populate Personal Records (PR cards)
-            document.getElementById('pr-1k').innerText = calcPRForDistance(allRuns, 1);
-            document.getElementById('pr-3k').innerText = calcPRForDistance(allRuns, 3);
-            document.getElementById('pr-5k').innerText = calcPRForDistance(allRuns, 5);
+            // FIX: Populate Personal Records (PR cards) — use inspirational text when empty
+            const pr1k = calcPRForDistance(allRuns, 1);
+            const pr3k = calcPRForDistance(allRuns, 3);
+            const pr5k = calcPRForDistance(allRuns, 5);
+            const pr1kEl = document.getElementById('pr-1k');
+            const pr3kEl = document.getElementById('pr-3k');
+            const pr5kEl = document.getElementById('pr-5k');
+            pr1kEl.innerText = pr1k === '--' ? 'Je eerste record wacht op je!' : pr1k;
+            pr1kEl.style.fontSize = pr1k === '--' ? '10px' : '';
+            pr1kEl.style.letterSpacing = pr1k === '--' ? 'normal' : '';
+            pr3kEl.innerText = pr3k === '--' ? 'Je eerste record wacht op je!' : pr3k;
+            pr3kEl.style.fontSize = pr3k === '--' ? '10px' : '';
+            pr3kEl.style.letterSpacing = pr3k === '--' ? 'normal' : '';
+            pr5kEl.innerText = pr5k === '--' ? 'Je eerste record wacht op je!' : pr5k;
+            pr5kEl.style.fontSize = pr5k === '--' ? '10px' : '';
+            pr5kEl.style.letterSpacing = pr5k === '--' ? 'normal' : '';
 
-            // Streak
+            // Streak — use singular "SESSIE" when streak === 1
             const streak = calculateStreak(allRuns);
             const streakCont = document.getElementById('streak-container');
             if(streak > 0) {
                 streakCont.style.display = 'inline-flex';
                 document.getElementById('dash-streak').innerText = streak;
+                document.getElementById('dash-streak-label').innerText = streak === 1 ? 'SESSIE' : 'SESSIES';
             } else {
                 streakCont.style.display = 'none';
             }
 
-            // History list
+            // History list with swipe-to-delete
             document.getElementById('history-list').innerHTML = h.slice(0, 10).map((r) => `
-                <div class="history-item" onclick="viewRun(${r.id})">
-                    <div style="flex-grow:1"><div style="font-weight:800">${r.n}</div><div style="font-size:12px; color:var(--text-muted)">${r.d} • ${r.dist}km</div></div>
-                    <button class="delete-btn" onclick="deleteRun(event, ${r.id})">🗑️</button>
-                </div>`).join('') || '<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:10px">Nog geen activiteiten</div>';
+                <div class="history-item" id="history-item-${r.id}" onclick="viewRun(${r.id})"
+                     ontouchstart="handleSwipeStart(event, this)"
+                     ontouchend="handleSwipeEnd(event, ${r.id})"
+                     onmousedown="handleSwipeStart(event, this)"
+                     onmouseup="handleSwipeEnd(event, ${r.id})">
+                    <div class="history-item-content">
+                        <div style="flex-grow:1"><div style="font-weight:800">${r.n}</div><div style="font-size:12px; color:var(--text-muted)">${r.d} • ${r.dist}km</div></div>
+                        <button class="delete-btn" onclick="deleteRun(event, ${r.id})" style="pointer-events:auto">🗑️</button>
+                    </div>
+                    <div class="swipe-delete-overlay" onclick="confirmSwipeDelete(event, ${r.id})">VERWIJDER</div>
+                </div>`).join('') || '<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:10px"> Nog geen activiteiten</div>';
         };
         renderPlan();
         
@@ -1194,7 +1394,7 @@
         window.paceChartObj = new Chart(ctx, { type: 'line', data: { labels: data.map((_, i) => i + 1), datasets: [{ label: 'Pace', data: data, borderColor: '#2ecc71', backgroundColor: 'rgba(46, 204, 113, 0.1)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { reverse: true }, x: { display: false } }, plugins: { legend: { display: false } } } });
     }
 
-    function initMap(route) { if (mapInstance) mapInstance.remove(); mapInstance = L.map('map', {zoomControl: false}).setView(route[0] || [52.1, 5.2], 14); L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(mapInstance); if(route.length > 1) { const poly = L.polyline(route, {color: '#2ecc71', weight: 4}).addTo(mapInstance); mapInstance.fitBounds(poly.getBounds(), {padding: [20, 20]}); } }
+    function initMap(route) { if (mapInstance) mapInstance.remove(); mapInstance = L.map('map', {zoomControl: false}).setView(route[0] || [52.1, 5.2], 14); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapInstance); if(route.length > 1) { const poly = L.polyline(route, {color: '#2ecc71', weight: 4}).addTo(mapInstance); mapInstance.fitBounds(poly.getBounds(), {padding: [20, 20]}); } }
 
     // FIX: viewRun now safely handles runs without paceHistory (older records)
     function viewRun(id) {
@@ -1215,8 +1415,37 @@
         };
     }
 
-    function deleteRun(e, id) { e.stopPropagation(); if(confirm("Wissen?")) { const tx = db.transaction("runs", "readwrite"); tx.objectStore("runs").delete(id); tx.oncomplete = init; } }
-    function clearAllHistory() { if(confirm("Alles wissen?")) { const tx = db.transaction("runs", "readwrite"); tx.objectStore("runs").clear(); tx.oncomplete = init; } }
+    function deleteRun(e, id) {
+        e.stopPropagation();
+        if(confirm("Wissen?")) {
+            const tx = db.transaction("runs", "readwrite");
+            tx.objectStore("runs").delete(id);
+            tx.oncomplete = init;
+        }
+        // Also close swipe overlay if open
+        const item = document.getElementById('history-item-' + id);
+        if (item) item.classList.remove('swiped');
+    }
+    
+    function clearAllHistory() {
+        if(confirm("Weet je zeker dat je alle activiteiten wilt wissen? Dit kan niet ongedaan gemaakt worden.")) {
+            const tx = db.transaction("runs", "readwrite");
+            tx.objectStore("runs").clear();
+            tx.oncomplete = init;
+        }
+    }
+
+    function confirmClearAll() {
+        if(confirm("Weet je zeker dat je ALLE gegevens (inclusief opgeslagen profiel en instellingen) wilt wissen?")) {
+            const tx = db.transaction("runs", "readwrite");
+            tx.objectStore("runs").clear();
+            tx.oncomplete = () => {
+                localStorage.clear();
+                location.reload();
+            };
+        }
+    }
+
     function saveSelectedPlan() { 
         localStorage.setItem('strive_selected_plan', document.getElementById('plan-select').value); 
         renderPlan();
@@ -1238,7 +1467,7 @@
             deleteBtn.className = 'clear-history-btn';
             deleteBtn.style.marginTop = '10px';
             deleteBtn.style.float = 'right';
-            deleteBtn.innerText = '🗑️ VERWIJDER PLAN';
+            deleteBtn.innerText = '  VERWIJDER PLAN';
             deleteBtn.onclick = deletePersonalPlan;
             
             const planCard = planSelect.parentElement;
@@ -1385,7 +1614,7 @@
             {t: cooldownSec, s:"Cool-down", m:"warmup"}
         ];
         
-        document.getElementById('pre-title').innerText = "📊 30 Minuten Baseline Test";
+        document.getElementById('pre-title').innerText = " 30 Minuten Baseline Test";
         const totalMin = Math.round(sessionBlocks.reduce((a,b)=>a+b.t, 0)/60);
         document.getElementById('pre-time').innerText = totalMin + " min";
         document.getElementById('pre-type').innerText = "Basis Test";
@@ -1456,8 +1685,8 @@
         const cycles = Math.floor(workTime / intervalCycle);
         
         for(let i = 0; i < cycles; i++) {
-            blocks.push({t: 60, s:"🔴 HIT Snel Tempo", m:"run"});
-            blocks.push({t: 60, s:"🟢 Actief Herstel", m:"walk"});
+            blocks.push({t: 60, s:" HIT Snel Tempo", m:"run"});
+            blocks.push({t: 60, s:" Actief Herstel", m:"walk"});
         }
 
         blocks.push({t: cooldown, s:"Cool-down", m:"warmup"});
@@ -1533,7 +1762,7 @@
             
             // ✅ Opslaan in schema lijst
             allSchemas['custom'] = {
-                name: `🎯 Wetenschappelijk Plan: ${goal} (${frequency}x/week)`,
+                name: `  Wetenschappelijk Plan: ${goal} (${frequency}x/week)`,
                 weeks: customWeeks
             };
             
@@ -1568,10 +1797,76 @@
     window.speechSynthesis.onvoiceschanged = () => { voices = window.speechSynthesis.getVoices(); const dutch = voices.filter(v => v.lang.includes('nl')); const select = document.getElementById('voice-select'); if(select) select.innerHTML = dutch.map(v => `<option value="${v.name}">${v.name}</option>`).join('') || '<option>Standaard Stem</option>'; };
 
     // ==============================================
+    // ✅ VERSIEBEHEER
+    // ==============================================
+    const APP_VERSION = "1.2.0";
+    const APP_VERSION_DATE = "08-05-2026";
+    const CHANGELOG = [
+        { version: "1.2.0", date: "08-05-2026", changes: [
+            "  UX Design & grammatica verbeteringen",
+            "  Grammatica: \"1 SESSIES\" → \"1 SESSIE\" (enkelvoud/meervoud logica)",
+            "  Empty states: motiverende teksten i.p.v. streepjes bij records",
+            "  \"Wis alles\" verplaatst naar    instellingen-icoon (minder risico op per ongeluk wissen)",
+            "  Swipe-to-delete patroon voor moderne interactie op activiteiten",
+            "  Training Breakdown nu op basis van pace i.p.v. blok-types ( eerlijker)"
+        ]},
+        { version: "1.1.0", date: "08-05-2026", changes: [
+            "  Kaart in resultatenscherm is nu licht (OpenStreetMap) i.p.v. donker",
+            "  Donkere flits bij laden kaart verholpen (CSS achtergrond naar wit)",
+            "  Versiebeheer systeem toegevoegd met changelog",
+            "  Audio ducking verwijderd (veroorzaakte irritante klik, werkte niet goed)",
+            "  Route-minimap toegevoegd aan share afbeelding"
+        ]},
+        { version: "1.0.0", date: "01-05-2026", changes: [
+            "  Eerste volledige release van JellyLegs",
+            "  Training schema's voor 3km, 5km, 10km en halve marathon",
+            "  GPS tracking met live kaart tijdens het hardlopen",
+            "  Gedetailleerde resultaten met pace grafiek",
+            "  Streak tracking en persoonlijke records",
+            "  Bluetooth hartslagmeter ondersteuning",
+            "  Deel resultaten via social media",
+            "  Generate share afbeelding voor Instagram",
+            "  GPX export voor Strava/Garmin",
+            "  Wetenschappelijk 80/20 trainingsplan generator met ACWR"
+        ]}
+    ];
+
+    function showChangelog() {
+        const existing = document.getElementById('changelog-overlay');
+        if (existing) existing.remove();
+        
+        const overlay = document.createElement('div');
+        overlay.id = 'changelog-overlay';
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(5px);z-index:5000;display:flex;align-items:center;padding:20px;overflow-y:auto;';
+        
+        const content = document.createElement('div');
+        content.className = 'card';
+        content.style.cssText = 'width:100%;max-width:480px;margin:auto;max-height:80vh;overflow-y:auto;';
+        
+        let html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px"><h2 style="margin:0">  Wijzigingslog</h2><button class="clear-history-btn" onclick="this.closest(\'#changelog-overlay\').remove()">✕ Sluiten</button></div>';
+        
+        CHANGELOG.forEach(entry => {
+            html += `<div style="margin-bottom:20px;padding-bottom:15px;border-bottom:1px solid rgba(255,255,255,0.1)">`;
+            html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">`;
+            html += `<span style="font-size:16px;font-weight:900;color:var(--primary)">v${entry.version}</span>`;
+            html += `<span style="font-size:11px;font-weight:700;color:var(--text-muted)">${entry.date}</span>`;
+            html += `</div><ul style="margin:0;padding-left:20px">`;
+            entry.changes.forEach(change => {
+                html += `<li style="font-size:13px;margin-bottom:4px;line-height:1.5">${change}</li>`;
+            });
+            html += `</ul></div>`;
+        });
+        
+        content.innerHTML = html;
+        overlay.appendChild(content);
+        document.body.appendChild(overlay);
+    }
+    
+    // ==============================================
     // ✅ NIEUWE FEATURES: Web Bluetooth, Web Share, View Transitions, GPX Export
     // ==============================================
 
-    // 1. ❤️ Hartslagmeter via Web Bluetooth API
+    // 1.  ❤️ Hartslagmeter via Web Bluetooth API
     let heartRateDevice = null;
     let heartRateCharacteristic = null;
     let currentHeartRate = 0;
@@ -1619,7 +1914,7 @@
         }
     }
 
-    // 2. 📤 Web Share API voor het delen van resultaten
+    // 2.  📤 Web Share API voor het delen van resultaten
     async function shareResult() {
         if (!navigator.share) {
             alert("Delen wordt niet ondersteund in deze browser");
@@ -1628,7 +1923,7 @@
 
         try {
             await navigator.share({
-                title: "🏃 Mijn Strive run!",
+                title: "  Mijn Strive run!",
                 text: `Ik heb net ${document.getElementById('res-d').innerText} km gerund in ${document.getElementById('res-time').innerText}! Gemiddeld tempo: ${document.getElementById('res-p').innerText} min/km`,
                 url: window.location.href
             });
@@ -1637,7 +1932,178 @@
         }
     }
 
-    // ✅ 🖼️ Share Afbeelding Generator (Instagram / Strava formaat 1080x1080)
+    // ✅ Helper: teken OpenStreetMap kaart op canvas met handmatig geladen tiles
+    // Gebruikt Leaflet voor coördinaat-transformatie, maar laadt tiles zelf
+    // om CORS-issues te voorkomen en zeker te weten dat tiles renderen
+    async function drawMapTiles(ctx, route, mapX, mapY, mapW, mapH) {
+        if (!route || route.length < 2) return;
+
+        try {
+            // 1. Bereken bounds en zoom van de route
+            let minLat = Infinity, maxLat = -Infinity, minLng = Infinity, maxLng = -Infinity;
+            route.forEach(p => {
+                if (p[0] < minLat) minLat = p[0];
+                if (p[0] > maxLat) maxLat = p[0];
+                if (p[1] < minLng) minLng = p[1];
+                if (p[1] > maxLng) maxLng = p[1];
+            });
+            
+            const padding = 0.002;
+            minLat -= padding; maxLat += padding;
+            minLng -= padding; maxLng += padding;
+            
+            // 2. Maak een kaart achtergrond
+            ctx.fillStyle = '#1e1e24';
+            ctx.beginPath();
+            ctx.roundRect(mapX, mapY, mapW, mapH, 16);
+            ctx.fill();
+            
+            // 3. Gebruik een tijdelijke Leaflet kaart voor latLng→pixel transformatie
+            const tempDiv = document.createElement('div');
+            tempDiv.id = 'temp-share-map';
+            tempDiv.style.cssText = 'position:absolute;left:-9999px;top:0;width:' + mapW + 'px;height:' + mapH + 'px';
+            document.body.appendChild(tempDiv);
+            
+            const tempMap = L.map('temp-share-map', {
+                zoomControl: false,
+                attributionControl: false,
+                zoomAnimation: false,
+                fadeAnimation: false
+            });
+            
+            // Voeg tile layer toe (alleen voor transformatie)
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(tempMap);
+            
+            const poly = L.polyline(route, {color: '#2ecc71', weight: 4}).addTo(tempMap);
+            const bounds = poly.getBounds();
+            if (bounds.isValid()) {
+                tempMap.fitBounds(bounds, {padding: [30, 30], maxZoom: 16});
+            }
+            
+            // Wacht even tot Leaflet de view heeft ingesteld
+            await new Promise(r => setTimeout(r, 100));
+            
+            // 4. Bereken welke tiles nodig zijn en laad ze
+            const zoom = tempMap.getZoom();
+            const tileSize = 256;
+            
+            // Zichtbare bounds in tile coördinaten
+            const visBounds = tempMap.getBounds();
+            const nwTile = latLngToTile(visBounds.getNorthWest(), zoom);
+            const seTile = latLngToTile(visBounds.getSouthEast(), zoom);
+            
+            // Laad alle benodigde tiles
+            const tilePromises = [];
+            for (let x = nwTile.x; x <= seTile.x; x++) {
+                for (let y = nwTile.y; y <= seTile.y; y++) {
+                    tilePromises.push(loadTile(x, y, zoom));
+                }
+            }
+            
+            const tiles = await Promise.all(tilePromises);
+            
+            // 5. Teken elke tile op canvas
+            tiles.forEach(tileData => {
+                const tileX = tileData.x * tileSize - nwTile.x * tileSize;
+                const tileY = tileData.y * tileSize - nwTile.y * tileSize;
+                
+                ctx.drawImage(tileData.img, tileX + mapX, tileY + mapY, tileSize, tileSize);
+            });
+            
+            // 6. Teken de route polyline
+            if (route.length >= 2) {
+                const pts = route.map(latLng => {
+                    const point = tempMap.latLngToContainerPoint(L.latLng(latLng[0], latLng[1]));
+                    return { x: point.x + mapX, y: point.y + mapY };
+                });
+
+                ctx.shadowColor = '#2ecc71';
+                ctx.shadowBlur = 12;
+                ctx.beginPath();
+                ctx.moveTo(pts[0].x, pts[0].y);
+                for (let i = 1; i < pts.length; i++) {
+                    ctx.lineTo(pts[i].x, pts[i].y);
+                }
+                ctx.strokeStyle = '#2ecc71';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                // Start marker
+                const firstPt = tempMap.latLngToContainerPoint(L.latLng(route[0][0], route[0][1]));
+                const sx = firstPt.x + mapX;
+                const sy = firstPt.y + mapY;
+                ctx.beginPath();
+                ctx.arc(sx, sy, 8, 0, Math.PI * 2);
+                ctx.fillStyle = '#27ae60';
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.font = 'bold 14px Inter, sans-serif';
+                ctx.fillStyle = '#27ae60';
+                ctx.textAlign = 'center';
+                ctx.fillText('START', sx, sy - 16);
+
+                // Finish marker
+                const lastPt = route[route.length - 1];
+                const endPt = tempMap.latLngToContainerPoint(L.latLng(lastPt[0], lastPt[1]));
+                const ex = endPt.x + mapX;
+                const ey = endPt.y + mapY;
+                ctx.beginPath();
+                ctx.arc(ex, ey, 8, 0, Math.PI * 2);
+                ctx.fillStyle = '#e74c3c';
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.font = 'bold 14px Inter, sans-serif';
+                ctx.fillStyle = '#e74c3c';
+                ctx.textAlign = 'center';
+                ctx.fillText('FINISH', ex, ey - 16);
+            }
+
+            // Border
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(mapX, mapY, mapW, mapH, 16);
+            ctx.stroke();
+            
+            // Cleanup
+            tempMap.remove();
+            tempDiv.remove();
+            
+        } catch (e) {
+            console.warn('Map render error:', e);
+        }
+    }
+
+    // ✅ Helper: converteer latLng naar tile coördinaten
+    function latLngToTile(latLng, zoom) {
+        const n = Math.pow(2, zoom);
+        const latRad = latLng.lat * Math.PI / 180;
+        const x = Math.floor((latLng.lng + 180) / 360 * n);
+        const y = Math.floor((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * n);
+        return { x: Math.max(0, Math.min(n - 1, x)), y: Math.max(0, Math.min(n - 1, y)) };
+    }
+
+    // ✅ Helper: laad één OSM tile als Image met crossOrigin
+    function loadTile(x, y, zoom) {
+        const subdomains = ['a', 'b', 'c'];
+        const subdomain = subdomains[(x + y) % subdomains.length];
+        const url = `https://${subdomain}.tile.openstreetmap.org/${zoom}/${x}/${y}.png`;
+        
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => resolve({ x, y, zoom, img });
+            img.onerror = () => resolve({ x, y, zoom, img: null });
+            img.src = url;
+        });
+    }
+
+    // ✅  🖼️ Share Afbeelding Generator (Instagram / Strava formaat 1080x1080)
     async function generateShareImage() {
         try {
             // Maak vierkante canvas 1080x1080 perfect voor Instagram
@@ -1663,28 +2129,40 @@
             ctx.font = 'normal 34px Inter, sans-serif';
             ctx.fillStyle = '#a4b0be';
             ctx.fillText('Hardloop Training Voltooid!', canvas.width/2, 200);
+
+            // --- Echte Route Kaart (OpenStreetMap tiles) ---
+            if (currentRoute && currentRoute.length >= 2) {
+                const mapX = (canvas.width - 500) / 2;
+                const mapY = 240;
+                const mapW = 500;
+                const mapH = 300;
+
+                // Teken de kaart met tiles direct op canvas
+                await drawMapTiles(ctx, currentRoute, mapX, mapY, mapW, mapH);
+            }
+            // --- End Route Kaart ---
             
-            // Afstand (main value)
+            // Stats
             ctx.font = 'bold 72px Inter, sans-serif';
             ctx.fillStyle = '#ffffff';
-            ctx.fillText(document.getElementById('res-d').innerText + ' KM', canvas.width/2, 350);
+            ctx.fillText(document.getElementById('res-d').innerText + ' KM', canvas.width/2, 560);
             
             // Stats rij
             ctx.font = 'normal 32px Inter, sans-serif';
             ctx.fillStyle = '#a4b0be';
-            ctx.fillText(`Pace: ${document.getElementById('res-p').innerText} min/km`, canvas.width/2, 420);
+            ctx.fillText(`Pace: ${document.getElementById('res-p').innerText} min/km`, canvas.width/2, 610);
             
             // Ronde cirkel decoratie
             ctx.beginPath();
-            ctx.arc(canvas.width/2, 700, 220, 0, Math.PI * 2);
+            ctx.arc(canvas.width/2, 820, 170, 0, Math.PI * 2);
             ctx.strokeStyle = '#27ae60';
-            ctx.lineWidth = 5;
+            ctx.lineWidth = 4;
             ctx.stroke();
             
             // Tijd in het midden
-            ctx.font = 'bold 104px Inter, sans-serif';
+            ctx.font = 'bold 88px Inter, sans-serif';
             ctx.fillStyle = '#ffffff';
-            ctx.fillText(document.getElementById('res-time').innerText, canvas.width/2, 735);
+            ctx.fillText(document.getElementById('res-time').innerText, canvas.width/2, 845);
             
             // Footer branding
             ctx.font = 'normal 28px Inter, sans-serif';
@@ -1706,7 +2184,7 @@
         }
     }
 
-    // 3. ✨ View Transitions API voor vloeiende tab animaties
+    // 3.  ✨ View Transitions API voor vloeiende tab animaties
     function openTab(tabName, element) {
         const switchTab = () => {
             // Hide all tabs
@@ -1728,7 +2206,7 @@
         }
     }
 
-    // 4. 📍 GPX File Export (voor Strava, Garmin, etc)
+    // 4.  📍 GPX File Export (voor Strava, Garmin, etc)
     function exportAsGPX(route) {
         if (!route || route.length < 2) {
             alert("Geen GPS data aanwezig om te exporteren");
