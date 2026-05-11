@@ -237,13 +237,14 @@
 </head>
 <body>
 
-<div id="preview-overlay">
+        <div id="preview-overlay">
     <div class="card" style="width:100%">
         <h2 id="pre-title" style="margin:0">Training</h2>
         <div class="preview-chart" id="pre-chart"></div>
         <div class="legend">
             <div class="legend-item"><div class="dot" style="background:var(--accent)"></div> Warming-up</div>
             <div class="legend-item"><div class="dot" style="background:var(--primary)"></div> Hardlopen</div>
+            <div class="legend-item"><div class="dot" style="background:var(--accent)"></div> Joggen</div>
             <div class="legend-item"><div class="dot" style="background:var(--warning)"></div> Wandelen</div>
         </div>
         <div style="display:flex; justify-content: space-between; margin: 20px 0; font-weight:700">
@@ -270,26 +271,35 @@
             <span class="dash-label">📊 Training Breakdown</span>
             <div style="height:24px; background:rgba(120,120,120,0.1); border-radius:12px; overflow:hidden; display:flex; margin:15px 0">
                 <div id="stat-run-bar" style="background:var(--primary); height:100%"></div>
+                <div id="stat-jog-bar" style="background:var(--accent); height:100%"></div>
                 <div id="stat-walk-bar" style="background:var(--warning); height:100%"></div>
             </div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; text-align:center">
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; text-align:center">
                 <div>
-                    <div style="font-size:26px; font-weight:900; color:var(--primary)" id="stat-run-percent">0%</div>
-                    <div style="font-size:11px; font-weight:700; color:var(--text-muted)">RUNNING</div>
+                    <div style="font-size:20px; font-weight:900; color:var(--primary)" id="stat-run-percent">0%</div>
+                    <div style="font-size:10px; font-weight:700; color:var(--text-muted)">RUNNING</div>
                 </div>
                 <div>
-                    <div style="font-size:26px; font-weight:900; color:var(--warning)" id="stat-walk-percent">0%</div>
-                    <div style="font-size:11px; font-weight:700; color:var(--text-muted)">WALKING</div>
+                    <div style="font-size:20px; font-weight:900; color:var(--accent)" id="stat-jog-percent">0%</div>
+                    <div style="font-size:10px; font-weight:700; color:var(--text-muted)">JOGGING</div>
+                </div>
+                <div>
+                    <div style="font-size:20px; font-weight:900; color:var(--warning)" id="stat-walk-percent">0%</div>
+                    <div style="font-size:10px; font-weight:700; color:var(--text-muted)">WALKING</div>
                 </div>
             </div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-top:15px; text-align:center">
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-top:15px; text-align:center">
                 <div>
-                    <div style="font-size:20px; font-weight:900; color:var(--primary)" id="stat-run-time">0:00</div>
-                    <div style="font-size:10px; font-weight:700; color:var(--text-muted)">LOOP TIJD</div>
+                    <div style="font-size:16px; font-weight:900; color:var(--primary)" id="stat-run-time">0:00</div>
+                    <div style="font-size:9px; font-weight:700; color:var(--text-muted)">RUN TIME</div>
                 </div>
                 <div>
-                    <div style="font-size:20px; font-weight:900; color:var(--warning)" id="stat-walk-time">0:00</div>
-                    <div style="font-size:10px; font-weight:700; color:var(--text-muted)">WANDEL TIJD</div>
+                    <div style="font-size:16px; font-weight:900; color:var(--accent)" id="stat-jog-time">0:00</div>
+                    <div style="font-size:9px; font-weight:700; color:var(--text-muted)">JOG TIME</div>
+                </div>
+                <div>
+                    <div style="font-size:16px; font-weight:900; color:var(--warning)" id="stat-walk-time">0:00</div>
+                    <div style="font-size:9px; font-weight:700; color:var(--text-muted)">WALK TIME</div>
                 </div>
             </div>
         </div>
@@ -1006,20 +1016,57 @@
         document.getElementById('res-time').innerText = formatT(totalSeconds);
         document.getElementById('res-cal').innerText = calories;
         
-        // ✅ Training Breakdown statistieken
-        const totalRunTime = sessionBlocks.filter(b => b.m === 'run').reduce((a,b) => a + b.t, 0);
-        const totalWalkTime = sessionBlocks.filter(b => b.m === 'walk').reduce((a,b) => a + b.t, 0);
-        const totalSessionTime = totalRunTime + totalWalkTime;
+        // ✅ Training Breakdown statistieken op basis van PACE
+        // Bedenk zelf welke pace onder welke valt:
+        // Running: < 6:30 min/km (sneller dan 9.2 km/h)
+        // Jogging: 6:30 - 9:00 min/km (6.6 - 9.2 km/h)
+        // Walking: > 9:00 min/km (langzamer dan 6.6 km/h)
         
-        const runPercent = totalSessionTime > 0 ? Math.round((totalRunTime / totalSessionTime) * 100) : 0;
-        const walkPercent = 100 - runPercent;
+        let runSeconds = 0;
+        let jogSeconds = 0;
+        let walkSeconds = 0;
+
+        if (paceData && paceData.length > 0) {
+            // Elke datapunt in paceData vertegenwoordigt 30 seconden (zie startGPS sampling)
+            paceData.forEach(pStr => {
+                const p = parseFloat(pStr);
+                if (p < 6.5) runSeconds += 30;
+                else if (p < 9.0) jogSeconds += 30;
+                else walkSeconds += 30;
+            });
+            
+            // Corrigeer voor de werkelijke totale tijd als de som afwijkt door afronding/sampling
+            const totalSampled = runSeconds + jogSeconds + walkSeconds;
+            if (totalSampled > 0) {
+                const ratio = totalSeconds / totalSampled;
+                runSeconds *= ratio;
+                jogSeconds *= ratio;
+                walkSeconds *= ratio;
+            }
+        } else {
+            // Fallback als er geen pace data is (bijv. te korte sessie)
+            const avgPace = parseFloat(pace);
+            if (avgPace < 6.5) runSeconds = totalSeconds;
+            else if (avgPace < 9.0) jogSeconds = totalSeconds;
+            else walkSeconds = totalSeconds;
+        }
+
+        const totalCalculated = runSeconds + jogSeconds + walkSeconds;
+        const runPercent = totalCalculated > 0 ? Math.round((runSeconds / totalCalculated) * 100) : 0;
+        const jogPercent = totalCalculated > 0 ? Math.round((jogSeconds / totalCalculated) * 100) : 0;
+        const walkPercent = totalCalculated > 0 ? Math.max(0, 100 - runPercent - jogPercent) : 0;
         
         document.getElementById('stat-run-percent').innerText = runPercent + '%';
+        document.getElementById('stat-jog-percent').innerText = jogPercent + '%';
         document.getElementById('stat-walk-percent').innerText = walkPercent + '%';
+        
         document.getElementById('stat-run-bar').style.width = runPercent + '%';
+        document.getElementById('stat-jog-bar').style.width = jogPercent + '%';
         document.getElementById('stat-walk-bar').style.width = walkPercent + '%';
-        document.getElementById('stat-run-time').innerText = formatT(totalRunTime);
-        document.getElementById('stat-walk-time').innerText = formatT(totalWalkTime);
+        
+        document.getElementById('stat-run-time').innerText = formatT(Math.round(runSeconds));
+        document.getElementById('stat-jog-time').innerText = formatT(Math.round(jogSeconds));
+        document.getElementById('stat-walk-time').innerText = formatT(Math.round(walkSeconds));
 
         if(activePlanKey !== undefined) localStorage.setItem(`done_${activePlanKey}_${activeWeekIdx}_${activeType}`, "true");
         const run = { 
@@ -1198,9 +1245,54 @@
             document.getElementById('res-title').innerText = run.n;
             document.getElementById('res-d').innerText = run.dist;
             document.getElementById('res-p').innerText = run.pace;
+            document.getElementById('res-time').innerText = formatT(run.duration || 0);
+            document.getElementById('res-cal').innerText = run.calories || 0;
             document.getElementById('res-btn').innerText = "SLUITEN";
             document.getElementById('res-btn').onclick = () => document.getElementById('result-screen').style.display='none';
             document.getElementById('result-screen').style.display='flex';
+            
+            // ✅ Training Breakdown statistieken voor historische run
+            const totalSeconds = run.duration || 0;
+            const paceData = run.paceHistory || [];
+            
+            let runSeconds = 0;
+            let jogSeconds = 0;
+            let walkSeconds = 0;
+
+            if (paceData.length > 0) {
+                paceData.forEach(pStr => {
+                    const p = parseFloat(pStr);
+                    if (p < 6.5) runSeconds += 30;
+                    else if (p < 9.0) jogSeconds += 30;
+                    else walkSeconds += 30;
+                });
+                const totalSampled = runSeconds + jogSeconds + walkSeconds;
+                if (totalSampled > 0) {
+                    const ratio = totalSeconds / totalSampled;
+                    runSeconds *= ratio; jogSeconds *= ratio; walkSeconds *= ratio;
+                }
+            } else {
+                const avgPace = parseFloat(run.pace);
+                if (avgPace < 6.5) runSeconds = totalSeconds;
+                else if (avgPace < 9.0) jogSeconds = totalSeconds;
+                else walkSeconds = totalSeconds;
+            }
+
+            const totalCalculated = runSeconds + jogSeconds + walkSeconds;
+            const runPercent = totalCalculated > 0 ? Math.round((runSeconds / totalCalculated) * 100) : 0;
+            const jogPercent = totalCalculated > 0 ? Math.round((jogSeconds / totalCalculated) * 100) : 0;
+            const walkPercent = totalCalculated > 0 ? Math.max(0, 100 - runPercent - jogPercent) : 0;
+            
+            document.getElementById('stat-run-percent').innerText = runPercent + '%';
+            document.getElementById('stat-jog-percent').innerText = jogPercent + '%';
+            document.getElementById('stat-walk-percent').innerText = walkPercent + '%';
+            document.getElementById('stat-run-bar').style.width = runPercent + '%';
+            document.getElementById('stat-jog-bar').style.width = jogPercent + '%';
+            document.getElementById('stat-walk-bar').style.width = walkPercent + '%';
+            document.getElementById('stat-run-time').innerText = formatT(Math.round(runSeconds));
+            document.getElementById('stat-jog-time').innerText = formatT(Math.round(jogSeconds));
+            document.getElementById('stat-walk-time').innerText = formatT(Math.round(walkSeconds));
+
             setTimeout(() => {
                 initMap(run.route || []);
                 renderPaceChart(run.paceHistory || []);
