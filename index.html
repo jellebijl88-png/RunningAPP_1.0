@@ -22,6 +22,7 @@
             --card-shadow: 0 8px 32px rgba(0,0,0,0.4);
             --card-glass-bg: rgba(30, 30, 35, 0.75);
             --card-glass-border: 1px solid rgba(255,255,255,0.06);
+            --jogging: #9b59b6;
             --streak-color: #ff4757;
             --easing: cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -206,6 +207,7 @@
         .bar span { position: absolute; top: -18px; font-size: 8px; font-weight: 900; color: var(--text-muted); white-space: nowrap; }
         .bar.run { background: var(--primary); }
         .bar.walk { background: var(--warning); }
+        .bar.jog { background: var(--jogging); }
         .bar.warmup { background: var(--accent); }
 
         #result-screen { position: fixed; inset: 0; background: var(--bg-dark); z-index: 4000; display: none; flex-direction: column; overflow-y: auto; }
@@ -345,11 +347,11 @@
     <div class="card" style="width:100%">
         <h2 id="pre-title" style="margin:0">Training</h2>
         <div class="preview-chart" id="pre-chart"></div>
-        <div class="legend">
-            <div class="legend-item"><div class="dot" style="background:var(--accent)"></div> Warming-up</div>
-            <div class="legend-item"><div class="dot" style="background:var(--primary)"></div> Hardlopen</div>
-            <div class="legend-item"><div class="dot" style="background:var(--warning)"></div> Wandelen</div>
-        </div>
+    <div class="legend">
+        <div class="legend-item"><div class="dot" style="background:var(--accent)"></div> Warming-up</div>
+        <div class="legend-item"><div class="dot" style="background:var(--primary)"></div> Hardlopen</div>
+        <div class="legend-item"><div class="dot" style="background:var(--warning)"></div> Wandelen</div>
+    </div>
         <div style="display:flex; justify-content: space-between; margin: 20px 0; font-weight:700">
             <span id="pre-time">-- min</span>
             <span id="pre-type" style="color:var(--primary)">Schema</span>
@@ -374,22 +376,31 @@
             <span class="dash-label">📊 Training Breakdown</span>
             <div style="height:24px; background:rgba(120,120,120,0.1); border-radius:12px; overflow:hidden; display:flex; margin:15px 0">
                 <div id="stat-run-bar" style="background:var(--primary); height:100%"></div>
+                <div id="stat-jog-bar" style="background:var(--jogging); height:100%"></div>
                 <div id="stat-walk-bar" style="background:var(--warning); height:100%"></div>
             </div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; text-align:center">
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px; text-align:center">
                 <div>
                     <div style="font-size:26px; font-weight:900; color:var(--primary)" id="stat-run-percent">0%</div>
                     <div style="font-size:11px; font-weight:700; color:var(--text-muted)">RUNNING</div>
+                </div>
+                <div>
+                    <div style="font-size:26px; font-weight:900; color:var(--jogging)" id="stat-jog-percent">0%</div>
+                    <div style="font-size:11px; font-weight:700; color:var(--text-muted)">JOGGING</div>
                 </div>
                 <div>
                     <div style="font-size:26px; font-weight:900; color:var(--warning)" id="stat-walk-percent">0%</div>
                     <div style="font-size:11px; font-weight:700; color:var(--text-muted)">WALKING</div>
                 </div>
             </div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-top:15px; text-align:center">
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px; margin-top:15px; text-align:center">
                 <div>
                     <div style="font-size:20px; font-weight:900; color:var(--primary)" id="stat-run-time">0:00</div>
                     <div style="font-size:10px; font-weight:700; color:var(--text-muted)">LOOP TIJD</div>
+                </div>
+                <div>
+                    <div style="font-size:20px; font-weight:900; color:var(--jogging)" id="stat-jog-time">0:00</div>
+                    <div style="font-size:10px; font-weight:700; color:var(--text-muted)">JOG TIJD</div>
                 </div>
                 <div>
                     <div style="font-size:20px; font-weight:900; color:var(--warning)" id="stat-walk-time">0:00</div>
@@ -540,8 +551,8 @@
             <span class="dash-label">📦 Versie</span>
             <div style="display:flex; align-items:center; justify-content:space-between">
                 <div>
-                    <div style="font-size:22px; font-weight:900; color:var(--primary)">v1.2.0</div>
-                    <div style="font-size:11px; color:var(--text-muted); margin-top:2px">Laatste update: 08-05-2026</div>
+            <div style="font-size:22px; font-weight:900; color:var(--primary)">v1.3.0</div>
+                    <div style="font-size:11px; color:var(--text-muted); margin-top:2px">Laatste update: 11-05-2026</div>
                 </div>
                 <button class="clear-history-btn" style="color:var(--accent); background:rgba(52,152,219,0.1)" onclick="showChangelog()">📜 Wijzigingen</button>
             </div>
@@ -609,6 +620,18 @@
     };
     request.onsuccess = (e) => { db = e.target.result; migrateData(); init(); };
     request.onerror = (e) => { console.error("IndexedDB fout:", e.target.error); };
+
+    // Pace thresholds for coloring (same as used in breakdown)
+    const RUN_PACE_THRESHOLD = 6.0;
+    const JOG_PACE_THRESHOLD = 10.0;
+
+    // Helper: determine color for a pace value (min/km)
+    function getPaceColor(pace) {
+        if (pace <= 0 || pace >= 20) return '#2ecc71'; // fallback green
+        if (pace < RUN_PACE_THRESHOLD) return '#27ae60'; // running - green
+        if (pace < JOG_PACE_THRESHOLD) return '#9b59b6'; // jogging - purple
+        return '#f39c12'; // walking - orange
+    }
 
     function migrateData() {
         try {
@@ -1117,21 +1140,22 @@
         document.getElementById('res-time').innerText = formatT(totalSeconds);
         document.getElementById('res-cal').innerText = calories;
         
-        // ✅ Training Breakdown berekend op basis van daadwerkelijke pace (i.p.v. blok-types)
-        // Dit is eerlijker: als je wandelt tijdens een "run" blok, telt dat als wandelen
-        const PACE_THRESHOLD = 8.0; // min/km — alles sneller dan 8:00 = hardlopen, langzamer = wandelen
+        // ✅ Training Breakdown met 3 types: Running (< 6:00), Jogging (6:00-10:00), Walking (> 10:00)
         const SAMPLE_INTERVAL = 30; // seconden — paceData wordt elke 30s gesampled
         
         let finalRunTime = 0;
+        let finalJogTime = 0;
         let finalWalkTime = 0;
         
         if (paceData.length > 0) {
-            // Bepaal run/walk op basis van pace samples
+            // Bepaal run/jog/walk op basis van pace samples
             const samples = paceData.map(p => parseFloat(p));
             samples.forEach(p => {
-                if (p > 0 && p < PACE_THRESHOLD) {
+                if (p > 0 && p < RUN_PACE_THRESHOLD) {
                     finalRunTime += SAMPLE_INTERVAL; // hardlopen
-                } else if (p >= PACE_THRESHOLD) {
+                } else if (p >= RUN_PACE_THRESHOLD && p < JOG_PACE_THRESHOLD) {
+                    finalJogTime += SAMPLE_INTERVAL; // joggen
+                } else if (p >= JOG_PACE_THRESHOLD) {
                     finalWalkTime += SAMPLE_INTERVAL; // wandelen
                 }
             });
@@ -1139,14 +1163,18 @@
             // Verdeel de resterende tijd (niet gesampled) proportioneel
             const sampledTime = samples.length * SAMPLE_INTERVAL;
             const remainingTime = totalSeconds - sampledTime;
-            if (remainingTime > 0 && (finalRunTime + finalWalkTime) > 0) {
-                const runRatio = finalRunTime / (finalRunTime + finalWalkTime);
+            const totalSampled = finalRunTime + finalJogTime + finalWalkTime;
+            if (remainingTime > 0 && totalSampled > 0) {
+                const runRatio = finalRunTime / totalSampled;
+                const jogRatio = finalJogTime / totalSampled;
                 finalRunTime += Math.round(remainingTime * runRatio);
-                finalWalkTime += remainingTime - Math.round(remainingTime * runRatio);
+                finalJogTime += Math.round(remainingTime * jogRatio);
+                finalWalkTime += remainingTime - Math.round(remainingTime * runRatio) - Math.round(remainingTime * jogRatio);
             } else if (remainingTime > 0) {
                 // Geen samples, val terug op totale tijd
-                finalRunTime = Math.round(remainingTime * 0.7);
-                finalWalkTime = remainingTime - finalRunTime;
+                finalRunTime = Math.round(remainingTime * 0.5);
+                finalJogTime = Math.round(remainingTime * 0.3);
+                finalWalkTime = remainingTime - finalRunTime - finalJogTime;
             }
         } else {
             // Fallback: gebruik blok-types als er geen GPS/pace data is
@@ -1162,18 +1190,22 @@
             }
         }
         
-        const totalSessionTime = finalRunTime + finalWalkTime;
+        const totalSessionTime = finalRunTime + finalJogTime + finalWalkTime;
         
         const runPercent = totalSessionTime > 0 ? Math.round((finalRunTime / totalSessionTime) * 100) : 0;
-        const walkPercent = 100 - runPercent;
+        const jogPercent = totalSessionTime > 0 ? Math.round((finalJogTime / totalSessionTime) * 100) : 0;
+        const walkPercent = Math.max(0, 100 - runPercent - jogPercent);
         
-        // Update de DOM
+        // Update de DOM met 3 types
         document.getElementById('stat-run-time').innerText = formatT(finalRunTime);
+        document.getElementById('stat-jog-time').innerText = formatT(finalJogTime);
         document.getElementById('stat-walk-time').innerText = formatT(finalWalkTime);
         
         document.getElementById('stat-run-percent').innerText = runPercent + '%';
+        document.getElementById('stat-jog-percent').innerText = jogPercent + '%';
         document.getElementById('stat-walk-percent').innerText = walkPercent + '%';
         document.getElementById('stat-run-bar').style.width = runPercent + '%';
+        document.getElementById('stat-jog-bar').style.width = jogPercent + '%';
         document.getElementById('stat-walk-bar').style.width = walkPercent + '%';
 
         if(activePlanKey !== undefined) localStorage.setItem(`done_${activePlanKey}_${activeWeekIdx}_${activeType}`, "true");
@@ -1192,7 +1224,7 @@
         tx.oncomplete = () => {
             document.getElementById('res-btn').onclick = () => location.reload();
             document.getElementById('result-screen').style.display='flex';
-            setTimeout(() => { initMap(currentRoute); renderPaceChart(paceData); }, 100);
+            setTimeout(() => { initMap(currentRoute, paceData); renderPaceChart(paceData); }, 100);
         };
     }
 
@@ -1394,9 +1426,47 @@
         window.paceChartObj = new Chart(ctx, { type: 'line', data: { labels: data.map((_, i) => i + 1), datasets: [{ label: 'Pace', data: data, borderColor: '#2ecc71', backgroundColor: 'rgba(46, 204, 113, 0.1)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { reverse: true }, x: { display: false } }, plugins: { legend: { display: false } } } });
     }
 
-    function initMap(route) { if (mapInstance) mapInstance.remove(); mapInstance = L.map('map', {zoomControl: false}).setView(route[0] || [52.1, 5.2], 14); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapInstance); if(route.length > 1) { const poly = L.polyline(route, {color: '#2ecc71', weight: 4}).addTo(mapInstance); mapInstance.fitBounds(poly.getBounds(), {padding: [20, 20]}); } }
+    // ✅ Init map met pace-gebaseerde route kleuren
+    function initMap(route, paceHistory) {
+        if (mapInstance) mapInstance.remove();
+        mapInstance = L.map('map', {zoomControl: false}).setView(route[0] || [52.1, 5.2], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapInstance);
+        
+        if (route.length > 1) {
+            addColoredRouteToMap(mapInstance, route, paceHistory);
+            const tempPoly = L.polyline(route, {color: '#2ecc71', weight: 4}).addTo(mapInstance);
+            mapInstance.fitBounds(tempPoly.getBounds(), {padding: [20, 20]});
+            mapInstance.removeLayer(tempPoly);
+        }
+    }
 
-    // FIX: viewRun now safely handles runs without paceHistory (older records)
+    // ✅ Teken route met kleuren op basis van pace
+    function addColoredRouteToMap(map, route, paceHistory) {
+        // We splitsen de route in segmenten van 2 punten. De pace voor elk segment
+        // bepalen we door het paceHistory te interpoleren.
+        if (!paceHistory || paceHistory.length === 0) {
+            // Geen pace data: teken alles groen
+            const poly = L.polyline(route, {color: '#2ecc71', weight: 4}).addTo(map);
+            return;
+        }
+        
+        // Elke pace sample dekt 30 seconden. We hebben evenveel samples als 30s segmenten in de route.
+        // Verdeel de route punten evenredig over de samples
+        for (let i = 0; i < route.length - 1; i++) {
+            // Bepaal welke pace sample hoort bij dit segment
+            const sampleIdx = Math.min(
+                Math.floor((i / (route.length - 1)) * paceHistory.length),
+                paceHistory.length - 1
+            );
+            const pace = parseFloat(paceHistory[sampleIdx]) || 7.0;
+            const color = getPaceColor(pace);
+            
+            const segment = [route[i], route[i + 1]];
+            L.polyline(segment, {color: color, weight: 4, opacity: 0.9}).addTo(map);
+        }
+    }
+
+    // ✅ VUL ALLE resultaat velden inclusief looptijd, kcal en breakdown (bijv. bij viewRun)
     function viewRun(id) {
         const tx = db.transaction("runs", "readonly");
         const req = tx.objectStore("runs").get(id);
@@ -1405,11 +1475,65 @@
             document.getElementById('res-title').innerText = run.n;
             document.getElementById('res-d').innerText = run.dist;
             document.getElementById('res-p').innerText = run.pace;
+            document.getElementById('res-time').innerText = formatT(run.duration || 0);
+            document.getElementById('res-cal').innerText = run.calories || 0;
+            
+            // Training Breakdown op basis van opgeslagen paceHistory
+            const paceHistory = run.paceHistory || [];
+            const durationSec = run.duration || 0;
+            const SAMPLE_INTERVAL = 30;
+            
+            let finalRunTime = 0, finalJogTime = 0, finalWalkTime = 0;
+            
+            if (paceHistory.length > 0) {
+                const samples = paceHistory.map(p => parseFloat(p));
+                samples.forEach(p => {
+                    if (p > 0 && p < RUN_PACE_THRESHOLD) finalRunTime += SAMPLE_INTERVAL;
+                    else if (p >= RUN_PACE_THRESHOLD && p < JOG_PACE_THRESHOLD) finalJogTime += SAMPLE_INTERVAL;
+                    else if (p >= JOG_PACE_THRESHOLD) finalWalkTime += SAMPLE_INTERVAL;
+                });
+                const sampledTime = samples.length * SAMPLE_INTERVAL;
+                const remainingTime = Math.max(0, durationSec - sampledTime);
+                const totalSampled = finalRunTime + finalJogTime + finalWalkTime;
+                if (remainingTime > 0 && totalSampled > 0) {
+                    const runRatio = finalRunTime / totalSampled;
+                    const jogRatio = finalJogTime / totalSampled;
+                    finalRunTime += Math.round(remainingTime * runRatio);
+                    finalJogTime += Math.round(remainingTime * jogRatio);
+                    finalWalkTime += remainingTime - Math.round(remainingTime * runRatio) - Math.round(remainingTime * jogRatio);
+                } else if (remainingTime > 0) {
+                    finalRunTime = Math.round(remainingTime * 0.5);
+                    finalJogTime = Math.round(remainingTime * 0.3);
+                    finalWalkTime = remainingTime - finalRunTime - finalJogTime;
+                }
+            } else {
+                // Fallback: schat op basis van gemiddelde pace
+                const avgPace = parseFloat(run.pace) || 7.0;
+                if (avgPace < RUN_PACE_THRESHOLD) finalRunTime = durationSec;
+                else if (avgPace < JOG_PACE_THRESHOLD) finalJogTime = durationSec;
+                else finalWalkTime = durationSec;
+            }
+            
+            const totalSessionTime = finalRunTime + finalJogTime + finalWalkTime;
+            const runPercent = totalSessionTime > 0 ? Math.round((finalRunTime / totalSessionTime) * 100) : 0;
+            const jogPercent = totalSessionTime > 0 ? Math.round((finalJogTime / totalSessionTime) * 100) : 0;
+            const walkPercent = Math.max(0, 100 - runPercent - jogPercent);
+            
+            document.getElementById('stat-run-time').innerText = formatT(finalRunTime);
+            document.getElementById('stat-jog-time').innerText = formatT(finalJogTime);
+            document.getElementById('stat-walk-time').innerText = formatT(finalWalkTime);
+            document.getElementById('stat-run-percent').innerText = runPercent + '%';
+            document.getElementById('stat-jog-percent').innerText = jogPercent + '%';
+            document.getElementById('stat-walk-percent').innerText = walkPercent + '%';
+            document.getElementById('stat-run-bar').style.width = runPercent + '%';
+            document.getElementById('stat-jog-bar').style.width = jogPercent + '%';
+            document.getElementById('stat-walk-bar').style.width = walkPercent + '%';
+            
             document.getElementById('res-btn').innerText = "SLUITEN";
             document.getElementById('res-btn').onclick = () => document.getElementById('result-screen').style.display='none';
             document.getElementById('result-screen').style.display='flex';
             setTimeout(() => {
-                initMap(run.route || []);
+                initMap(run.route || [], run.paceHistory || []);
                 renderPaceChart(run.paceHistory || []);
             }, 100);
         };
@@ -1799,9 +1923,15 @@
     // ==============================================
     // ✅ VERSIEBEHEER
     // ==============================================
-    const APP_VERSION = "1.2.0";
-    const APP_VERSION_DATE = "08-05-2026";
+    const APP_VERSION = "1.3.0";
+    const APP_VERSION_DATE = "11-05-2026";
     const CHANGELOG = [
+        { version: "1.3.0", date: "11-05-2026", changes: [
+            "  Toegevoegd: Jogging als 3e categorie in Training Breakdown (🟣 paars, pace 6:00-10:00)",
+            "  Toegevoegd: Route op kaart krijgt kleur op basis van pace (groen=run, paars=jog, oranje=walk)",
+            "  Fix: Looptijd en KCAL worden nu correct getoond in resultatenoverzicht en bij bekijken historie",
+            "  Fix: Training Breakdown percentages werken nu met 3-type pace-indeling"
+        ]},
         { version: "1.2.0", date: "08-05-2026", changes: [
             "  UX Design & grammatica verbeteringen",
             "  Grammatica: \"1 SESSIES\" → \"1 SESSIE\" (enkelvoud/meervoud logica)",
@@ -1974,8 +2104,25 @@
             // Voeg tile layer toe (alleen voor transformatie)
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(tempMap);
             
-            const poly = L.polyline(route, {color: '#2ecc71', weight: 4}).addTo(tempMap);
-            const bounds = poly.getBounds();
+            // Teken route op de share map met pace-kleuren
+            if (route.length > 1 && paceData.length > 0) {
+                for (let i = 0; i < route.length - 1; i++) {
+                    const sampleIdx = Math.min(
+                        Math.floor((i / (route.length - 1)) * paceData.length),
+                        paceData.length - 1
+                    );
+                    const pace = parseFloat(paceData[sampleIdx]) || 7.0;
+                    const color = getPaceColor(pace);
+                    const segment = [route[i], route[i + 1]];
+                    L.polyline(segment, {color: color, weight: 4, opacity: 0.9}).addTo(tempMap);
+                }
+            } else if (route.length > 1) {
+                // Geen pace data: teken alles groen
+                const poly = L.polyline(route, {color: '#2ecc71', weight: 4}).addTo(tempMap);
+            }
+            
+            const polyBounds = L.polyline(route, {color: '#2ecc71', weight: 4}).addTo(tempMap);
+            const bounds = polyBounds.getBounds();
             if (bounds.isValid()) {
                 tempMap.fitBounds(bounds, {padding: [30, 30], maxZoom: 16});
             }
@@ -2010,8 +2157,31 @@
                 ctx.drawImage(tileData.img, tileX + mapX, tileY + mapY, tileSize, tileSize);
             });
             
-            // 6. Teken de route polyline
-            if (route.length >= 2) {
+            // 6. Teken de route polyline (multi-color, al toegevoegd aan tempMap)
+            // We tekenen opnieuw over de tiles heen voor zichtbaarheid
+            if (route.length >= 2 && paceData.length > 0) {
+                for (let i = 0; i < route.length - 1; i++) {
+                    const sampleIdx = Math.min(
+                        Math.floor((i / (route.length - 1)) * paceData.length),
+                        paceData.length - 1
+                    );
+                    const pace = parseFloat(paceData[sampleIdx]) || 7.0;
+                    const color = getPaceColor(pace);
+                    
+                    const p1 = tempMap.latLngToContainerPoint(L.latLng(route[i][0], route[i][1]));
+                    const p2 = tempMap.latLngToContainerPoint(L.latLng(route[i+1][0], route[i+1][1]));
+                    
+                    ctx.shadowColor = color;
+                    ctx.shadowBlur = 12;
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x + mapX, p1.y + mapY);
+                    ctx.lineTo(p2.x + mapX, p2.y + mapY);
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 4;
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+                }
+            } else if (route.length >= 2) {
                 const pts = route.map(latLng => {
                     const point = tempMap.latLngToContainerPoint(L.latLng(latLng[0], latLng[1]));
                     return { x: point.x + mapX, y: point.y + mapY };
@@ -2028,8 +2198,10 @@
                 ctx.lineWidth = 4;
                 ctx.stroke();
                 ctx.shadowBlur = 0;
+            }
 
-                // Start marker
+            // Start marker
+            if (route.length > 0) {
                 const firstPt = tempMap.latLngToContainerPoint(L.latLng(route[0][0], route[0][1]));
                 const sx = firstPt.x + mapX;
                 const sy = firstPt.y + mapY;
@@ -2044,8 +2216,10 @@
                 ctx.fillStyle = '#27ae60';
                 ctx.textAlign = 'center';
                 ctx.fillText('START', sx, sy - 16);
+            }
 
-                // Finish marker
+            // Finish marker
+            if (route.length > 0) {
                 const lastPt = route[route.length - 1];
                 const endPt = tempMap.latLngToContainerPoint(L.latLng(lastPt[0], lastPt[1]));
                 const ex = endPt.x + mapX;
