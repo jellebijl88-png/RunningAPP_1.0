@@ -1177,16 +1177,15 @@
                 finalWalkTime = remainingTime - finalRunTime - finalJogTime;
             }
         } else {
-            // Fallback: gebruik blok-types als er geen GPS/pace data is
-            const executedBlocks = sessionBlocks.slice(0, currentBIdx);
-            finalRunTime = executedBlocks.filter(b => b.m === 'run').reduce((a,b) => a + b.t, 0);
-            finalWalkTime = executedBlocks.filter(b => b.m === 'walk').reduce((a,b) => a + b.t, 0);
-            // Voeg de bestede tijd van het huidige (onafgemaakte) blok toe
-            if (currentBIdx < sessionBlocks.length) {
-                const currentBlock = sessionBlocks[currentBIdx];
-                const spentInCurrent = currentBlock.t - blockRem;
-                if (currentBlock.m === 'run') finalRunTime += Math.max(0, spentInCurrent);
-                else if (currentBlock.m === 'walk') finalWalkTime += Math.max(0, spentInCurrent);
+            // Fallback: gebruik de gemiddelde pace om de verdeling te schatten
+            // Dit is veel realistischer dan blok-types, omdat iemand kan wandelen tijdens een "run" blok
+            const avgPaceNum = parseFloat(pace) || 7.0;
+            if (avgPaceNum > 0 && avgPaceNum < RUN_PACE_THRESHOLD) {
+                finalRunTime = totalSeconds;
+            } else if (avgPaceNum >= RUN_PACE_THRESHOLD && avgPaceNum < JOG_PACE_THRESHOLD) {
+                finalJogTime = totalSeconds;
+            } else {
+                finalWalkTime = totalSeconds;
             }
         }
         
