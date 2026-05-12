@@ -439,8 +439,8 @@
             <span class="dash-label">📦 Versie</span>
             <div style="display:flex; align-items:center; justify-content:space-between">
                 <div>
-                    <div style="font-size:22px; font-weight:900; color:var(--primary)">v1.1.0</div>
-                    <div style="font-size:11px; color:var(--text-muted); margin-top:2px">Laatste update: 08-05-2026</div>
+                    <div style="font-size:22px; font-weight:900; color:var(--primary)">v1.1.1</div>
+                    <div style="font-size:11px; color:var(--text-muted); margin-top:2px">Laatste update: 12-05-2026</div>
                 </div>
                 <button class="clear-history-btn" style="color:var(--accent); background:rgba(52,152,219,0.1)" onclick="UIController.showChangelog()">📜 Wijzigingen</button>
             </div>
@@ -767,7 +767,7 @@
             
             this.liveMapInstance = L.map('live-training-map', {zoomControl: false, attributionControl: false});
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(this.liveMapInstance);
-            this.livePolyline = L.polyline([], {color: '#2ecc71', weight: 5}).addTo(this.liveMapInstance);
+            this.livePolyline = L.polyline([], {color: '#27ae60', weight: 5}).addTo(this.liveMapInstance);
         },
 
         updateLiveMap: function(route) {
@@ -786,7 +786,7 @@
             }
         },
 
-        // ✅ Koppel kleuren van map aan de grafiek / labels
+        // ✅ Koppel EXPLICITE HEX kleuren van map aan de grafiek / labels om Leaflet rendering bugs te voorkomen
         renderResultMap: function(route) {
             if (this.mapInstance) this.mapInstance.remove();
             
@@ -810,15 +810,15 @@
                         const p2 = route[i+1];
                         const pace = p2[2] || p1[2] || 0; 
                         
-                        let segColor = 'var(--primary)'; // Groen (Hardlopen)
-                        if (pace === 0 || pace >= 9.0) segColor = 'var(--warning)'; // Oranje (Wandelen)
-                        else if (pace >= 6.5) segColor = 'var(--accent)'; // Blauw (Joggen)
+                        let segColor = '#27ae60'; // Groen (Hardlopen)
+                        if (pace === 0 || pace >= 9.0) segColor = '#f39c12'; // Oranje (Wandelen)
+                        else if (pace >= 6.5) segColor = '#3498db'; // Blauw (Joggen)
 
-                        const segment = L.polyline([[p1[0], p1[1]], [p2[0], p2[1]]], {color: segColor, weight: 5});
+                        const segment = L.polyline([[p1[0], p1[1]], [p2[0], p2[1]]], {color: segColor, weight: 5, lineCap: 'round'});
                         segment.addTo(this.mapInstance);
                     }
                 } else {
-                    L.polyline(route, {color: '#2ecc71', weight: 4}).addTo(this.mapInstance);
+                    L.polyline(route, {color: '#27ae60', weight: 4}).addTo(this.mapInstance);
                 }
 
                 route.forEach(p => bounds.push([p[0], p[1]]));
@@ -826,7 +826,7 @@
             }
         },
 
-        // ✅ Zorg voor betere tooltips zodat de grafiek logisch wordt
+        // ✅ Pace chart gebruikt nu de Chart.js 'segment' API voor gekleurde lijnen
         renderPaceChart: function(data) {
             const ctx = document.getElementById('paceChart').getContext('2d');
             if (this.paceChartObj) this.paceChartObj.destroy();
@@ -845,11 +845,18 @@
                     datasets: [{ 
                         label: 'Pace', 
                         data: data, 
-                        borderColor: '#2ecc71', 
-                        backgroundColor: 'rgba(46, 204, 113, 0.1)', 
+                        segment: {
+                            borderColor: ctx => {
+                                const pace = ctx.p1.parsed.y;
+                                if (pace >= 9.0) return '#f39c12'; // Oranje
+                                if (pace >= 6.5) return '#3498db'; // Blauw
+                                return '#27ae60'; // Groen
+                            }
+                        },
+                        backgroundColor: 'rgba(120, 120, 120, 0.05)', 
                         fill: true, 
                         tension: 0.4, 
-                        borderWidth: 2, 
+                        borderWidth: 3, 
                         pointRadius: 0 
                     }] 
                 }, 
@@ -1531,8 +1538,8 @@
                 document.getElementById('res-btn').onclick = () => location.reload();
                 document.getElementById('result-screen').style.display='flex';
                 setTimeout(() => { 
-                    UIController.renderResultMap(AppState.currentRoute); 
-                    UIController.renderPaceChart(AppState.paceData); 
+                    UIController.renderResultMap(run.route); 
+                    UIController.renderPaceChart(run.paceHistory); 
                 }, 100);
             });
         },
@@ -1835,9 +1842,26 @@
                         return { x: drawX + ((p[1] - minLng) / lngRange) * drawW, y: drawY + drawH - ((projectLat(p[0]) - projMinLat) / projLatRange) * drawH };
                     });
                     
-                    ctx.shadowColor = '#2ecc71'; ctx.shadowBlur = 12; ctx.beginPath(); ctx.moveTo(points[0].x, points[0].y);
-                    for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
-                    ctx.strokeStyle = '#2ecc71'; ctx.lineWidth = 4; ctx.stroke(); ctx.shadowBlur = 0;
+                    // Lijnen in correcte kleuren voor Share Image
+                    ctx.lineWidth = 4;
+                    ctx.lineCap = 'round';
+                    ctx.shadowBlur = 0; // Geen shadow bij multi-color, anders wordt het modderig
+                    
+                    for (let i = 0; i < points.length - 1; i++) {
+                        const p1 = points[i];
+                        const p2 = points[i+1];
+                        const pace = AppState.currentRoute[i+1][2] || AppState.currentRoute[i][2] || 0;
+                        
+                        let segColor = '#27ae60';
+                        if (pace === 0 || pace >= 9.0) segColor = '#f39c12';
+                        else if (pace >= 6.5) segColor = '#3498db';
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.strokeStyle = segColor;
+                        ctx.stroke();
+                    }
                     
                     if (points.length > 0) {
                         ctx.beginPath(); ctx.arc(points[0].x, points[0].y, 8, 0, Math.PI * 2); ctx.fillStyle = '#27ae60'; ctx.fill();
