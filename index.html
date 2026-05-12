@@ -63,7 +63,7 @@
         .btn-primary { background: var(--primary); color: #000; border: none; cursor: pointer; transition: transform 0.2s; }
         .btn-primary:active { transform: scale(0.98); }
         
-        .btn-ghost { background: transparent; border: 1px solid rgba(120,120,120,0.2); color: var(--text-main); transition: all 0.2s var(--easing); padding: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+        .btn-ghost { background: transparent; border: 1px solid rgba(120,120,120,0.2); color: var(--text-main); transition: all 0.2s var(--easing); padding: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border-radius: var(--radius-md); }
         .btn-ghost:hover, .btn-ghost:active { background: rgba(120,120,120,0.1); border-color: rgba(120,120,120,0.4); }
 
         .theme-toggle { position: absolute; top: 20px; right: 20px; cursor: pointer; font-size: 20px; background: none; border: none; padding: 8px; border-radius: 50%; }
@@ -82,8 +82,14 @@
         #timer-display { position: sticky; top: 10px; z-index: 2000; display: none; text-align: center; }
         .timer-big { font-size: 65px; font-weight: 900; letter-spacing: -3px; margin: 8px 0; }
 
+        /* ✅ Aangepaste History & Data Timeline items */
         .history-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: rgba(120,120,120,0.05); border-radius: var(--radius-md); margin-bottom: 12px; cursor: pointer; transition: 0.2s; }
         .delete-btn { color: var(--danger); background: none; border: none; font-size: 18px; cursor: pointer; padding: 12px; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
+
+        .week-group { margin-bottom: 24px; }
+        .week-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(120,120,120,0.1); }
+        .week-title { font-size: 14px; font-weight: 900; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.5px; }
+        .week-summary { font-size: 12px; font-weight: 700; color: var(--primary); }
 
         #preview-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 3000; display: none; align-items: center; padding: 24px; }
         .preview-chart { display: flex; align-items: flex-end; gap: 3px; height: 100px; margin: 24px 0; background: rgba(120,120,120,0.1); padding: 24px 10px 10px 10px; border-radius: var(--radius-md); box-sizing: border-box; }
@@ -93,7 +99,7 @@
         .bar.walk { background: var(--warning); }
         .bar.warmup { background: var(--accent); }
 
-        /* ✅ Vloeiend slide-in resultaatscherm */
+        /* Vloeiend slide-in resultaatscherm */
         #result-screen { 
             position: fixed; inset: 0; background: var(--bg-dark); z-index: 4000; 
             display: flex; flex-direction: column; overflow-y: auto; 
@@ -119,6 +125,7 @@
         .clear-history-btn { background: rgba(231, 76, 60, 0.1); border: none; font-size: 13px; text-transform: uppercase; color: var(--danger); font-weight: 700; letter-spacing: 1px; cursor: pointer; padding: 10px 16px; border-radius: var(--radius-sm); font-family: inherit; transition: 0.2s ease; }
         .clear-history-btn:hover { background: rgba(231, 76, 60, 0.15); transform: scale(1.02); }
 
+        /* ✅ Bottom Navigation (nu 4 items) */
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: var(--bg-panel); border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-around; align-items: center; z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
         .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; height: 100%; cursor: pointer; transition: all 0.2s var(--easing); opacity: 0.5; background: none; border: none; color: inherit; font-family: inherit; padding: 0; margin: 0; appearance: none; outline: none; }
         .nav-item.active { opacity: 1; color: var(--primary); }
@@ -141,7 +148,7 @@
         body.light-mode #live-training-map { background: #ffffff; }
         .leaflet-tile-pane { filter: none !important; }
 
-        /* ✅ Bottom Sheet (Custom Plan Wizard) Styling */
+        /* Bottom Sheet (Custom Plan Wizard) Styling */
         .bottom-sheet-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
             z-index: 5000; display: flex; align-items: flex-end;
@@ -159,9 +166,75 @@
         }
         .bottom-sheet-overlay.active .bottom-sheet { transform: translateY(0); }
         .sheet-handle { width: 48px; height: 6px; background: rgba(120,120,120,0.3); border-radius: 10px; margin: 0 auto 24px auto; }
+        
+        /* Onboarding Scherm Styling */
+        #onboarding-screen {
+            position: fixed; inset: 0; background: var(--bg-dark); z-index: 9999;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            padding: 24px; text-align: center;
+        }
+        .onboarding-step { display: none; width: 100%; max-width: 400px; animation: fadeIn 0.4s var(--easing); }
+        .onboarding-step.active { display: block; }
+        .onboarding-input-group { 
+            display: flex; align-items: center; justify-content: space-between; 
+            margin-bottom: 12px; background: rgba(120,120,120,0.1); 
+            padding: 16px; border-radius: var(--radius-md); 
+        }
+        .onboarding-input-group span { font-weight: 700; color: var(--text-main); font-size: 15px; }
+        .onboarding-input-group input, .onboarding-input-group select { 
+            width: 110px; padding: 10px; border-radius: var(--radius-sm); border: none; 
+            background: var(--bg-panel); color: var(--text-main); font-weight: 900; 
+            text-align: center; margin-top: 0; font-size: 16px;
+        }
     </style>
 </head>
 <body>
+
+<div id="onboarding-screen">
+    <div id="onboard-step-1" class="onboarding-step active">
+        <h1 style="color: var(--primary); margin-bottom: 8px; font-weight: 900; letter-spacing: -1px;">Welkom bij JellyLegs!</h1>
+        <p style="color: var(--text-muted); margin-bottom: 32px; font-size: 15px; line-height: 1.5;">Om je verbrande calorieën en AI-trainingsplannen perfect op jouw lichaam af te stemmen, hebben we wat gegevens nodig.</p>
+        
+        <div class="onboarding-input-group">
+            <span>Lichaamsgewicht (kg)</span>
+            <input type="number" id="ob-weight" min="30" max="200" value="75">
+        </div>
+        <div class="onboarding-input-group">
+            <span>Lengte (cm)</span>
+            <input type="number" id="ob-height" min="100" max="220" value="175">
+        </div>
+        <div class="onboarding-input-group">
+            <span>Leeftijd</span>
+            <input type="number" id="ob-age" min="12" max="99" value="30">
+        </div>
+        <div class="onboarding-input-group">
+            <span>Geslacht</span>
+            <select id="ob-gender">
+                <option value="male">Man</option>
+                <option value="female">Vrouw</option>
+            </select>
+        </div>
+        
+        <button class="btn btn-primary" style="margin-top: 24px; padding: 20px; font-size: 16px;" onclick="UIController.nextOnboardingStep()">VOLGENDE STAP</button>
+    </div>
+    
+    <div id="onboard-step-2" class="onboarding-step">
+        <h1 style="color: var(--primary); margin-bottom: 8px; font-weight: 900; letter-spacing: -1px;">Klaar voor de start!</h1>
+        <p style="color: var(--text-muted); margin-bottom: 24px; font-size: 15px; line-height: 1.5;">We adviseren je om te beginnen met de 30-minuten Baseline Test. Hiermee bepalen we exact je huidige startniveau voor het perfecte AI-schema.</p>
+        
+        <div class="card" style="text-align: left; background: rgba(39, 174, 96, 0.05); border: 2px solid rgba(39, 174, 96, 0.3);">
+            <span class="dash-label" style="color: var(--primary);">📊 Baseline Test</span>
+            <ul style="margin: 0; padding-left: 20px; font-size: 14px; font-weight: 600; color: var(--text-main); line-height: 1.8;">
+                <li>5 min warming-up</li>
+                <li>30 min lopen op eigen tempo</li>
+                <li>5 min cool-down</li>
+            </ul>
+        </div>
+        
+        <button class="btn btn-primary" style="margin-top: 16px; padding: 20px; font-size: 15px;" onclick="AppController.finishOnboarding(true)">🏃 START BASELINE TEST NU</button>
+        <button class="btn btn-ghost" style="margin-top: 16px; border: none; font-size: 13px;" onclick="AppController.finishOnboarding(false)">Nu even niet, breng me naar het dashboard</button>
+    </div>
+</div>
 
 <div id="preview-overlay">
     <div class="card" style="width:100%">
@@ -345,6 +418,21 @@
         </div>
     </div>
 
+    <div id="tab-data" class="tab-view">
+        <div class="card">
+            <span class="dash-label">📈 Wekelijkse Opbouw (Volume)</span>
+            <div class="chart-container" style="height: 220px; margin-top: 16px;">
+                <canvas id="weeklyVolumeChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <span class="dash-label">📅 Trainingslogboek per week</span>
+            <div id="data-timeline" style="margin-top: 16px;">
+                </div>
+        </div>
+    </div>
+
     <div id="tab-profile" class="tab-view">
         <div class="card">
             <span class="dash-label">⚙️ Gebruikers Profiel</span>
@@ -391,7 +479,7 @@
             <span class="dash-label">📦 Versie</span>
             <div style="display:flex; align-items:center; justify-content:space-between">
                 <div>
-                    <div style="font-size:24px; font-weight:900; color:var(--primary)">v1.2.1</div>
+                    <div style="font-size:24px; font-weight:900; color:var(--primary)">v1.4.0</div>
                     <div style="font-size:11px; color:var(--text-muted); margin-top:4px">Laatste update: 12-05-2026</div>
                 </div>
                 <button class="clear-history-btn" style="color:var(--accent); background:rgba(52,152,219,0.1)" onclick="UIController.showChangelog()">📜 Wijzigingen</button>
@@ -439,6 +527,10 @@
     <button class="nav-item" onclick="UIController.openTab('training', this)">
         <div class="nav-icon">📅</div>
         <div class="nav-label">Training</div>
+    </button>
+    <button class="nav-item" onclick="UIController.openTab('data', this)">
+        <div class="nav-icon">📊</div>
+        <div class="nav-label">Data</div>
     </button>
     <button class="nav-item" onclick="UIController.openTab('profile', this)">
         <div class="nav-icon">👤</div>
@@ -540,6 +632,16 @@
             }, 1700);
         },
 
+        saveOnboardingProfile: function() {
+            document.getElementById('user-weight').value = document.getElementById('ob-weight').value;
+            document.getElementById('user-height').value = document.getElementById('ob-height').value;
+            document.getElementById('user-age').value = document.getElementById('ob-age').value;
+            document.getElementById('user-gender').value = document.getElementById('ob-gender').value;
+            
+            this.saveUserProfile();
+            localStorage.setItem('onboarding_complete', 'true');
+        },
+
         updateWarmupCoolDown: function() {
             const warmupMin = parseInt(document.getElementById('warmup-time').value);
             const cooldownMin = parseInt(document.getElementById('cooldown-time').value);
@@ -571,6 +673,45 @@
                 UIController.renderPlan();
                 AppController.speak("Persoonlijk plan verwijderd");
             }
+        },
+
+        // ✅ DATA HELPER: Groepeer runs per week voor de Data Tab
+        processWeeklyData: function(runs) {
+            const weeks = {};
+            
+            runs.forEach(run => {
+                // Parse the DD-MM-YYYY format
+                const parts = run.d.split(/[.-]/);
+                const d = new Date(parts[2], parts[1] - 1, parts[0]);
+                
+                // Vind de Maandag van deze week
+                const day = d.getDay() || 7; // Zondag (0) wordt 7
+                const monday = new Date(d);
+                monday.setDate(d.getDate() - day + 1);
+                monday.setHours(0,0,0,0);
+                
+                const weekKey = monday.getTime();
+                
+                if(!weeks[weekKey]) {
+                    // Kort label voor de grafiek, bijv "12 Mei"
+                    const shortLabel = monday.toLocaleDateString('nl-NL', {day: 'numeric', month: 'short'});
+                    weeks[weekKey] = {
+                        monday: monday,
+                        label: `Week van ${shortLabel}`,
+                        shortLabel: shortLabel,
+                        totalDist: 0,
+                        totalTime: 0,
+                        runs: []
+                    };
+                }
+                
+                weeks[weekKey].totalDist += parseFloat(run.dist) || 0;
+                weeks[weekKey].totalTime += parseInt(run.duration) || 0;
+                weeks[weekKey].runs.push(run);
+            });
+
+            // Sorteer weken van nieuw naar oud
+            return Object.values(weeks).sort((a,b) => b.monday - a.monday);
         }
     };
 
@@ -582,6 +723,7 @@
         liveMapInstance: null,
         livePolyline: null,
         paceChartObj: null,
+        weeklyVolumeChartObj: null,
         liveMapEnabled: localStorage.getItem('live_map_enabled') === 'true',
 
         applyTheme: function(isLight) { 
@@ -616,6 +758,11 @@
             } else {
                 switchTab();
             }
+        },
+
+        nextOnboardingStep: function() {
+            document.getElementById('onboard-step-1').classList.remove('active');
+            document.getElementById('onboard-step-2').classList.add('active');
         },
 
         openCustomPlanSheet: function() {
@@ -671,6 +818,94 @@
                     <button class="delete-btn" aria-label="Verwijder activiteit" onclick="DataController.deleteRun(event, ${r.id})">🗑️</button>
                 </div>`).join("") || 
                 `<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:10px">Nog geen activiteiten</div>`;
+        },
+
+        // ✅ NIEUW: Render de Data Tab (Grafiek + Timeline)
+        renderDataTab: function(runs) {
+            const weeklyData = DataController.processWeeklyData(runs);
+            const timelineContainer = document.getElementById('data-timeline');
+            
+            if (weeklyData.length === 0) {
+                timelineContainer.innerHTML = `<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:20px">Voer eerst een training uit om je data te zien.</div>`;
+                return;
+            }
+
+            // --- 1. Bar Chart Genereren ---
+            // Neem maximaal de laatste 12 weken en draai ze om (oudste links, nieuwste rechts op de X-as)
+            const chartData = weeklyData.slice(0, 12).reverse();
+            
+            const labels = chartData.map(w => w.shortLabel);
+            const distances = chartData.map(w => parseFloat(w.totalDist.toFixed(1)));
+
+            const ctx = document.getElementById('weeklyVolumeChart').getContext('2d');
+            if (this.weeklyVolumeChartObj) this.weeklyVolumeChartObj.destroy();
+            
+            this.weeklyVolumeChartObj = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Kilometers',
+                        data: distances,
+                        backgroundColor: '#27ae60',
+                        borderRadius: 4,
+                        barPercentage: 0.6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { color: 'rgba(120,120,120,0.1)' },
+                            ticks: { color: '#a4b0be', font: {family: 'Inter', size: 10} }
+                        },
+                        x: { 
+                            grid: { display: false },
+                            ticks: { color: '#a4b0be', font: {family: 'Inter', size: 10} }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) { return `${context.raw} KM`; }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // --- 2. Verticale Timeline Genereren ---
+            let timelineHtml = '';
+            
+            weeklyData.forEach(week => {
+                timelineHtml += `<div class="week-group">`;
+                timelineHtml += `
+                    <div class="week-header">
+                        <span class="week-title">${week.label}</span>
+                        <span class="week-summary">${week.totalDist.toFixed(1)} KM • ${week.runs.length} Sessies</span>
+                    </div>
+                `;
+                
+                // Sorteer de runs binnen deze week (nieuwste eerst)
+                week.runs.sort((a,b) => b.id - a.id).forEach(r => {
+                    timelineHtml += `
+                        <div class="history-item" onclick="AppController.viewRun(${r.id})">
+                            <div style="flex-grow:1">
+                                <div style="font-weight:800">${r.n}</div>
+                                <div style="font-size:12px; color:var(--text-muted)">${r.d} • ${r.dist}km • ${AppController.formatT(r.duration || 0)}</div>
+                            </div>
+                            <div style="color:var(--primary); font-weight:900; font-size: 14px;">›</div>
+                        </div>
+                    `;
+                });
+                
+                timelineHtml += `</div>`;
+            });
+
+            timelineContainer.innerHTML = timelineHtml;
         },
 
         renderPlan: function() {
@@ -781,9 +1016,9 @@
                         const p2 = route[i+1];
                         const pace = p2[2] || p1[2] || 0; 
                         
-                        let segColor = '#27ae60'; // Groen (Hardlopen)
-                        if (pace === 0 || pace >= 9.0) segColor = '#f39c12'; // Oranje (Wandelen)
-                        else if (pace >= 6.5) segColor = '#3498db'; // Blauw (Joggen)
+                        let segColor = '#27ae60'; 
+                        if (pace === 0 || pace >= 9.0) segColor = '#f39c12'; 
+                        else if (pace >= 6.5) segColor = '#3498db'; 
 
                         const segment = L.polyline([[p1[0], p1[1]], [p2[0], p2[1]]], {color: segColor, weight: 5, lineCap: 'round'});
                         segment.addTo(this.mapInstance);
@@ -818,9 +1053,9 @@
                         segment: {
                             borderColor: ctx => {
                                 const pace = ctx.p1.parsed.y;
-                                if (pace >= 9.0) return '#f39c12'; // Oranje
-                                if (pace >= 6.5) return '#3498db'; // Blauw
-                                return '#27ae60'; // Groen
+                                if (pace >= 9.0) return '#f39c12'; 
+                                if (pace >= 6.5) return '#3498db'; 
+                                return '#27ae60'; 
                             }
                         },
                         backgroundColor: 'rgba(120, 120, 120, 0.05)', 
@@ -1077,6 +1312,12 @@
 
     const AppController = {
         CHANGELOG: [
+            { version: "1.4.0", date: "12-05-2026", changes: [
+                "📊 UX UPDATE: Nieuwe 'Data' tab toegevoegd! Bekijk nu je wekelijkse opbouw in de staafgrafiek en je consistente logboek per week."
+            ]},
+            { version: "1.3.0", date: "12-05-2026", changes: [
+                "✨ UX UPDATE: Nieuwe Onboarding Flow! Bij de eerste start vul je direct je profiel in voor een betere AI-berekening."
+            ]},
             { version: "1.2.1", date: "12-05-2026", changes: [
                 "🐛 FIX: Timer-scherm blijft nu niet meer zichtbaar nadat een training gestopt of succesvol afgerond is.",
                 "✍️ TEKST UPDATE: 'Steady Tempo' e.d. in het Ervaren Loper plan consistent veranderd naar 'Hardlopen'."
@@ -1084,14 +1325,7 @@
             { version: "1.2.0", date: "12-05-2026", changes: [
                 "✨ UX UPDATE: 'Genereer Plan' opent nu een elegante bottom sheet wizard.",
                 "📱 UI UPDATE: Resultaat verschijnt nu als een slide-in pagina met iOS stijl X-knop.",
-                "🎨 UI UPDATE: Modern en rustig design. Kaarten lijken te zweven (border eruit, betere schaduw) en interne spacing is verhoogd.",
-                "🔗 Knoppenhiërarchie aangepast: 'Opslaan' is nu veel dominanter dan de deel-knoppen."
-            ]},
-            { version: "1.1.4", date: "12-05-2026", changes: [
-                "🐛 FIX: Baseline test generator kijkt nu naar de *nieuwste* test in de historie."
-            ]},
-            { version: "1.1.3", date: "12-05-2026", changes: [
-                "🎨 Strakker design voor de share-afbeelding zonder storende glow-effecten onder de teksten."
+                "🎨 UI UPDATE: Modern en rustig design. Kaarten lijken te zweven (border eruit, betere schaduw)."
             ]}
         ],
 
@@ -1122,25 +1356,38 @@
 
             DataController.getAllRuns((runs) => {
                 UIController.renderDashboard(runs);
+                UIController.renderDataTab(runs); // Render de nieuwe Data tab
             });
 
             UIController.renderPlan();
             setTimeout(() => this.addDeletePlanButton(), 100);
 
-            // WakeLock Event Listener
             document.addEventListener('visibilitychange', async () => {
                 if (AppState.wakeLock !== null && document.visibilityState === 'visible') {
                     await this.requestWakeLock();
                 }
             });
 
-            // Speech Synthesis
             window.speechSynthesis.onvoiceschanged = () => { 
                 AppState.voices = window.speechSynthesis.getVoices(); 
                 const dutch = AppState.voices.filter(v => v.lang.includes('nl')); 
                 const select = document.getElementById('voice-select'); 
                 if(select) select.innerHTML = dutch.map(v => `<option value="${v.name}">${v.name}</option>`).join('') || '<option>Standaard Stem</option>'; 
             };
+            
+            if (!localStorage.getItem('onboarding_complete')) {
+                document.getElementById('onboarding-screen').style.display = 'flex';
+            }
+        },
+
+        finishOnboarding: function(startTest) {
+            DataController.saveOnboardingProfile();
+            document.getElementById('onboarding-screen').style.display = 'none';
+            
+            if (startTest) {
+                UIController.openTab('training', document.querySelectorAll('.nav-item')[1]);
+                this.startBaselineTest();
+            }
         },
 
         loadSettings: function() {
@@ -1328,8 +1575,10 @@
 
         startGPS: function() {
             AppState.watchId = navigator.geolocation.watchPosition(p => {
-                if(AppState.isPaused || p.coords.accuracy > 25) return;
-                const lat=p.coords.latitude, lng=p.coords.longitude;
+                if(AppState.isPaused || p.coords.accuracy > 15) return;
+                
+                const lat = p.coords.latitude;
+                const lng = p.coords.longitude;
                 const now = Date.now();
                 
                 let pointPace = 0;
@@ -1337,42 +1586,48 @@
                 if(AppState.currentRoute.length > 0) {
                     const last = AppState.currentRoute[AppState.currentRoute.length-1];
                     const d = this.calcDist(last[0], last[1], lat, lng);
-                    AppState.totalDist += d;
-                        
-                    const currentKM = Math.floor(AppState.totalDist);
-                    if(currentKM > AppState.lastKMSpeech && currentKM > 0) { 
-                        AppState.lastKMSpeech = currentKM; 
-                        this.vibrate([300, 100, 300, 100, 300]);
-                        this.speak(`${currentKM} kilometer gerend! Goed bezig!`);
-                    }
                     
-                    const elapsedMinutes = (now - AppState.startTime) / 60000;
+                    if (d < 0.005) return; 
+
+                    const timeDiff = (now - AppState.session.lastGpsTime) / 1000; 
                     
-                    if(AppState.totalDist > 0.05) {
-                        const avgPace = elapsedMinutes / AppState.totalDist;
-                        const avgMins = Math.floor(avgPace);
-                        const avgSecs = Math.round((avgPace - avgMins) * 60);
-                        document.getElementById('avg-pace').innerText = `${avgMins}:${avgSecs.toString().padStart(2, '0')}`;
+                    if(AppState.session.lastGpsTime && timeDiff > 0) {
+                        const speedKmh = d / (timeDiff / 3600); 
                         
-                        if (now - AppState.lastPaceTime >= 30000) {
-                            AppState.lastPaceTime = now;
-                            AppState.paceData.push(avgPace.toFixed(2));
+                        if (speedKmh > 35 || speedKmh < 1.5) return;
+
+                        AppState.totalDist += d;
+                        
+                        const currentKM = Math.floor(AppState.totalDist);
+                        if(currentKM > AppState.lastKMSpeech && currentKM > 0) { 
+                            AppState.lastKMSpeech = currentKM; 
+                            this.vibrate([300, 100, 300, 100, 300]);
+                            this.speak(`${currentKM} kilometer gerend! Goed bezig!`);
                         }
-                    }
-                    
-                    const timeDiff = (now - AppState.session.lastGpsTime) / 1000;
-                    if(AppState.session.lastGpsTime && timeDiff > 0 && timeDiff < 30) {
-                        const speed = d / (timeDiff / 3600); // km/h
-                        const currentPace = 60 / speed; // min/km
                         
+                        const elapsedMinutes = (now - AppState.startTime) / 60000;
+                        if(AppState.totalDist > 0.05) {
+                            const avgPace = elapsedMinutes / AppState.totalDist;
+                            const avgMins = Math.floor(avgPace);
+                            const avgSecs = Math.round((avgPace - avgMins) * 60);
+                            document.getElementById('avg-pace').innerText = `${avgMins}:${avgSecs.toString().padStart(2, '0')}`;
+                            
+                            if (now - AppState.lastPaceTime >= 30000) {
+                                AppState.lastPaceTime = now;
+                                AppState.paceData.push(avgPace.toFixed(2));
+                            }
+                        }
+                        
+                        const currentPace = 60 / speedKmh;
                         if(currentPace > 2 && currentPace < 20) {
-                            AppState.session.speedEMA = AppState.session.speedEMA * 0.7 + currentPace * 0.3;
+                            AppState.session.speedEMA = AppState.session.speedEMA === 0 ? currentPace : (AppState.session.speedEMA * 0.7 + currentPace * 0.3);
                             const currMins = Math.floor(AppState.session.speedEMA);
                             const currSecs = Math.round((AppState.session.speedEMA - currMins) * 60);
                             document.getElementById('live-pace').innerText = `${currMins}:${currSecs.toString().padStart(2, '0')}`;
                         }
+                        pointPace = AppState.session.speedEMA;
                     }
-                    pointPace = AppState.session.speedEMA;
+                    
                     document.getElementById('live-dist').innerText = AppState.totalDist.toFixed(2) + " km";
                     AppState.session.lastGpsTime = now;
                 } else {
@@ -1382,7 +1637,7 @@
                 AppState.currentRoute.push([lat, lng, pointPace]);
                 UIController.updateLiveMap(AppState.currentRoute);
 
-            }, null, {enableHighAccuracy: true});
+            }, null, {enableHighAccuracy: true, maximumAge: 0, timeout: 5000}); 
         },
 
         startBlock: function() {
@@ -1431,7 +1686,6 @@
             clearInterval(AppState.timerId); 
             navigator.geolocation.clearWatch(AppState.watchId);
             
-            // ✅ Verberg het timersysteem en toon de rest weer
             document.getElementById('timer-display').style.display = 'none';
             document.getElementById('baseline-card').style.display = 'block';
             document.getElementById('app-list').style.display = 'block';
