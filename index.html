@@ -1581,7 +1581,7 @@
                 //    en daarna naar >30 zodat de route wél wordt gestart.
                 //    Veel toestellen hebben accuracy 15-30m onderweg.
                 if (p.coords.accuracy > 50) return;
-                if (AppState.currentRoute.length > 0 && p.coords.accuracy > 35) return;
+                if (AppState.currentRoute.length > 0 && p.coords.accuracy > 50) return;
                 
                 const lat = p.coords.latitude;
                 const lng = p.coords.longitude;
@@ -1594,7 +1594,10 @@
                     const d = this.calcDist(last[0], last[1], lat, lng);
                     
                     // Minimale afstand: 3 meter ipv 5 meter (betere resolutie)
-                    if (d < 0.003) return; 
+                    if (d < 0.003) { 
+                        AppState.session.lastGpsTime = now;
+                        return; 
+                    }
 
                     const timeDiff = (now - AppState.session.lastGpsTime) / 1000; 
                     
