@@ -16,219 +16,149 @@
     <style>
         :root {
             --primary: #27ae60; --warning: #f39c12; --danger: #e74c3c; --accent: #3498db;
-            --bg-dark: #121214; --bg-panel: rgba(30, 30, 35, 0.95);
+            /* Donkerdere achtergrond en lichtere panelen voor diepte */
+            --bg-dark: #0a0a0c; --bg-panel: #161619; 
             --text-main: #f5f6fa; --text-muted: #a4b0be;
-            --border: 1px solid rgba(255,255,255,0.1);
-            --card-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            --card-shadow: 0 12px 32px rgba(0,0,0,0.4);
             --streak-color: #ff4757;
             --easing: cubic-bezier(0.4, 0, 0.2, 1);
+            
+            /* Design Tokens voor radii */
+            --radius-sm: 8px;
+            --radius-md: 16px;
+            --radius-lg: 24px;
         }
 
         body.light-mode {
             --bg-dark: #f0f2f5; --bg-panel: #ffffff;
             --text-main: #2f3542; --text-muted: #747d8c;
-            --border: 1px solid rgba(0,0,0,0.05);
-            --card-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            --card-shadow: 0 8px 24px rgba(0,0,0,0.08);
         }
 
         body { font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(--text-main); margin: 0; padding-bottom: 80px; -webkit-tap-highlight-color: transparent; transition: background 0.3s var(--easing); line-height: 1.5; }
         .container { width: 100%; max-width: 480px; margin: 0 auto; padding: 20px; box-sizing: border-box; }
 
-        .card { background: var(--bg-panel); padding: 20px; border-radius: 25px; border: var(--border); margin-bottom: 15px; box-shadow: var(--card-shadow); position: relative; }
+        /* Verhoogde padding, border radius token, geen borders (zwevend) */
+        .card { background: var(--bg-panel); padding: 24px; border-radius: var(--radius-lg); border: none; margin-bottom: 16px; box-shadow: var(--card-shadow); position: relative; }
+        
         .dash-label { font-size: 14px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 1px; display: block; margin-bottom: 12px; line-height: 1.4; }
         
-        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
         .dash-val { font-size: 24px; font-weight: 900; color: var(--primary); }
 
-        .streak-badge { background: var(--streak-color); color: white; padding: 5px 12px; border-radius: 50px; font-size: 11px; font-weight: 900; display: inline-flex; align-items: center; gap: 5px; margin-bottom: 10px; }
+        .streak-badge { background: var(--streak-color); color: white; padding: 6px 14px; border-radius: 50px; font-size: 11px; font-weight: 900; display: inline-flex; align-items: center; gap: 5px; margin-bottom: 12px; }
 
-        .pr-list { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 5px; }
+        .pr-list { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 8px; }
         .pr-card { 
-            text-align: center; 
-            padding: 15px 5px; 
+            text-align: center; padding: 16px 8px; 
             background: rgba(255,255,255,0.03); 
-            border-radius: 20px; 
-            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: var(--radius-md); 
             transition: transform 0.2s ease;
         }
         .pr-val { font-size: 18px; font-weight: 900; color: var(--accent); letter-spacing: -0.5px; display: block; margin-top: 4px; }
         .pr-card .dash-label { margin-bottom: 0; font-size: 9px; opacity: 0.8; }
 
-        select, .btn { width: 100%; padding: 15px; border-radius: 15px; border: var(--border); background: rgba(120,120,120,0.1); color: var(--text-main); font-weight: 700; font-family: inherit; margin-top: 5px; appearance: none; outline: none; }
-        .btn-primary { background: var(--primary); color: #000; border: none; cursor: pointer; }
+        /* Tokens toepassen op inputs en buttons */
+        select, .btn, input[type="number"] { width: 100%; padding: 16px; border-radius: var(--radius-md); border: none; background: rgba(120,120,120,0.1); color: var(--text-main); font-weight: 700; font-family: inherit; margin-top: 6px; appearance: none; outline: none; box-sizing: border-box; }
+        .btn-primary { background: var(--primary); color: #000; border: none; cursor: pointer; transition: transform 0.2s; }
+        .btn-primary:active { transform: scale(0.98); }
         
-        .theme-toggle { position: absolute; top: 20px; right: 20px; cursor: pointer; font-size: 20px; background: none; border: none; }
+        .btn-ghost { background: transparent; border: 1px solid rgba(120,120,120,0.2); color: var(--text-main); transition: all 0.2s var(--easing); padding: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+        .btn-ghost:hover, .btn-ghost:active { background: rgba(120,120,120,0.1); border-color: rgba(120,120,120,0.4); }
 
-        .training-row { display: flex; align-items: center; justify-content: space-between; padding: 15px 0; border-top: 1px solid rgba(120,120,120,0.1); }
+        .theme-toggle { position: absolute; top: 20px; right: 20px; cursor: pointer; font-size: 20px; background: none; border: none; padding: 8px; border-radius: 50%; }
+
+        .training-row { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; border-top: 1px solid rgba(120,120,120,0.1); margin-bottom: 4px; }
+        .training-row:first-of-type { border-top: none; padding-top: 0; }
         .training-row.is-done { opacity: 0.6; }
         .check-circle { width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--text-muted); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s var(--easing); margin-right: 16px; flex-shrink: 0; }
         .check-circle:active { transform: scale(0.95); }
         .check-circle.checked { background: var(--primary); border-color: var(--primary); color: #000; font-size: 14px; font-weight: 900; }
 
-        .legend { display: flex; justify-content: space-around; margin-top: 15px; font-size: 11px; font-weight: 700; color: var(--text-muted); }
-        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .legend { display: flex; justify-content: space-around; margin-top: 16px; font-size: 11px; font-weight: 700; color: var(--text-muted); }
+        .legend-item { display: flex; align-items: center; gap: 6px; }
         .dot { width: 10px; height: 10px; border-radius: 50%; }
 
         #timer-display { position: sticky; top: 10px; z-index: 2000; display: none; text-align: center; }
-        .timer-big { font-size: 65px; font-weight: 900; letter-spacing: -3px; margin: 5px 0; }
+        .timer-big { font-size: 65px; font-weight: 900; letter-spacing: -3px; margin: 8px 0; }
 
-        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(120,120,120,0.05); border-radius: 15px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
-        .delete-btn { color: var(--danger); background: none; border: none; font-size: 18px; cursor: pointer; padding: 10px; }
+        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: rgba(120,120,120,0.05); border-radius: var(--radius-md); margin-bottom: 12px; cursor: pointer; transition: 0.2s; }
+        .delete-btn { color: var(--danger); background: none; border: none; font-size: 18px; cursor: pointer; padding: 12px; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
 
-        #preview-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 3000; display: none; align-items: center; padding: 20px; }
-        .preview-chart { display: flex; align-items: flex-end; gap: 3px; height: 100px; margin: 20px 0; background: rgba(120,120,120,0.1); padding: 25px 10px 10px 10px; border-radius: 12px; box-sizing: border-box; }
-        .bar { flex: 1; border-radius: 3px 3px 0 0; min-height: 4px; position: relative; display: flex; justify-content: center; }
-        .bar span { position: absolute; top: -18px; font-size: 8px; font-weight: 900; color: var(--text-muted); white-space: nowrap; }
+        #preview-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 3000; display: none; align-items: center; padding: 24px; }
+        .preview-chart { display: flex; align-items: flex-end; gap: 3px; height: 100px; margin: 24px 0; background: rgba(120,120,120,0.1); padding: 24px 10px 10px 10px; border-radius: var(--radius-md); box-sizing: border-box; }
+        .bar { flex: 1; border-radius: 4px 4px 0 0; min-height: 4px; position: relative; display: flex; justify-content: center; }
+        .bar span { position: absolute; top: -20px; font-size: 9px; font-weight: 900; color: var(--text-muted); white-space: nowrap; }
         .bar.run { background: var(--primary); }
         .bar.walk { background: var(--warning); }
         .bar.warmup { background: var(--accent); }
 
-        #result-screen { position: fixed; inset: 0; background: var(--bg-dark); z-index: 4000; display: none; flex-direction: column; overflow-y: auto; }
-        #map { width: 100%; min-height: 300px; background: #ffffff; flex-shrink: 0; }
+        /* ✅ Vloeiend slide-in resultaatscherm */
+        #result-screen { 
+            position: fixed; inset: 0; background: var(--bg-dark); z-index: 4000; 
+            display: flex; flex-direction: column; overflow-y: auto; 
+            transform: translateY(100%); transition: transform 0.4s var(--easing), visibility 0s 0.4s;
+            visibility: hidden;
+        }
+        #result-screen.active {
+            transform: translateY(0); visibility: visible; transition: transform 0.4s var(--easing);
+        }
+        
+        .result-close-btn {
+            position: absolute; top: 20px; left: 20px; z-index: 4010;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(10px);
+            border-radius: 50%; width: 44px; height: 44px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: white; font-weight: 900; font-size: 20px; border: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        #map { width: 100%; min-height: 320px; background: #ffffff; flex-shrink: 0; }
         .chart-container { height: 180px; padding: 0; margin: 0; }
 
-        .clear-history-btn {
-            background: rgba(231, 76, 60, 0.1);
-            border: none;
-            font-size: 13px;
-            text-transform: uppercase;
-            color: var(--danger);
-            font-weight: 700;
-            letter-spacing: 1px;
-            cursor: pointer;
-            padding: 8px 14px;
-            border-radius: 8px;
-            font-family: inherit;
-            transition: 0.2s ease;
-        }
-        
-        .clear-history-btn:hover {
-            background: rgba(231, 76, 60, 0.15);
-            transform: scale(1.05);
-        }
+        .clear-history-btn { background: rgba(231, 76, 60, 0.1); border: none; font-size: 13px; text-transform: uppercase; color: var(--danger); font-weight: 700; letter-spacing: 1px; cursor: pointer; padding: 10px 16px; border-radius: var(--radius-sm); font-family: inherit; transition: 0.2s ease; }
+        .clear-history-btn:hover { background: rgba(231, 76, 60, 0.15); transform: scale(1.02); }
 
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 70px;
-            background: var(--bg-panel);
-            border-top: var(--border);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            z-index: 1000;
-            padding-bottom: env(safe-area-inset-bottom);
-        }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: var(--bg-panel); border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-around; align-items: center; z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; height: 100%; cursor: pointer; transition: all 0.2s var(--easing); opacity: 0.5; background: none; border: none; color: inherit; font-family: inherit; padding: 0; margin: 0; appearance: none; outline: none; }
+        .nav-item.active { opacity: 1; color: var(--primary); }
+        .nav-icon { font-size: 24px; margin-bottom: 4px; }
+        .nav-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            flex: 1;
-            height: 100%;
-            cursor: pointer;
-            transition: all 0.2s var(--easing);
-            opacity: 0.5;
-            background: none;
-            border: none;
-            color: inherit;
-            font-family: inherit;
-            padding: 0;
-            margin: 0;
-            appearance: none;
-            outline: none;
-            -webkit-appearance: none;
-        }
+        .tab-view { display: none; animation: fadeIn 0.3s ease; }
+        .tab-view.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-        .nav-item.active {
-            opacity: 1;
-            color: var(--primary);
-        }
+        body { padding-bottom: 100px; }
 
-        .nav-icon {
-            font-size: 22px;
-            margin-bottom: 4px;
-        }
+        .toggle-container { display: flex; align-items: center; padding: 14px 0; cursor: pointer; }
+        .toggle-switch { width: 52px; height: 30px; background: rgba(120,120,120,0.2); border-radius: 15px; position: relative; transition: all 0.3s var(--easing); }
+        .toggle-switch.active { background: var(--primary); }
+        .toggle-switch::after { content: ''; position: absolute; width: 24px; height: 24px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: all 0.3s var(--easing); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        .toggle-switch.active::after { left: 25px; }
 
-        .nav-label {
-            font-size: 10px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .tab-view {
-            display: none;
-            animation: fadeIn 0.2s ease;
-        }
-
-        .tab-view.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        body {
-            padding-bottom: 100px;
-        }
-
-        .toggle-container {
-            display: flex;
-            align-items: center;
-            padding: 12px 0;
-            cursor: pointer;
-        }
-
-        .toggle-switch {
-            width: 50px;
-            height: 28px;
-            background: rgba(120,120,120,0.2);
-            border-radius: 14px;
-            position: relative;
-            transition: all 0.3s var(--easing);
-        }
-
-        .toggle-switch.active {
-            background: var(--primary);
-        }
-
-        .toggle-switch::after {
-            content: '';
-            position: absolute;
-            width: 22px;
-            height: 22px;
-            background: white;
-            border-radius: 50%;
-            top: 3px;
-            left: 3px;
-            transition: all 0.3s var(--easing);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-
-        .toggle-switch.active::after {
-            left: 25px;
-        }
-
-        #live-training-map {
-            width: 100%;
-            height: 220px;
-            margin-bottom: 10px;
-            border-radius: 15px;
-            background: #ffffff;
-            display: none;
-        }
-        
-        body.light-mode #live-training-map {
-            background: #ffffff;
-        }
-        
+        #live-training-map { width: 100%; height: 220px; margin-bottom: 12px; border-radius: var(--radius-md); background: #ffffff; display: none; }
+        body.light-mode #live-training-map { background: #ffffff; }
         .leaflet-tile-pane { filter: none !important; }
+
+        /* ✅ Bottom Sheet (Custom Plan Wizard) Styling */
+        .bottom-sheet-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            z-index: 5000; display: flex; align-items: flex-end;
+            visibility: hidden; opacity: 0; transition: opacity 0.3s var(--easing), visibility 0s 0.3s;
+        }
+        .bottom-sheet-overlay.active {
+            visibility: visible; opacity: 1; transition: opacity 0.3s var(--easing);
+        }
+        .bottom-sheet {
+            background: var(--bg-panel); width: 100%; max-height: 90vh; overflow-y: auto;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0; padding: 24px;
+            transform: translateY(100%); transition: transform 0.4s var(--easing);
+            box-sizing: border-box; box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+            padding-bottom: calc(24px + env(safe-area-inset-bottom));
+        }
+        .bottom-sheet-overlay.active .bottom-sheet { transform: translateY(0); }
+        .sheet-handle { width: 48px; height: 6px; background: rgba(120,120,120,0.3); border-radius: 10px; margin: 0 auto 24px auto; }
     </style>
 </head>
 <body>
@@ -243,59 +173,91 @@
             <div class="legend-item"><div class="dot" style="background:var(--accent)"></div> Joggen</div>
             <div class="legend-item"><div class="dot" style="background:var(--warning)"></div> Wandelen</div>
         </div>
-        <div style="display:flex; justify-content: space-between; margin: 20px 0; font-weight:700">
+        <div style="display:flex; justify-content: space-between; margin: 24px 0; font-weight:700">
             <span id="pre-time">-- min</span>
             <span id="pre-type" style="color:var(--primary)">Schema</span>
         </div>
         <button class="btn btn-primary" onclick="AppController.realStart()">START TRAINING</button>
-        <button class="btn" style="background:transparent" onclick="UIController.hidePreview()">TERUG</button>
+        <button class="btn btn-ghost" style="margin-top:12px; border:none;" onclick="UIController.hidePreview()">TERUG</button>
+    </div>
+</div>
+
+<div id="custom-plan-sheet" class="bottom-sheet-overlay" onclick="UIController.closeCustomPlanSheet(event)">
+    <div class="bottom-sheet" onclick="event.stopPropagation()">
+        <div class="sheet-handle"></div>
+        <h2 style="margin-top:0; margin-bottom: 24px;">Genereer Eigen Plan</h2>
+        
+        <span class="dash-label">Training per week</span>
+        <select id="train-frequency">
+            <option value="2">2 keer per week</option>
+            <option value="3" selected>3 keer per week</option>
+            <option value="4">4 keer per week</option>
+            <option value="5">5 keer per week</option>
+        </select>
+        
+        <span class="dash-label" style="margin-top:20px">Einddoel</span>
+        <select id="train-goal">
+            <option value="3km">3 Kilometer</option>
+            <option value="5km" selected>5 Kilometer</option>
+            <option value="10km">10 Kilometer</option>
+            <option value="halve">Halve Marathon</option>
+        </select>
+
+        <span class="dash-label" style="margin-top:20px">Huidig weekvolume (km)</span>
+        <input type="number" id="user-base-volume" min="1" max="100" value="5">
+        <div style="font-size: 12px; color: var(--text-muted); margin-top: 10px; line-height: 1.5;">
+            Gemiddeld aantal kilometer dat je de afgelopen 4 weken per week liep. Dit wordt gebruikt voor een wetenschappelijk verantwoorde en veilige opbouw.
+        </div>
+        
+        <button class="btn btn-primary" style="margin-top:24px" onclick="AppController.generateCustomPlan()">📅 MAAK PLAN AAN</button>
     </div>
 </div>
 
 <div id="result-screen">
+    <button class="result-close-btn" aria-label="Sluiten" onclick="UIController.closeResultScreen()">&times;</button>
     <div id="map"></div>
     <div class="container">
         <h2 id="res-title" style="margin-top:0">Sessie Voltooid!</h2>
         <div class="dashboard">
-            <div class="card"><span class="dash-val" id="res-d">0</span><br><span class="dash-label">KM</span></div>
-            <div class="card"><span class="dash-val" id="res-p">0</span><br><span class="dash-label">GEMIDDELD PACE</span></div>
-            <div class="card"><span class="dash-val" id="res-time">0</span><br><span class="dash-label">LOOPTIJD</span></div>
-            <div class="card"><span class="dash-val" id="res-cal">0</span><br><span class="dash-label">KCAL</span></div>
+            <div class="card" style="margin-bottom:0;"><span class="dash-val" id="res-d">0</span><br><span class="dash-label">KM</span></div>
+            <div class="card" style="margin-bottom:0;"><span class="dash-val" id="res-p">0</span><br><span class="dash-label">GEMIDDELD PACE</span></div>
+            <div class="card" style="margin-bottom:0;"><span class="dash-val" id="res-time">0</span><br><span class="dash-label">LOOPTIJD</span></div>
+            <div class="card" style="margin-bottom:0;"><span class="dash-val" id="res-cal">0</span><br><span class="dash-label">KCAL</span></div>
         </div>
 
         <div class="card">
             <span class="dash-label">📊 Training Breakdown</span>
-            <div style="height:24px; background:rgba(120,120,120,0.1); border-radius:12px; overflow:hidden; display:flex; margin:15px 0">
+            <div style="height:24px; background:rgba(120,120,120,0.1); border-radius:12px; overflow:hidden; display:flex; margin:16px 0">
                 <div id="stat-run-bar" style="background:var(--primary); height:100%"></div>
                 <div id="stat-jog-bar" style="background:var(--accent); height:100%"></div>
                 <div id="stat-walk-bar" style="background:var(--warning); height:100%"></div>
             </div>
             <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; text-align:center">
                 <div>
-                    <div style="font-size:20px; font-weight:900; color:var(--primary)" id="stat-run-percent">0%</div>
+                    <div style="font-size:22px; font-weight:900; color:var(--primary)" id="stat-run-percent">0%</div>
                     <div style="font-size:10px; font-weight:700; color:var(--text-muted)">RUNNING</div>
                 </div>
                 <div>
-                    <div style="font-size:20px; font-weight:900; color:var(--accent)" id="stat-jog-percent">0%</div>
+                    <div style="font-size:22px; font-weight:900; color:var(--accent)" id="stat-jog-percent">0%</div>
                     <div style="font-size:10px; font-weight:700; color:var(--text-muted)">JOGGING</div>
                 </div>
                 <div>
-                    <div style="font-size:20px; font-weight:900; color:var(--warning)" id="stat-walk-percent">0%</div>
+                    <div style="font-size:22px; font-weight:900; color:var(--warning)" id="stat-walk-percent">0%</div>
                     <div style="font-size:10px; font-weight:700; color:var(--text-muted)">WALKING</div>
                 </div>
             </div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-top:15px; text-align:center">
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-top:16px; text-align:center">
                 <div>
                     <div style="font-size:16px; font-weight:900; color:var(--primary)" id="stat-run-time">0:00</div>
-                    <div style="font-size:9px; font-weight:700; color:var(--text-muted)">RUN TIME</div>
+                    <div style="font-size:10px; font-weight:700; color:var(--text-muted)">TIJD</div>
                 </div>
                 <div>
                     <div style="font-size:16px; font-weight:900; color:var(--accent)" id="stat-jog-time">0:00</div>
-                    <div style="font-size:9px; font-weight:700; color:var(--text-muted)">JOG TIME</div>
+                    <div style="font-size:10px; font-weight:700; color:var(--text-muted)">TIJD</div>
                 </div>
                 <div>
                     <div style="font-size:16px; font-weight:900; color:var(--warning)" id="stat-walk-time">0:00</div>
-                    <div style="font-size:9px; font-weight:700; color:var(--text-muted)">WALK TIME</div>
+                    <div style="font-size:10px; font-weight:700; color:var(--text-muted)">TIJD</div>
                 </div>
             </div>
         </div>
@@ -305,26 +267,38 @@
             <div class="chart-container"><canvas id="paceChart"></canvas></div>
         </div>
         
-        <button id="res-btn" class="btn btn-primary" onclick="location.reload()">OPSLAAN & SLUITEN</button>
-        <button class="btn" style="margin-top: 10px; background: rgba(52, 152, 219, 0.2); color: var(--accent)" onclick="AppController.shareResult()">📤 Deel resultaat</button>
-        <button class="btn" style="margin-top: 10px; background: rgba(46, 204, 113, 0.2); color: var(--primary)" onclick="AppController.generateShareImage()">🖼️ Genereer Share Afbeelding</button>
-        <button class="btn" style="margin-top: 10px" onclick="AppController.exportAsGPX()">📍 Exporteer als .GPX (Strava/Garmin)</button>
+        <button id="res-btn" class="btn btn-primary" onclick="UIController.closeResultScreen(true)" style="padding: 18px; font-size: 16px;">OPSLAAN & SLUITEN</button>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 16px;">
+            <button class="btn-ghost" onclick="AppController.shareResult()" aria-label="Deel resultaat">
+                <span style="font-size: 24px;">📤</span>
+                <span style="font-size: 11px; font-weight: 700; margin-top: 4px;">Delen</span>
+            </button>
+            <button class="btn-ghost" onclick="AppController.generateShareImage()" aria-label="Genereer Poster">
+                <span style="font-size: 24px;">🖼️</span>
+                <span style="font-size: 11px; font-weight: 700; margin-top: 4px;">Poster</span>
+            </button>
+            <button class="btn-ghost" onclick="AppController.exportAsGPX()" aria-label="Exporteer GPX">
+                <span style="font-size: 24px;">📍</span>
+                <span style="font-size: 11px; font-weight: 700; margin-top: 4px;">.GPX</span>
+            </button>
+        </div>
     </div>
 </div>
 
 <div class="container" id="main-app">
-    <header style="text-align:center; margin-bottom:20px; position:relative">
+    <header style="text-align:center; margin-bottom:24px; position:relative">
         <h1 style="margin:0; letter-spacing:-1px">JELLYLEGS</h1>
-        <button class="theme-toggle" onclick="UIController.toggleTheme()" id="theme-btn">🌙</button>
+        <button class="theme-toggle" aria-label="Schakel light mode in" onclick="UIController.toggleTheme()" id="theme-btn">🌙</button>
     </header>
 
     <div id="tab-home" class="tab-view active">
         <div class="dashboard">
-            <div class="card">
+            <div class="card" style="margin-bottom:0">
                 <div id="streak-container" class="streak-badge" style="display:none">🔥 <span id="dash-streak">0</span> SESSIES</div>
                 <span class="dash-val" id="dash-total">0.0</span><br><span class="dash-label">Totaal KM</span>
             </div>
-            <div class="card"><span class="dash-val" id="dash-pb">--</span><br><span class="dash-label">Snelste Pace</span></div>
+            <div class="card" style="margin-bottom:0"><span class="dash-val" id="dash-pb">--</span><br><span class="dash-label">Snelste Pace</span></div>
         </div>
 
         <div class="card">
@@ -346,7 +320,7 @@
         </div>
 
         <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
                 <span class="dash-label" style="margin-bottom:0">Recente Activiteit</span>
                 <button class="clear-history-btn" onclick="DataController.clearAllHistory()">Wis alles</button>
             </div>
@@ -363,75 +337,53 @@
         <div id="app-list"></div>
 
         <div class="card" id="baseline-card">
-            <span class="dash-label">📊 Baseline Test & Custom Plan</span>
+            <span class="dash-label">📊 Basis Niveau & Schema's</span>
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: 0; margin-bottom: 20px;">Bepaal je startniveau met de 30-minuten test of genereer direct een op maat gemaakt AI-schema.</p>
             
-            <button class="btn btn-primary" onclick="AppController.startBaselineTest()" style="margin-bottom:15px">🏃 START 30 MINUTEN BASELINE TEST</button>
-            
-            <div id="baseline-setup" style="margin-top:15px">
-                <span class="dash-label">Training per week</span>
-                <select id="train-frequency">
-                    <option value="2">2 keer per week</option>
-                    <option value="3" selected>3 keer per week</option>
-                    <option value="4">4 keer per week</option>
-                    <option value="5">5 keer per week</option>
-                </select>
-                
-                <span class="dash-label" style="margin-top:15px">Einddoel</span>
-                <select id="train-goal">
-                    <option value="3km">3 Kilometer</option>
-                    <option value="5km" selected>5 Kilometer</option>
-                    <option value="10km">10 Kilometer</option>
-                    <option value="halve">Halve Marathon</option>
-                </select>
-
-                <span class="dash-label" style="margin-top:15px">Huidig weekvolume (km)</span>
-                <input type="number" id="user-base-volume" min="1" max="100" value="5" style="width: 100%; padding: 15px; border-radius: 15px; border: var(--border); background: rgba(120,120,120,0.1); color: var(--text-main); font-weight: 700; font-family: inherit; margin-top: 5px; text-align: center; box-sizing: border-box;">
-                <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">Gemiddeld aantal kilometer dat je de afgelopen 4 weken per week liep. Dit wordt gebruikt voor veilige opbouw.</div>
-                
-                <button class="btn" style="margin-top:15px" onclick="AppController.generateCustomPlan()">📅 Genereer Eigen Plan</button>
-            </div>
+            <button class="btn btn-primary" onclick="AppController.startBaselineTest()">🏃 START 30 MIN. TEST</button>
+            <button class="btn" style="background: rgba(52, 152, 219, 0.1); color: var(--accent); margin-top: 12px;" onclick="UIController.openCustomPlanSheet()">✨ GENEREER CUSTOM PLAN</button>
         </div>
     </div>
 
     <div id="tab-profile" class="tab-view">
         <div class="card">
             <span class="dash-label">⚙️ Gebruikers Profiel</span>
-            <div style="display: grid; grid-template-columns: 1fr 70px; gap: 10px; align-items: center;">
+            <div style="display: grid; grid-template-columns: 1fr 70px; gap: 12px; align-items: center;">
                 <span style="font-size: 13px; color: var(--text-muted)">Lichaamsgewicht</span>
-                <input type="number" id="user-weight" min="30" max="200" value="75" style="background: rgba(120,120,120,0.1); border: var(--border); color: var(--text-main); border-radius: 8px; padding: 6px; text-align: center; font-weight: 700;" onchange="DataController.saveUserProfile()">
-                <span style="font-size: 12px; color: var(--text-muted)">Lengte</span>
-                <input type="number" id="user-height" min="100" max="220" value="175" style="background: rgba(120,120,120,0.1); border: var(--border); color: var(--text-main); border-radius: 8px; padding: 6px; text-align: center; font-weight: 700;" onchange="DataController.saveUserProfile()">
-                <span style="font-size: 12px; color: var(--text-muted)">Leeftijd</span>
-                <input type="number" id="user-age" min="12" max="99" value="30" style="background: rgba(120,120,120,0.1); border: var(--border); color: var(--text-main); border-radius: 8px; padding: 6px; text-align: center; font-weight: 700;" onchange="DataController.saveUserProfile()">
-                <span style="font-size: 12px; color: var(--text-muted)">Geslacht</span>
-                <select id="user-gender" style="background: rgba(120,120,120,0.1); border: var(--border); color: var(--text-main); border-radius: 8px; padding: 6px; font-weight: 700;" onchange="DataController.saveUserProfile()">
+                <input type="number" id="user-weight" min="30" max="200" value="75" style="margin-top:0; text-align: center;" onchange="DataController.saveUserProfile()">
+                <span style="font-size: 13px; color: var(--text-muted)">Lengte</span>
+                <input type="number" id="user-height" min="100" max="220" value="175" style="margin-top:0; text-align: center;" onchange="DataController.saveUserProfile()">
+                <span style="font-size: 13px; color: var(--text-muted)">Leeftijd</span>
+                <input type="number" id="user-age" min="12" max="99" value="30" style="margin-top:0; text-align: center;" onchange="DataController.saveUserProfile()">
+                <span style="font-size: 13px; color: var(--text-muted)">Geslacht</span>
+                <select id="user-gender" style="margin-top:0; padding: 12px;" onchange="DataController.saveUserProfile()">
                     <option value="male">Man</option>
                     <option value="female">Vrouw</option>
                 </select>
             </div>
-            <div id="save-feedback" style="color: var(--primary); text-align: center; font-size: 13px; font-weight: 700; margin-top: 8px; opacity: 0; transition: opacity 0.4s ease, transform 0.4s ease; transform: translateY(10px);">Opgeslagen ✔️</div>
-            <div style="font-size: 12px; color: var(--text-muted); margin-top: 10px; text-align: center;">
-                ✅ Wordt gebruikt voor wetenschappelijk accurate calorie berekening<br>
-                Je kan dit op ieder moment aanpassen
+            <div id="save-feedback" style="color: var(--primary); text-align: center; font-size: 13px; font-weight: 700; margin-top: 12px; opacity: 0; transition: opacity 0.4s ease, transform 0.4s ease; transform: translateY(10px);">Opgeslagen ✔️</div>
+            <div style="font-size: 12px; color: var(--text-muted); margin-top: 12px; text-align: center; line-height: 1.5;">
+                ✅ Wordt gebruikt voor wetenschappelijk accurate calorie berekening.<br>
+                Je kan dit op ieder moment aanpassen.
             </div>
         </div>
 
         <div class="card">
             <span class="dash-label">App Instellingen</span>
             
-            <span class="dash-label" style="margin-top:15px">Warming-up tijd</span>
-            <input type="range" id="warmup-time" min="1" max="15" value="5" oninput="DataController.updateWarmupCoolDown()"><div style="text-align:center; font-weight:700; font-size:14px; margin-top:5px"><span id="warmup-val">5</span> minuten</div>
+            <span class="dash-label" style="margin-top:20px">Warming-up tijd</span>
+            <input type="range" id="warmup-time" min="1" max="15" value="5" oninput="DataController.updateWarmupCoolDown()"><div style="text-align:center; font-weight:700; font-size:14px; margin-top:8px"><span id="warmup-val">5</span> minuten</div>
             
-            <span class="dash-label" style="margin-top:15px">Cool-down tijd</span>
-            <input type="range" id="cooldown-time" min="1" max="15" value="5" oninput="DataController.updateWarmupCoolDown()"><div style="text-align:center; font-weight:700; font-size:14px; margin-top:5px"><span id="cooldown-val">5</span> minuten</div>
+            <span class="dash-label" style="margin-top:24px">Cool-down tijd</span>
+            <input type="range" id="cooldown-time" min="1" max="15" value="5" oninput="DataController.updateWarmupCoolDown()"><div style="text-align:center; font-weight:700; font-size:14px; margin-top:8px"><span id="cooldown-val">5</span> minuten</div>
             
-            <span class="dash-label" style="margin-top:15px">Coach Stem</span>
+            <span class="dash-label" style="margin-top:24px">Coach Stem</span>
             <select id="voice-select"></select>
             
-            <span class="dash-label" style="margin-top:15px">📍 Live Kaart Tijdens Training</span>
+            <span class="dash-label" style="margin-top:24px">📍 Live Kaart Tijdens Training</span>
             <div class="toggle-container" onclick="UIController.toggleLiveMap()">
                 <div class="toggle-switch" id="live-map-toggle"></div>
-                <span style="margin-left: 10px;">Toon live route op kaart tijdens hardlopen</span>
+                <span style="margin-left: 14px; font-size: 14px;">Toon live route op kaart tijdens hardlopen</span>
             </div>
         </div>
 
@@ -439,8 +391,8 @@
             <span class="dash-label">📦 Versie</span>
             <div style="display:flex; align-items:center; justify-content:space-between">
                 <div>
-                    <div style="font-size:22px; font-weight:900; color:var(--primary)">v1.1.4</div>
-                    <div style="font-size:11px; color:var(--text-muted); margin-top:2px">Laatste update: 12-05-2026</div>
+                    <div style="font-size:24px; font-weight:900; color:var(--primary)">v1.2.1</div>
+                    <div style="font-size:11px; color:var(--text-muted); margin-top:4px">Laatste update: 12-05-2026</div>
                 </div>
                 <button class="clear-history-btn" style="color:var(--accent); background:rgba(52,152,219,0.1)" onclick="UIController.showChangelog()">📜 Wijzigingen</button>
             </div>
@@ -449,32 +401,32 @@
         <div class="card">
             <span class="dash-label">⚡ Geavanceerd</span>
             <button class="btn btn-primary" style="margin-top:10px;" onclick="AppController.connectHeartRateMonitor()">❤️ Koppel Hartslagmeter</button>
-            <button class="btn" style="margin-top:10px; color: var(--danger); background: rgba(231,76,60,0.1)" onclick="DataController.clearAllHistory()">🗑️ Wis Alle Gegevens</button>
+            <button class="btn" style="margin-top:12px; color: var(--danger); background: rgba(231,76,60,0.1)" onclick="DataController.clearAllHistory()">🗑️ Wis Alle Gegevens</button>
         </div>
     </div>
 
     <div id="timer-display" class="card">
         <div id="live-training-map"></div>
-        <div style="display:flex; justify-content: space-between; color:var(--primary); font-weight:900; font-size:14px">
+        <div style="display:flex; justify-content: space-between; color:var(--primary); font-weight:900; font-size:16px">
             <span id="live-dist">0.00 km</span>
             <span id="total-time-left">00:00</span>
         </div>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:16px">
             <div style="text-align:center">
-                <div class="dash-val" id="live-pace" style="font-size:18px">--:--</div>
-                <span class="dash-label">HUIDIG PACE</span>
+                <div class="dash-val" id="live-pace" style="font-size:20px">--:--</div>
+                <span class="dash-label" style="font-size: 11px;">HUIDIG PACE</span>
             </div>
             <div style="text-align:center">
-                <div class="dash-val" id="avg-pace" style="font-size:18px">--:--</div>
-                <span class="dash-label">GEMIDDELD PACE</span>
+                <div class="dash-val" id="avg-pace" style="font-size:20px">--:--</div>
+                <span class="dash-label" style="font-size: 11px;">GEM. PACE</span>
             </div>
         </div>
-        <div id="timer-status" style="margin-top:10px; font-size:12px; font-weight:700; color:var(--text-muted)">MAAK JE KLAAR...</div>
+        <div id="timer-status" style="margin-top:16px; font-size:14px; font-weight:700; color:var(--text-muted)">MAAK JE KLAAR...</div>
         <div id="timer-time" class="timer-big">00:05</div>
-        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px">
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px">
             <button id="btn-pause" class="btn btn-pause" onclick="AppController.togglePause()">PAUZE</button>
-            <button id="btn-skip" class="btn" style="background:rgba(52, 152, 219, 0.2); color:var(--accent)" onclick="AppController.skipBlock()">SKIP</button>
-            <button class="btn" style="background:rgba(231, 76, 60, 0.2); color:var(--danger)" onclick="AppController.confirmStop()">STOP</button>
+            <button id="btn-skip" class="btn" style="background:rgba(52, 152, 219, 0.15); color:var(--accent)" onclick="AppController.skipBlock()">SKIP</button>
+            <button class="btn" style="background:rgba(231, 76, 60, 0.15); color:var(--danger)" onclick="AppController.confirmStop()">STOP</button>
         </div>
     </div>
 </div>
@@ -636,7 +588,7 @@
             document.body.classList.toggle('light-mode', isLight); 
             document.getElementById('theme-btn').innerText = isLight ? "☀️" : "🌙"; 
             localStorage.setItem('strive_theme', isLight ? 'light' : 'dark');
-            document.querySelector('meta[name="theme-color"]').setAttribute('content', isLight ? '#f0f2f5' : '#121214');
+            document.querySelector('meta[name="theme-color"]').setAttribute('content', isLight ? '#f0f2f5' : '#0a0a0c');
         },
 
         toggleTheme: function() { 
@@ -663,6 +615,26 @@
                 document.startViewTransition(switchTab);
             } else {
                 switchTab();
+            }
+        },
+
+        openCustomPlanSheet: function() {
+            document.getElementById('custom-plan-sheet').classList.add('active');
+        },
+        
+        closeCustomPlanSheet: function(e) {
+            if(e) e.stopPropagation();
+            document.getElementById('custom-plan-sheet').classList.remove('active');
+        },
+
+        openResultScreen: function() {
+            document.getElementById('result-screen').classList.add('active');
+        },
+
+        closeResultScreen: function(reload = false) {
+            document.getElementById('result-screen').classList.remove('active');
+            if(reload) {
+                setTimeout(() => location.reload(), 400); 
             }
         },
 
@@ -696,7 +668,7 @@
             document.getElementById("history-list").innerHTML = h.slice(0, 10).map((r) => `
                 <div class="history-item" onclick="AppController.viewRun(${r.id})">
                     <div style="flex-grow:1"><div style="font-weight:800">${r.n}</div><div style="font-size:12px; color:var(--text-muted)">${r.d} • ${r.dist}km</div></div>
-                    <button class="delete-btn" onclick="DataController.deleteRun(event, ${r.id})">🗑️</button>
+                    <button class="delete-btn" aria-label="Verwijder activiteit" onclick="DataController.deleteRun(event, ${r.id})">🗑️</button>
                 </div>`).join("") || 
                 `<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:10px">Nog geen activiteiten</div>`;
         },
@@ -725,7 +697,7 @@
                             </div>
                             <div style="font-weight:800">${w[t].label}</div>
                         </div>
-                        <button class="btn btn-primary" style="width:auto" onclick="UIController.openPreview('${planKey}', ${i}, '${t}')">START</button>`;
+                        <button class="btn btn-primary" style="width:auto; padding: 12px 20px;" onclick="UIController.openPreview('${planKey}', ${i}, '${t}')">START</button>`;
                     card.appendChild(row);
                 });
                 list.appendChild(card);
@@ -888,13 +860,13 @@
             
             const overlay = document.createElement('div');
             overlay.id = 'changelog-overlay';
-            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(5px);z-index:5000;display:flex;align-items:center;padding:20px;overflow-y:auto;';
+            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(5px);z-index:5000;display:flex;align-items:center;padding:24px;overflow-y:auto;';
             
             const content = document.createElement('div');
             content.className = 'card';
             content.style.cssText = 'width:100%;max-width:480px;margin:auto;max-height:80vh;overflow-y:auto;';
             
-            let html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px"><h2 style="margin:0">📜 Wijzigingslog</h2><button class="clear-history-btn" onclick="this.closest(\'#changelog-overlay\').remove()">✕ Sluiten</button></div>';
+            let html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px"><h2 style="margin:0">📜 Wijzigingslog</h2><button class="clear-history-btn" onclick="this.closest(\'#changelog-overlay\').remove()">✕ Sluiten</button></div>';
             
             AppController.CHANGELOG.forEach(entry => {
                 html += `<div style="margin-bottom:20px;padding-bottom:15px;border-bottom:1px solid rgba(255,255,255,0.1)">`;
@@ -903,7 +875,7 @@
                 html += `<span style="font-size:11px;font-weight:700;color:var(--text-muted)">${entry.date}</span>`;
                 html += `</div><ul style="margin:0;padding-left:20px">`;
                 entry.changes.forEach(change => {
-                    html += `<li style="font-size:13px;margin-bottom:4px;line-height:1.5">${change}</li>`;
+                    html += `<li style="font-size:13px;margin-bottom:6px;line-height:1.5">${change}</li>`;
                 });
                 html += `</ul></div>`;
             });
@@ -1071,14 +1043,14 @@
                 { w: 8, t1: { label: "W8: Tapering", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:600, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"}, {t:600, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "🏁 DE 5KM FINISH", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:2100, s:"5KM POGING", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } }
             ]},
             gevorderd5k_ervaren: { name: "Ervaren Loper 5KM Plan (Snelheid)", weeks: [
-                { w: 1, t1: { label: "W1: Tempo Blokken", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:300, s:"Steady Tempo", m:"run"}, {t:120, s:"Actief Herstel", m:"run"}, {t:300, s:"Steady Tempo", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W1: Lange Duurloop", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:2400, s:"Rustig Tempo", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-                { w: 2, t1: { label: "W2: 1km Intervallen", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:300, s:"Vlot Tempo", m:"run"}, {t:120, s:"Joggen", m:"run"}, {t:300, s:"Vlot Tempo", m:"run"}, {t:120, s:"Joggen", m:"run"}, {t:300, s:"Vlot Tempo", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W2: Steady Run", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:2700, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-                { w: 3, t1: { label: "W3: Drempel Training", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:1200, s:"Drempel Tempo", m:"run"}, {t:180, s:"Joggen", m:"run"}, {t:600, s:"Drempel Tempo", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W3: Lange Run", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:3000, s:"Rustig", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-                { w: 4, t1: { label: "W4: 800m Herhalingen", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:240, s:"Snel Tempo", m:"run"}, {t:120, s:"Joggen", m:"run"}, {t:240, s:"Snel Tempo", m:"run"}, {t:120, s:"Joggen", m:"run"}, {t:240, s:"Snel Tempo", m:"run"}, {t:240, s:"Snel Tempo", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W4: Steady 35m", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:2100, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-                { w: 5, t1: { label: "W5: 1km Tempo", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:300, s:"Vlot", m:"run"}, {t:90, s:"Joggen", m:"run"}, {t:300, s:"Vlot", m:"run"}, {t:90, s:"Joggen", m:"run"}, {t:300, s:"Vlot", m:"run"}, {t:90, s:"Joggen", m:"run"}, {t:300, s:"Vlot", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W5: Lange Run", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:3300, s:"Rustig", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-                { w: 6, t1: { label: "W6: Drempel Blokken", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:900, s:"Drempel Tempo", m:"run"}, {t:120, s:"Joggen", m:"run"}, {t:600, s:"Drempel Tempo", m:"run"}, {t:120, s:"Joggen", m:"run"}, {t:600, s:"Drempel Tempo", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W6: Steady 40m", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:2400, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-                { w: 7, t1: { label: "W7: Tapering", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:600, s:"Steady", m:"run"}, {t:180, s:"Joggen", m:"run"}, {t:600, s:"Steady", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W7: Activatie", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:1200, s:"Rustig", m:"run"}, {t:60, s:"Sprint", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-                { w: 8, t1: { label: "W8: Race Week", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:300, s:"Steady", m:"run"}, {t:60, s:"Sprint", m:"run"}, {t:300, s:"Steady", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "🏁 5KM RACE POGING", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:1800, s:"5KM MAX TEMPO", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } }
+                { w: 1, t1: { label: "W1: Tempo Blokken", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:300, s:"Hardlopen", m:"run"}, {t:120, s:"Actief Herstel", m:"run"}, {t:300, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W1: Lange Duurloop", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:2400, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 2, t1: { label: "W2: 1km Intervallen", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:300, s:"Hardlopen", m:"run"}, {t:120, s:"Joggen", m:"run"}, {t:300, s:"Hardlopen", m:"run"}, {t:120, s:"Joggen", m:"run"}, {t:300, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W2: Hardlopen", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:2700, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 3, t1: { label: "W3: Drempel Training", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:1200, s:"Drempel Tempo", m:"run"}, {t:180, s:"Joggen", m:"run"}, {t:600, s:"Drempel Tempo", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W3: Lange Run", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:3000, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 4, t1: { label: "W4: 800m Herhalingen", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:240, s:"Hardlopen", m:"run"}, {t:120, s:"Joggen", m:"run"}, {t:240, s:"Hardlopen", m:"run"}, {t:120, s:"Joggen", m:"run"}, {t:240, s:"Hardlopen", m:"run"}, {t:240, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W4: Hardlopen 35m", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:2100, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 5, t1: { label: "W5: 1km Tempo", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:300, s:"Hardlopen", m:"run"}, {t:90, s:"Joggen", m:"run"}, {t:300, s:"Hardlopen", m:"run"}, {t:90, s:"Joggen", m:"run"}, {t:300, s:"Hardlopen", m:"run"}, {t:90, s:"Joggen", m:"run"}, {t:300, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W5: Lange Run", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:3300, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 6, t1: { label: "W6: Drempel Blokken", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:900, s:"Drempel Tempo", m:"run"}, {t:120, s:"Joggen", m:"run"}, {t:600, s:"Drempel Tempo", m:"run"}, {t:120, s:"Joggen", m:"run"}, {t:600, s:"Drempel Tempo", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W6: Hardlopen 40m", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:2400, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 7, t1: { label: "W7: Tapering", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:600, s:"Hardlopen", m:"run"}, {t:180, s:"Joggen", m:"run"}, {t:600, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W7: Activatie", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:1200, s:"Hardlopen", m:"run"}, {t:60, s:"Sprint", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 8, t1: { label: "W8: Race Week", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:300, s:"Hardlopen", m:"run"}, {t:60, s:"Sprint", m:"run"}, {t:300, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "🏁 5KM RACE POGING", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:1800, s:"5KM MAX TEMPO", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } }
             ]},
             intervallen10k: { name: "10KM Interval Focus", weeks: [
                 { w: 1, t1: { label: "W1: Basis Interval", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:600, s:"Run", m:"run"}, {t:120, s:"Wandelen", m:"walk"}, {t:600, s:"Run", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W1: Duurloop 40m", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:2400, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
@@ -1105,24 +1077,21 @@
 
     const AppController = {
         CHANGELOG: [
+            { version: "1.2.1", date: "12-05-2026", changes: [
+                "🐛 FIX: Timer-scherm blijft nu niet meer zichtbaar nadat een training gestopt of succesvol afgerond is.",
+                "✍️ TEKST UPDATE: 'Steady Tempo' e.d. in het Ervaren Loper plan consistent veranderd naar 'Hardlopen'."
+            ]},
+            { version: "1.2.0", date: "12-05-2026", changes: [
+                "✨ UX UPDATE: 'Genereer Plan' opent nu een elegante bottom sheet wizard.",
+                "📱 UI UPDATE: Resultaat verschijnt nu als een slide-in pagina met iOS stijl X-knop.",
+                "🎨 UI UPDATE: Modern en rustig design. Kaarten lijken te zweven (border eruit, betere schaduw) en interne spacing is verhoogd.",
+                "🔗 Knoppenhiërarchie aangepast: 'Opslaan' is nu veel dominanter dan de deel-knoppen."
+            ]},
             { version: "1.1.4", date: "12-05-2026", changes: [
-                "🐛 FIX: Baseline test generator kijkt nu naar de *nieuwste* test in de historie in plaats van de allereerste test voor het berekenen van het plan."
+                "🐛 FIX: Baseline test generator kijkt nu naar de *nieuwste* test in de historie."
             ]},
             { version: "1.1.3", date: "12-05-2026", changes: [
-                "🎨 Strakker design voor de share-afbeelding: glow en schaduwen onder statistieken zijn verwijderd en de uitlijning is geperfectioneerd."
-            ]},
-            { version: "1.1.2", date: "12-05-2026", changes: [
-                "🖼️ VOLLEDIG VERNIEUWDE SHARE AFBEELDING: Vierkant, social-ready ontwerp met prominente kaart."
-            ]},
-            { version: "1.1.1", date: "12-05-2026", changes: [
-                "🎨 Pace-kleuren aangepast: hardlopen=groen, joggen=blauw, wandelen=oranje",
-                "📈 Pace grafiek heeft nu een duidelijke titel en verbeterde tooltips (bijv. 5:30 min/km)"
-            ]},
-            { version: "1.1.0", date: "08-05-2026", changes: [
-                "✨ Controller-patroon refactor voor data, weergave en logica scheiding",
-                "🎨 PACE-GEKLEURDE KAART: Route op de kaart krijgt kleuren obv gelopen tempo",
-                "✨ Kaart in resultatenscherm is nu licht (OpenStreetMap) i.p.v. donker",
-                "🐛 Donkere flits bij laden kaart verholpen (CSS achtergrond naar wit)"
+                "🎨 Strakker design voor de share-afbeelding zonder storende glow-effecten onder de teksten."
             ]}
         ],
 
@@ -1332,10 +1301,8 @@
             UIController.hidePreview();
             document.getElementById('timer-display').style.display = 'block';
             document.getElementById('app-list').style.display = 'none';
+            document.getElementById('baseline-card').style.display = 'none';
             
-            if(!document.getElementById('pre-title').innerText.includes('BASELINE') && !document.getElementById('pre-title').innerText.includes('Baseline')) {
-                document.getElementById('baseline-card').style.display = 'none';
-            }
             let count = 5; this.speak("Training begint over 5 seconden");
             const cdInterval = setInterval(() => {
                 count--; document.getElementById('timer-time').innerText = "00:0" + count;
@@ -1455,8 +1422,6 @@
         confirmStop: function() {
             if (!AppState.startTime) return;
             if(confirm("Stoppen?")) {
-                document.getElementById('baseline-card').style.display = 'block';
-                document.getElementById('app-list').style.display = 'block';
                 this.finishTraining();
             }
         },
@@ -1466,6 +1431,8 @@
             clearInterval(AppState.timerId); 
             navigator.geolocation.clearWatch(AppState.watchId);
             
+            // ✅ Verberg het timersysteem en toon de rest weer
+            document.getElementById('timer-display').style.display = 'none';
             document.getElementById('baseline-card').style.display = 'block';
             document.getElementById('app-list').style.display = 'block';
 
@@ -1530,12 +1497,11 @@
             };
             
             DataController.addRun(run, () => {
-                document.getElementById('res-btn').onclick = () => location.reload();
-                document.getElementById('result-screen').style.display='flex';
+                UIController.openResultScreen();
                 setTimeout(() => { 
                     UIController.renderResultMap(run.route); 
                     UIController.renderPaceChart(run.paceHistory); 
-                }, 100);
+                }, 400); 
             });
         },
 
@@ -1546,9 +1512,9 @@
                 document.getElementById('res-p').innerText = run.pace;
                 document.getElementById('res-time').innerText = this.formatT(run.duration || 0);
                 document.getElementById('res-cal').innerText = run.calories || 0;
-                document.getElementById('res-btn').innerText = "SLUITEN";
-                document.getElementById('res-btn').onclick = () => document.getElementById('result-screen').style.display='none';
-                document.getElementById('result-screen').style.display='flex';
+                
+                document.getElementById('res-btn').onclick = () => UIController.closeResultScreen(false);
+                UIController.openResultScreen();
                 
                 const totalSeconds = run.duration || 0;
                 const paceData = run.paceHistory || [];
@@ -1591,7 +1557,7 @@
                 setTimeout(() => {
                     UIController.renderResultMap(run.route || []);
                     UIController.renderPaceChart(run.paceHistory || []);
-                }, 100);
+                }, 400); 
             });
         },
 
@@ -1677,7 +1643,6 @@
             return { label: `W${weekNum}: ⚡ HIT Interval Training`, b: blocks };
         },
 
-        // ✅ FIX: Zorg ervoor dat de NIEUWSTE baseline test wordt gebruikt door .slice().reverse()
         generateCustomPlan: function() {
             const frequency = parseInt(document.getElementById('train-frequency').value);
             const goal = document.getElementById('train-goal').value;
@@ -1697,7 +1662,6 @@
                 }
 
                 let baselinePace = 7.0;
-                // ✅ BUGFIX 1.1.4: Reverse de array zodat de meest recente baseline test gepakt wordt, in plaats van de allereerste!
                 const baselineRun = runs.slice().reverse().find(r => r.n.includes("Baseline") && r.pace);
                 
                 if(baselineRun) baselinePace = parseFloat(baselineRun.pace);
@@ -1742,6 +1706,7 @@
                 localStorage.setItem("strive_selected_plan", "custom");
                 
                 UIController.renderPlan();
+                UIController.closeCustomPlanSheet(); 
                 this.speak("Je wetenschappelijk gevalideerde trainingsschema is gegenereerd!");
             });
         },
@@ -1775,7 +1740,6 @@
                 });
                 
                 this.speak("Hartslagmeter verbonden!");
-                alert("✅ Hartslagmeter succesvol verbonden!");
             } catch (err) {
                 console.warn("Hartslagmeter fout:", err);
                 this.speak("Kon geen verbinding maken met de hartslagmeter");
