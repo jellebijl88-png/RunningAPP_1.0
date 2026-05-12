@@ -479,8 +479,8 @@
             <span class="dash-label">📦 Versie</span>
             <div style="display:flex; align-items:center; justify-content:space-between">
                 <div>
-                    <div style="font-size:24px; font-weight:900; color:var(--primary)">v1.4.2</div>
-                    <div style="font-size:11px; color:var(--text-muted); margin-top:4px">Laatste update: Map Export</div>
+                    <div style="font-size:24px; font-weight:900; color:var(--primary)">v1.4.3</div>
+                    <div style="font-size:11px; color:var(--text-muted); margin-top:4px">Laatste update: GPS-Drift Fix</div>
                 </div>
                 <button class="clear-history-btn" style="color:var(--accent); background:rgba(52,152,219,0.1)" onclick="UIController.showChangelog()">📜 Wijzigingen</button>
             </div>
@@ -1303,6 +1303,9 @@
 
     const AppController = {
         CHANGELOG: [
+            { version: "1.4.3", date: "12-05-2026", changes: [
+                "🛡️ FIX: 'GPS Drift' verholpen. De app negeert nu micro-bewegingen (minder dan 5 meter) en herkent via hardware of je echt stilstaat (bijv. telefoon op je bureau)."
+            ]},
             { version: "1.4.2", date: "12-05-2026", changes: [
                 "🖼️ UPDATE: Poster delen bevat nu daadwerkelijk de OpenStreetMap tegels eronder voor een echte kaart-look!"
             ]},
@@ -1491,23 +1494,37 @@
 
         calculateCalories: function(distanceKm, durationMin) {
             const weightKg = parseInt(localStorage.getItem('user_weight')) || 75;
-            const heightCm = parseInt(localStorage.getItem('user_height')) || 175;
-            const age = parseInt(localStorage.getItem('user_age')) || 30;
-            const gender = localStorage.getItem('user_gender') || 'male';
-            const metValue = 9.8;
             
-            let bmr;
-            if(gender === 'male') {
-                bmr = 88.362 + (13.397 * weightKg) + (4.799 * heightCm) - (5.677 * age);
+            if (distanceKm <= 0.01 || durationMin <= 0) return 0;
+            
+            // Bereken snelheid in km/u
+            const speedKmh = distanceKm / (durationMin / 60);
+            
+            // Bepaal MET op basis van werkelijke snelheid
+            // MET omvat de totale energie-uitgave tijdens de activiteit (dus ook de ruststofwisseling)
+            let metValue;
+            if (speedKmh < 4.0) {
+                metValue = 2.5; // Zeer langzaam / wandelen
+            } else if (speedKmh < 5.0) {
+                metValue = 3.5; // Normaal wandelen
+            } else if (speedKmh < 6.0) {
+                metValue = 5.0; // Zeer langzaam joggen
+            } else if (speedKmh < 7.0) {
+                metValue = 6.0; // Langzaam joggen
+            } else if (speedKmh < 8.0) {
+                metValue = 7.0; // Joggen
+            } else if (speedKmh < 9.0) {
+                metValue = 8.3; // Rustig hardlopen
+            } else if (speedKmh < 10.0) {
+                metValue = 9.8; // Gematigd hardlopen
+            } else if (speedKmh < 11.0) {
+                metValue = 11.0; // Snel hardlopen
             } else {
-                bmr = 447.593 + (9.247 * weightKg) + (3.098 * heightCm) - (4.330 * age);
+                metValue = 12.5; // Zeer snel hardlopen
             }
             
-            const activityMultiplier = 1.375;
-            const dailyCalories = bmr * activityMultiplier;
-            const perMinuteCalories = dailyCalories / 1440;
-            
-            return Math.round(perMinuteCalories * durationMin + (metValue * weightKg * (durationMin / 60)));
+            // MET formule: MET × gewicht(kg) × tijd(uren) = totale kcal tijdens activiteit
+            return Math.round(metValue * weightKg * (durationMin / 60));
         },
 
         vibrate: function(pattern = [200, 100, 200]) {
@@ -1572,7 +1589,12 @@
 
         startGPS: function() {
             AppState.watchId = navigator.geolocation.watchPosition(p => {
-                if(AppState.isPaused || p.coords.accuracy > 40) return;
+                // Filter 1: Basis onnauwkeurigheid (GPS drift weggooien)
+                if(AppState.isPaused || p.coords.accuracy > 35) return;
+
+                // Filter 2: Hardware-level stilstand detectie (p.coords.speed is in m/s)
+                // Als de telefoon zeker weet dat je stilstaat (snelheid < 0.4 m/s = ~1.4 km/u), negeer de "sprongetjes"
+                if (p.coords.speed !== null && p.coords.speed < 0.4) return;
 
                 const lat = p.coords.latitude;
                 const lng = p.coords.longitude;
@@ -1584,13 +1606,15 @@
                     const last = AppState.currentRoute[AppState.currentRoute.length-1];
                     const d = this.calcDist(last[0], last[1], lat, lng);
                     
-                    if (d < 0.002) return;
+                    // Filter 3: Ruissprongen eruit filteren. Minder dan 5 meter is GPS jitter/ruis.
+                    if (d < 0.005) return;
 
                     const timeDiff = (now - AppState.session.lastGpsTime) / 1000;
 
                     if(AppState.session.lastGpsTime && timeDiff > 0) {
                         const speedKmh = d / (timeDiff / 3600); 
                         
+                        // Negeren van GPS teleportaties
                         if (speedKmh > 35) return;
 
                         AppState.totalDist += d;
@@ -2050,7 +2074,7 @@
                 // Kaart container masker
                 ctx.save();
                 ctx.beginPath(); ctx.roundRect(mapX, mapY, mapW, mapH, 30); 
-                ctx.clip(); // Voorkom dat de map buiten de afgeronde hoeken wordt getekend
+                ctx.clip(); 
                 ctx.fillStyle = '#1e1e24'; ctx.fill();
 
                 if (AppState.currentRoute && AppState.currentRoute.length >= 2) {
@@ -2063,24 +2087,21 @@
                     const centerLat = (minLat + maxLat) / 2;
                     const centerLng = (minLng + maxLng) / 2;
 
-                    // Wiskunde voor Mercator projectie (Slippy Map)
+                    // Wiskunde voor Mercator projectie
                     const mercatorY = (lat) => {
                         const latRad = lat * Math.PI / 180;
                         return (1.0 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2.0;
                     };
                     const mercatorX = (lng) => (lng + 180) / 360;
 
-                    // Dynamisch bepalen hoeveel we moeten inzoomen zodat de route in de box past
                     let zoom = 18;
                     while(zoom > 10) {
                         const tilesX = (mercatorX(maxLng) - mercatorX(minLng)) * Math.pow(2, zoom);
                         const tilesY = (mercatorY(minLat) - mercatorY(maxLat)) * Math.pow(2, zoom);
-                        // Ruimte overhouden voor padding (- 100px)
                         if (tilesX * 256 < mapW - 100 && tilesY * 256 < mapH - 100) break;
                         zoom--;
                     }
 
-                    // Bereken welke specifieke OSM map tiles we moeten laden rondom de center coordinaat
                     const centerX = mercatorX(centerLng) * Math.pow(2, zoom);
                     const centerY = mercatorY(centerLat) * Math.pow(2, zoom);
                     
@@ -2099,25 +2120,25 @@
                         }
                     }
 
-                    // Render de OpenStreetMap tegels met een donker/zwart-wit filter
+                    // OpenStreetMap tegels laden met filter
                     ctx.filter = 'grayscale(100%) brightness(30%)'; 
                     await Promise.all(tiles.map(t => {
                         return new Promise((resolve) => {
                             const img = new Image();
-                            img.crossOrigin = "Anonymous"; // Cruciaal voor het exporteren van canvas
+                            img.crossOrigin = "Anonymous"; 
                             img.onload = () => {
                                 const pxX = canvasCenterX + (t.x - centerX) * 256;
                                 const pxY = canvasCenterY + (t.y - centerY) * 256;
                                 ctx.drawImage(img, pxX, pxY, 256, 256);
                                 resolve();
                             };
-                            img.onerror = () => resolve(); // Als tegel faalt, sla over
+                            img.onerror = () => resolve(); 
                             img.src = `https://a.tile.openstreetmap.org/${t.z}/${t.x}/${t.y}.png`;
                         });
                     }));
-                    ctx.filter = 'none'; // Verwijder filter voor de gekleurde GPS route
+                    ctx.filter = 'none'; 
 
-                    // Plot de daadwerkelijke GPS data bovenop de kaart tegels
+                    // Plot de GPS data 
                     const points = AppState.currentRoute.map(p => {
                         return { 
                             x: canvasCenterX + (mercatorX(p[1]) * Math.pow(2, zoom) - centerX) * 256, 
@@ -2140,7 +2161,6 @@
                         ctx.strokeStyle = segColor; ctx.stroke();
                     }
                     
-                    // Markeringen
                     const drawMarker = (p, color, label) => {
                         ctx.beginPath(); ctx.arc(p.x, p.y, 15, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
                         ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3; ctx.stroke();
@@ -2154,7 +2174,7 @@
                     ctx.fillText('GEEN ROUTE DATA BESCHIKBAAR', mapX + mapW/2, mapY + mapH/2);
                 }
 
-                ctx.restore(); // Stop map masker (zodat we weer over het hele scherm kunnen tekenen)
+                ctx.restore(); 
                 
                 // Fancy oplichtende rand over de map
                 ctx.beginPath(); ctx.roundRect(mapX, mapY, mapW, mapH, 30);
