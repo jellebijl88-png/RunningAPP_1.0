@@ -35,8 +35,9 @@
             --card-shadow: 0 8px 24px rgba(0,0,0,0.08);
         }
 
-        body { font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(--text-main); margin: 0; padding-bottom: 80px; -webkit-tap-highlight-color: transparent; transition: background 0.3s var(--easing); line-height: 1.5; }
-        .container { width: 100%; max-width: 480px; margin: 0 auto; padding: 20px; box-sizing: border-box; }
+        html, body { height: 100%; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(--text-main); margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; transition: background 0.3s var(--easing); line-height: 1.5; }
+        .container { width: 100%; max-width: 480px; margin: 0 auto; padding: 20px; box-sizing: border-box; padding-bottom: 100px; }
 
         /* Verhoogde padding, border radius token, geen borders (zwevend) */
         .card { background: var(--bg-panel); padding: 24px; border-radius: var(--radius-lg); border: none; margin-bottom: 16px; box-shadow: var(--card-shadow); position: relative; }
@@ -135,8 +136,6 @@
         .tab-view { display: none; animation: fadeIn 0.3s ease; }
         .tab-view.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
-        body { padding-bottom: 100px; }
 
         .toggle-container { display: flex; align-items: center; padding: 14px 0; cursor: pointer; }
         .toggle-switch { width: 52px; height: 30px; background: rgba(120,120,120,0.2); border-radius: 15px; position: relative; transition: all 0.3s var(--easing); }
@@ -757,7 +756,7 @@
 
         applyTheme: function(isLight) { 
             document.body.classList.toggle('light-mode', isLight); 
-            document.getElementById('theme-btn').innerText = isLight ? "☀️" : "🌙"; 
+            document.getElementById('theme-btn').innerText = isLight ? "🌙" : "☀️"; 
             localStorage.setItem('strive_theme', isLight ? 'light' : 'dark');
             document.querySelector('meta[name="theme-color"]').setAttribute('content', isLight ? '#f0f2f5' : '#0a0a0c');
         },
@@ -1623,7 +1622,9 @@
                 } catch (err) {}
             }
             
-            UIController.applyTheme(localStorage.getItem("strive_theme") === "light");
+            // Standaard light mode bij eerste keer, anders de opgeslagen voorkeur
+            const savedTheme = localStorage.getItem("strive_theme");
+            UIController.applyTheme(savedTheme === null ? true : savedTheme === "light");
             
             const customPlan = DataController.getCustomPlan();
             if (customPlan) AppState.allSchemas["custom"] = customPlan;
