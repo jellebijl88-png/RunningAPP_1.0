@@ -82,7 +82,7 @@
         #timer-display { position: sticky; top: 10px; z-index: 2000; display: none; text-align: center; }
         .timer-big { font-size: 65px; font-weight: 900; letter-spacing: -3px; margin: 8px 0; }
 
-        /* ✅ Aangepaste History & Data Timeline items */
+        /* Aangepaste History & Data Timeline items */
         .history-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: rgba(120,120,120,0.05); border-radius: var(--radius-md); margin-bottom: 12px; cursor: pointer; transition: 0.2s; }
         .delete-btn { color: var(--danger); background: none; border: none; font-size: 18px; cursor: pointer; padding: 12px; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
 
@@ -125,7 +125,7 @@
         .clear-history-btn { background: rgba(231, 76, 60, 0.1); border: none; font-size: 13px; text-transform: uppercase; color: var(--danger); font-weight: 700; letter-spacing: 1px; cursor: pointer; padding: 10px 16px; border-radius: var(--radius-sm); font-family: inherit; transition: 0.2s ease; }
         .clear-history-btn:hover { background: rgba(231, 76, 60, 0.15); transform: scale(1.02); }
 
-        /* ✅ Bottom Navigation (nu 4 items) */
+        /* Bottom Navigation */
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: var(--bg-panel); border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-around; align-items: center; z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
         .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; height: 100%; cursor: pointer; transition: all 0.2s var(--easing); opacity: 0.5; background: none; border: none; color: inherit; font-family: inherit; padding: 0; margin: 0; appearance: none; outline: none; }
         .nav-item.active { opacity: 1; color: var(--primary); }
@@ -479,8 +479,8 @@
             <span class="dash-label">📦 Versie</span>
             <div style="display:flex; align-items:center; justify-content:space-between">
                 <div>
-                    <div style="font-size:24px; font-weight:900; color:var(--primary)">v1.4.1</div>
-                    <div style="font-size:11px; color:var(--text-muted); margin-top:4px">Laatste update: Bugfix release</div>
+                    <div style="font-size:24px; font-weight:900; color:var(--primary)">v1.4.2</div>
+                    <div style="font-size:11px; color:var(--text-muted); margin-top:4px">Laatste update: Map Export</div>
                 </div>
                 <button class="clear-history-btn" style="color:var(--accent); background:rgba(52,152,219,0.1)" onclick="UIController.showChangelog()">📜 Wijzigingen</button>
             </div>
@@ -1130,7 +1130,7 @@
         lastKMSpeech: 0,
         lastPaceTime: 0,
         startTime: null,
-        activeSeconds: 0, // NEW: Blijft correct tellen ondanks pauzes
+        activeSeconds: 0, 
         isPaused: false,
         timerId: null,
         watchId: null,
@@ -1303,6 +1303,9 @@
 
     const AppController = {
         CHANGELOG: [
+            { version: "1.4.2", date: "12-05-2026", changes: [
+                "🖼️ UPDATE: Poster delen bevat nu daadwerkelijk de OpenStreetMap tegels eronder voor een echte kaart-look!"
+            ]},
             { version: "1.4.1", date: "12-05-2026", changes: [
                 "🐛 FIX: Probleem opgelost waarbij de GPS afstand en pace stats niet meer updaten na een eerste run (lastGpsTime niet gereset).",
                 "🐛 FIX: Timer loopt nu robuust en pace-berekening blijft kloppen als de sessie gepauzeerd wordt.",
@@ -1317,11 +1320,6 @@
             { version: "1.2.1", date: "12-05-2026", changes: [
                 "🐛 FIX: Timer-scherm blijft nu niet meer zichtbaar nadat een training gestopt of succesvol afgerond is.",
                 "✍️ TEKST UPDATE: 'Steady Tempo' e.d. in het Ervaren Loper plan consistent veranderd naar 'Hardlopen'."
-            ]},
-            { version: "1.2.0", date: "12-05-2026", changes: [
-                "✨ UX UPDATE: 'Genereer Plan' opent nu een elegante bottom sheet wizard.",
-                "📱 UI UPDATE: Resultaat verschijnt nu als een slide-in pagina met iOS stijl X-knop.",
-                "🎨 UI UPDATE: Modern en rustig design. Kaarten lijken te zweven (border eruit, betere schaduw)."
             ]}
         ],
 
@@ -1352,7 +1350,7 @@
 
             DataController.getAllRuns((runs) => {
                 UIController.renderDashboard(runs);
-                UIController.renderDataTab(runs); // Render de nieuwe Data tab
+                UIController.renderDataTab(runs);
             });
 
             UIController.renderPlan();
@@ -1574,7 +1572,6 @@
 
         startGPS: function() {
             AppState.watchId = navigator.geolocation.watchPosition(p => {
-                // Minder strikte GPS vereiste om bevriezingen te voorkomen (40 ipv 15)
                 if(AppState.isPaused || p.coords.accuracy > 40) return;
 
                 const lat = p.coords.latitude;
@@ -1587,7 +1584,6 @@
                     const last = AppState.currentRoute[AppState.currentRoute.length-1];
                     const d = this.calcDist(last[0], last[1], lat, lng);
                     
-                    // Alleen filteren bij zeer kleine micro-bewegingen
                     if (d < 0.002) return;
 
                     const timeDiff = (now - AppState.session.lastGpsTime) / 1000;
@@ -1595,7 +1591,6 @@
                     if(AppState.session.lastGpsTime && timeDiff > 0) {
                         const speedKmh = d / (timeDiff / 3600); 
                         
-                        // Negeren van GPS "teleportaties" en glitches
                         if (speedKmh > 35) return;
 
                         AppState.totalDist += d;
@@ -1607,7 +1602,6 @@
                             this.speak(`${currentKM} kilometer gerend! Goed bezig!`);
                         }
                         
-                        // Bereken de avgPace op basis van pure actieve looptijd (zonder pauzes)
                         const elapsedMinutes = AppState.activeSeconds / 60;
                         if(AppState.totalDist > 0.05 && elapsedMinutes > 0) {
                             const avgPace = elapsedMinutes / AppState.totalDist;
@@ -1621,7 +1615,6 @@
                             }
                         }
                         
-                        // Snelheid EMA (Exponential Moving Average) updaten mits de speler echt beweegt
                         if (speedKmh >= 1.0) {
                             const currentPace = 60 / speedKmh;
                             if(currentPace > 2 && currentPace < 20) {
@@ -1657,7 +1650,7 @@
                 if(AppState.isPaused) return; 
                 AppState.blockRem--; 
                 AppState.totalRem--;
-                AppState.activeSeconds++; // Altijd exact het aantal echte "loopseconden" tracken
+                AppState.activeSeconds++;
                 document.getElementById('timer-time').innerText = this.formatT(AppState.blockRem); 
                 document.getElementById('total-time-left').innerText = this.formatT(AppState.totalRem);
                 if(AppState.blockRem <= 0) { 
@@ -1697,7 +1690,6 @@
             document.getElementById('baseline-card').style.display = 'block';
             document.getElementById('app-list').style.display = 'block';
 
-            // Geheel op basis van echte loopseconden (ipv Date.now() - startTime) zodat pauzes geen vertekend beeld geven
             const totalSeconds = AppState.activeSeconds;
             const durationMin = totalSeconds / 60;
             const pace = AppState.totalDist > 0.1 ? (durationMin / AppState.totalDist).toFixed(2) : "0.00";
@@ -1774,6 +1766,7 @@
                 document.getElementById('res-time').innerText = this.formatT(run.duration || 0);
                 document.getElementById('res-cal').innerText = run.calories || 0;
                 
+                document.getElementById('res-btn').innerText = "OPSLAAN & SLUITEN";
                 document.getElementById('res-btn').onclick = () => UIController.closeResultScreen(false);
                 UIController.openResultScreen();
                 
@@ -2023,25 +2016,28 @@
 
         generateShareImage: async function() {
             try {
+                const resBtn = document.getElementById('res-btn');
+                const originalText = resBtn.innerText;
+                resBtn.innerText = "BEZIG MET GENEREREN...";
+                
                 const canvas = document.createElement('canvas');
                 canvas.width = 1080; canvas.height = 1080; 
                 const ctx = canvas.getContext('2d');
                 
+                // Achtergrond
                 const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
                 gradient.addColorStop(0, '#0a0a0c'); 
                 gradient.addColorStop(1, '#161619');
                 ctx.fillStyle = gradient; 
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 
+                // Raster achtergrond
                 ctx.strokeStyle = 'rgba(255,255,255,0.02)';
                 ctx.lineWidth = 1;
-                for(let x=0; x<canvas.width; x+=50) {
-                    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
-                }
-                for(let y=0; y<canvas.height; y+=50) {
-                    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
-                }
+                for(let x=0; x<canvas.width; x+=50) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); }
+                for(let y=0; y<canvas.height; y+=50) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke(); }
 
+                // Teksten bovenkant
                 ctx.font = '900 60px Inter, sans-serif'; ctx.fillStyle = '#27ae60'; ctx.textAlign = 'left';
                 ctx.fillText('JELLYLEGS', 60, 90);
                 
@@ -2051,12 +2047,11 @@
 
                 const mapY = 160, mapH = 600, mapW = 960, mapX = 60;
                 
-                ctx.fillStyle = '#1e1e24'; 
-                ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 40; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 20;
-                ctx.beginPath(); ctx.roundRect(mapX, mapY, mapW, mapH, 30); ctx.fill();
-                ctx.shadowBlur = 0; 
-                
-                ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 2; ctx.stroke();
+                // Kaart container masker
+                ctx.save();
+                ctx.beginPath(); ctx.roundRect(mapX, mapY, mapW, mapH, 30); 
+                ctx.clip(); // Voorkom dat de map buiten de afgeronde hoeken wordt getekend
+                ctx.fillStyle = '#1e1e24'; ctx.fill();
 
                 if (AppState.currentRoute && AppState.currentRoute.length >= 2) {
                     let minLat = Infinity, maxLat = -Infinity, minLng = Infinity, maxLng = -Infinity;
@@ -2065,22 +2060,68 @@
                         if (p[1] < minLng) minLng = p[1]; if (p[1] > maxLng) maxLng = p[1];
                     });
                     
-                    const latBuffer = (maxLat - minLat) * 0.15 || 0.001;
-                    const lngBuffer = (maxLng - minLng) * 0.15 || 0.001;
-                    minLat -= latBuffer; maxLat += latBuffer; minLng -= lngBuffer; maxLng += lngBuffer;
+                    const centerLat = (minLat + maxLat) / 2;
+                    const centerLng = (minLng + maxLng) / 2;
+
+                    // Wiskunde voor Mercator projectie (Slippy Map)
+                    const mercatorY = (lat) => {
+                        const latRad = lat * Math.PI / 180;
+                        return (1.0 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2.0;
+                    };
+                    const mercatorX = (lng) => (lng + 180) / 360;
+
+                    // Dynamisch bepalen hoeveel we moeten inzoomen zodat de route in de box past
+                    let zoom = 18;
+                    while(zoom > 10) {
+                        const tilesX = (mercatorX(maxLng) - mercatorX(minLng)) * Math.pow(2, zoom);
+                        const tilesY = (mercatorY(minLat) - mercatorY(maxLat)) * Math.pow(2, zoom);
+                        // Ruimte overhouden voor padding (- 100px)
+                        if (tilesX * 256 < mapW - 100 && tilesY * 256 < mapH - 100) break;
+                        zoom--;
+                    }
+
+                    // Bereken welke specifieke OSM map tiles we moeten laden rondom de center coordinaat
+                    const centerX = mercatorX(centerLng) * Math.pow(2, zoom);
+                    const centerY = mercatorY(centerLat) * Math.pow(2, zoom);
                     
-                    const lngRange = maxLng - minLng;
-                    const projectLat = (lat) => Math.log(Math.tan(Math.PI/4 + (Math.max(-85, Math.min(85, lat)) * Math.PI/180)/2));
-                    const projMinLat = projectLat(minLat); const projLatRange = projectLat(maxLat) - projMinLat;
-                    
-                    const drawPadding = 50;
-                    const drawW = mapW - (drawPadding * 2), drawH = mapH - (drawPadding * 2);
-                    const drawX = mapX + drawPadding, drawY = mapY + drawPadding;
-                    
+                    const startX = Math.floor(centerX - (mapW/2/256)) - 1;
+                    const endX = Math.floor(centerX + (mapW/2/256)) + 1;
+                    const startY = Math.floor(centerY - (mapH/2/256)) - 1;
+                    const endY = Math.floor(centerY + (mapH/2/256)) + 1;
+
+                    const canvasCenterX = mapX + mapW / 2;
+                    const canvasCenterY = mapY + mapH / 2;
+
+                    const tiles = [];
+                    for (let x = startX; x <= endX; x++) {
+                        for (let y = startY; y <= endY; y++) {
+                            tiles.push({x, y, z: zoom});
+                        }
+                    }
+
+                    // Render de OpenStreetMap tegels met een donker/zwart-wit filter
+                    ctx.filter = 'grayscale(100%) brightness(30%)'; 
+                    await Promise.all(tiles.map(t => {
+                        return new Promise((resolve) => {
+                            const img = new Image();
+                            img.crossOrigin = "Anonymous"; // Cruciaal voor het exporteren van canvas
+                            img.onload = () => {
+                                const pxX = canvasCenterX + (t.x - centerX) * 256;
+                                const pxY = canvasCenterY + (t.y - centerY) * 256;
+                                ctx.drawImage(img, pxX, pxY, 256, 256);
+                                resolve();
+                            };
+                            img.onerror = () => resolve(); // Als tegel faalt, sla over
+                            img.src = `https://a.tile.openstreetmap.org/${t.z}/${t.x}/${t.y}.png`;
+                        });
+                    }));
+                    ctx.filter = 'none'; // Verwijder filter voor de gekleurde GPS route
+
+                    // Plot de daadwerkelijke GPS data bovenop de kaart tegels
                     const points = AppState.currentRoute.map(p => {
                         return { 
-                            x: drawX + ((p[1] - minLng) / lngRange) * drawW, 
-                            y: drawY + drawH - ((projectLat(p[0]) - projMinLat) / projLatRange) * drawH 
+                            x: canvasCenterX + (mercatorX(p[1]) * Math.pow(2, zoom) - centerX) * 256, 
+                            y: canvasCenterY + (mercatorY(p[0]) * Math.pow(2, zoom) - centerY) * 256 
                         };
                     });
                     
@@ -2099,6 +2140,7 @@
                         ctx.strokeStyle = segColor; ctx.stroke();
                     }
                     
+                    // Markeringen
                     const drawMarker = (p, color, label) => {
                         ctx.beginPath(); ctx.arc(p.x, p.y, 15, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
                         ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3; ctx.stroke();
@@ -2112,13 +2154,15 @@
                     ctx.fillText('GEEN ROUTE DATA BESCHIKBAAR', mapX + mapW/2, mapY + mapH/2);
                 }
 
+                ctx.restore(); // Stop map masker (zodat we weer over het hele scherm kunnen tekenen)
+                
+                // Fancy oplichtende rand over de map
+                ctx.beginPath(); ctx.roundRect(mapX, mapY, mapW, mapH, 30);
+                ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 2; ctx.stroke();
+
+                // Stats onderkant
                 const statsY = 820;
                 const colW = canvas.width / 4;
-                
-                ctx.shadowBlur = 0;
-                ctx.shadowColor = 'transparent';
-                ctx.shadowOffsetX = 0;
-                ctx.shadowOffsetY = 0;
 
                 const drawStat = (x, icon, val, unit, color) => {
                     ctx.textAlign = 'center';
@@ -2145,13 +2189,17 @@
                 ctx.font = '600 22px Inter, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.textAlign = 'center';
                 ctx.fillText('GEGENEREERD MET JELLYLEGS.APP', canvas.width/2, canvas.height - 40);
                 
+                // Exporteer bestand
                 const link = document.createElement('a');
                 link.download = `jellylegs-run-${new Date().toISOString().split('T')[0]}.png`;
                 link.href = canvas.toDataURL('image/png'); link.click();
                 
-                this.vibrate([100, 50, 100]); this.speak("Share afbeelding gegenereerd!");
+                resBtn.innerText = originalText;
+                this.vibrate([100, 50, 100]); this.speak("Poster succesvol gegenereerd!");
             } catch (err) {
-                console.warn("Share afbeelding fout:", err); alert("Kon geen afbeelding genereren");
+                console.warn("Share afbeelding fout:", err); 
+                alert("Kon geen afbeelding genereren. Probeer opnieuw.");
+                document.getElementById('res-btn').innerText = "OPSLAAN & SLUITEN";
             }
         },
 
