@@ -87,7 +87,6 @@
         #map { width: 100%; min-height: 300px; background: #ffffff; flex-shrink: 0; }
         .chart-container { height: 200px; padding: 10px; margin-bottom: 20px; }
 
-        /* Clear history button styled as inline text */
         .clear-history-btn {
             background: rgba(231, 76, 60, 0.1);
             border: none;
@@ -108,7 +107,6 @@
             transform: scale(1.05);
         }
 
-        /* ✅ Bottom Navigation */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -180,7 +178,6 @@
             padding-bottom: 100px;
         }
 
-        /* Toggle Switch Styling */
         .toggle-container {
             display: flex;
             align-items: center;
@@ -218,7 +215,6 @@
             left: 25px;
         }
 
-        /* Live training map */
         #live-training-map {
             width: 100%;
             height: 220px;
@@ -237,7 +233,7 @@
 </head>
 <body>
 
-        <div id="preview-overlay">
+<div id="preview-overlay">
     <div class="card" style="width:100%">
         <h2 id="pre-title" style="margin:0">Training</h2>
         <div class="preview-chart" id="pre-chart"></div>
@@ -251,8 +247,8 @@
             <span id="pre-time">-- min</span>
             <span id="pre-type" style="color:var(--primary)">Schema</span>
         </div>
-        <button class="btn btn-primary" onclick="realStart()">START TRAINING</button>
-        <button class="btn" style="background:transparent" onclick="document.getElementById('preview-overlay').style.display='none'">TERUG</button>
+        <button class="btn btn-primary" onclick="AppController.realStart()">START TRAINING</button>
+        <button class="btn" style="background:transparent" onclick="UIController.hidePreview()">TERUG</button>
     </div>
 </div>
 
@@ -306,19 +302,18 @@
 
         <div class="chart-container card"><canvas id="paceChart"></canvas></div>
         <button id="res-btn" class="btn btn-primary" onclick="location.reload()">OPSLAAN & SLUITEN</button>
-        <button class="btn" style="margin-top: 10px; background: rgba(52, 152, 219, 0.2); color: var(--accent)" onclick="shareResult()">📤 Deel resultaat</button>
-        <button class="btn" style="margin-top: 10px; background: rgba(46, 204, 113, 0.2); color: var(--primary)" onclick="generateShareImage()">🖼️ Genereer Share Afbeelding</button>
-        <button class="btn" style="margin-top: 10px" onclick="exportAsGPX(currentRoute)">📍 Exporteer als .GPX (Strava/Garmin)</button>
+        <button class="btn" style="margin-top: 10px; background: rgba(52, 152, 219, 0.2); color: var(--accent)" onclick="AppController.shareResult()">📤 Deel resultaat</button>
+        <button class="btn" style="margin-top: 10px; background: rgba(46, 204, 113, 0.2); color: var(--primary)" onclick="AppController.generateShareImage()">🖼️ Genereer Share Afbeelding</button>
+        <button class="btn" style="margin-top: 10px" onclick="AppController.exportAsGPX()">📍 Exporteer als .GPX (Strava/Garmin)</button>
     </div>
 </div>
 
 <div class="container" id="main-app">
     <header style="text-align:center; margin-bottom:20px; position:relative">
         <h1 style="margin:0; letter-spacing:-1px">JELLYLEGS</h1>
-        <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">🌙</button>
+        <button class="theme-toggle" onclick="UIController.toggleTheme()" id="theme-btn">🌙</button>
     </header>
 
-    <!-- ✅ TAB 1: HOME -->
     <div id="tab-home" class="tab-view active">
         <div class="dashboard">
             <div class="card">
@@ -349,17 +344,16 @@
         <div class="card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
                 <span class="dash-label" style="margin-bottom:0">Recente Activiteit</span>
-                <button class="clear-history-btn" onclick="clearAllHistory()">Wis alles</button>
+                <button class="clear-history-btn" onclick="DataController.clearAllHistory()">Wis alles</button>
             </div>
             <div id="history-list"></div>
         </div>
     </div>
 
-    <!-- ✅ TAB 2: TRAINING -->
     <div id="tab-training" class="tab-view">
         <div class="card">
             <span class="dash-label">Kies je Plan</span>
-            <select id="plan-select" onchange="saveSelectedPlan()"></select>
+            <select id="plan-select" onchange="AppController.saveSelectedPlan()"></select>
         </div>
 
         <div id="app-list"></div>
@@ -367,7 +361,7 @@
         <div class="card" id="baseline-card">
             <span class="dash-label">📊 Baseline Test & Custom Plan</span>
             
-            <button class="btn btn-primary" onclick="startBaselineTest()" style="margin-bottom:15px">🏃 START 30 MINUTEN BASELINE TEST</button>
+            <button class="btn btn-primary" onclick="AppController.startBaselineTest()" style="margin-bottom:15px">🏃 START 30 MINUTEN BASELINE TEST</button>
             
             <div id="baseline-setup" style="margin-top:15px">
                 <span class="dash-label">Training per week</span>
@@ -390,24 +384,23 @@
                 <input type="number" id="user-base-volume" min="1" max="100" value="5" style="width: 100%; padding: 15px; border-radius: 15px; border: var(--border); background: rgba(120,120,120,0.1); color: var(--text-main); font-weight: 700; font-family: inherit; margin-top: 5px; text-align: center; box-sizing: border-box;">
                 <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">Gemiddeld aantal kilometer dat je de afgelopen 4 weken per week liep. Dit wordt gebruikt voor veilige opbouw.</div>
                 
-                <button class="btn" style="margin-top:15px" onclick="generateCustomPlan()">📅 Genereer Eigen Plan</button>
+                <button class="btn" style="margin-top:15px" onclick="AppController.generateCustomPlan()">📅 Genereer Eigen Plan</button>
             </div>
         </div>
     </div>
 
-    <!-- ✅ TAB 3: PROFIEL -->
     <div id="tab-profile" class="tab-view">
         <div class="card">
             <span class="dash-label">⚙️ Gebruikers Profiel</span>
             <div style="display: grid; grid-template-columns: 1fr 70px; gap: 10px; align-items: center;">
                 <span style="font-size: 13px; color: var(--text-muted)">Lichaamsgewicht</span>
-                <input type="number" id="user-weight" min="30" max="200" value="75" style="background: rgba(120,120,120,0.1); border: var(--border); color: var(--text-main); border-radius: 8px; padding: 6px; text-align: center; font-weight: 700;" onchange="saveUserProfile()">
+                <input type="number" id="user-weight" min="30" max="200" value="75" style="background: rgba(120,120,120,0.1); border: var(--border); color: var(--text-main); border-radius: 8px; padding: 6px; text-align: center; font-weight: 700;" onchange="DataController.saveUserProfile()">
                 <span style="font-size: 12px; color: var(--text-muted)">Lengte</span>
-                <input type="number" id="user-height" min="100" max="220" value="175" style="background: rgba(120,120,120,0.1); border: var(--border); color: var(--text-main); border-radius: 8px; padding: 6px; text-align: center; font-weight: 700;" onchange="saveUserProfile()">
+                <input type="number" id="user-height" min="100" max="220" value="175" style="background: rgba(120,120,120,0.1); border: var(--border); color: var(--text-main); border-radius: 8px; padding: 6px; text-align: center; font-weight: 700;" onchange="DataController.saveUserProfile()">
                 <span style="font-size: 12px; color: var(--text-muted)">Leeftijd</span>
-                <input type="number" id="user-age" min="12" max="99" value="30" style="background: rgba(120,120,120,0.1); border: var(--border); color: var(--text-main); border-radius: 8px; padding: 6px; text-align: center; font-weight: 700;" onchange="saveUserProfile()">
+                <input type="number" id="user-age" min="12" max="99" value="30" style="background: rgba(120,120,120,0.1); border: var(--border); color: var(--text-main); border-radius: 8px; padding: 6px; text-align: center; font-weight: 700;" onchange="DataController.saveUserProfile()">
                 <span style="font-size: 12px; color: var(--text-muted)">Geslacht</span>
-                <select id="user-gender" style="background: rgba(120,120,120,0.1); border: var(--border); color: var(--text-main); border-radius: 8px; padding: 6px; font-weight: 700;" onchange="saveUserProfile()">
+                <select id="user-gender" style="background: rgba(120,120,120,0.1); border: var(--border); color: var(--text-main); border-radius: 8px; padding: 6px; font-weight: 700;" onchange="DataController.saveUserProfile()">
                     <option value="male">Man</option>
                     <option value="female">Vrouw</option>
                 </select>
@@ -423,16 +416,16 @@
             <span class="dash-label">App Instellingen</span>
             
             <span class="dash-label" style="margin-top:15px">Warming-up tijd</span>
-            <input type="range" id="warmup-time" min="1" max="15" value="5" oninput="updateWarmupCoolDown()"><div style="text-align:center; font-weight:700; font-size:14px; margin-top:5px"><span id="warmup-val">5</span> minuten</div>
+            <input type="range" id="warmup-time" min="1" max="15" value="5" oninput="DataController.updateWarmupCoolDown()"><div style="text-align:center; font-weight:700; font-size:14px; margin-top:5px"><span id="warmup-val">5</span> minuten</div>
             
             <span class="dash-label" style="margin-top:15px">Cool-down tijd</span>
-            <input type="range" id="cooldown-time" min="1" max="15" value="5" oninput="updateWarmupCoolDown()"><div style="text-align:center; font-weight:700; font-size:14px; margin-top:5px"><span id="cooldown-val">5</span> minuten</div>
+            <input type="range" id="cooldown-time" min="1" max="15" value="5" oninput="DataController.updateWarmupCoolDown()"><div style="text-align:center; font-weight:700; font-size:14px; margin-top:5px"><span id="cooldown-val">5</span> minuten</div>
             
             <span class="dash-label" style="margin-top:15px">Coach Stem</span>
             <select id="voice-select"></select>
             
             <span class="dash-label" style="margin-top:15px">📍 Live Kaart Tijdens Training</span>
-            <div class="toggle-container" onclick="toggleLiveMap()">
+            <div class="toggle-container" onclick="UIController.toggleLiveMap()">
                 <div class="toggle-switch" id="live-map-toggle"></div>
                 <span style="margin-left: 10px;">Toon live route op kaart tijdens hardlopen</span>
             </div>
@@ -445,14 +438,14 @@
                     <div style="font-size:22px; font-weight:900; color:var(--primary)">v1.1.0</div>
                     <div style="font-size:11px; color:var(--text-muted); margin-top:2px">Laatste update: 08-05-2026</div>
                 </div>
-                <button class="clear-history-btn" style="color:var(--accent); background:rgba(52,152,219,0.1)" onclick="showChangelog()">📜 Wijzigingen</button>
+                <button class="clear-history-btn" style="color:var(--accent); background:rgba(52,152,219,0.1)" onclick="UIController.showChangelog()">📜 Wijzigingen</button>
             </div>
         </div>
 
         <div class="card">
             <span class="dash-label">⚡ Geavanceerd</span>
-            <button class="btn btn-primary" style="margin-top:10px;" onclick="connectHeartRateMonitor()">❤️ Koppel Hartslagmeter</button>
-            <button class="btn" style="margin-top:10px; color: var(--danger); background: rgba(231,76,60,0.1)" onclick="clearAllHistory()">🗑️ Wis Alle Gegevens</button>
+            <button class="btn btn-primary" style="margin-top:10px;" onclick="AppController.connectHeartRateMonitor()">❤️ Koppel Hartslagmeter</button>
+            <button class="btn" style="margin-top:10px; color: var(--danger); background: rgba(231,76,60,0.1)" onclick="DataController.clearAllHistory()">🗑️ Wis Alle Gegevens</button>
         </div>
     </div>
 
@@ -475,24 +468,23 @@
         <div id="timer-status" style="margin-top:10px; font-size:12px; font-weight:700; color:var(--text-muted)">MAAK JE KLAAR...</div>
         <div id="timer-time" class="timer-big">00:05</div>
         <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px">
-            <button id="btn-pause" class="btn btn-pause" onclick="togglePause()">PAUZE</button>
-            <button id="btn-skip" class="btn" style="background:rgba(52, 152, 219, 0.2); color:var(--accent)" onclick="skipBlock()">SKIP</button>
-            <button class="btn" style="background:rgba(231, 76, 60, 0.2); color:var(--danger)" onclick="confirmStop()">STOP</button>
+            <button id="btn-pause" class="btn btn-pause" onclick="AppController.togglePause()">PAUZE</button>
+            <button id="btn-skip" class="btn" style="background:rgba(52, 152, 219, 0.2); color:var(--accent)" onclick="AppController.skipBlock()">SKIP</button>
+            <button class="btn" style="background:rgba(231, 76, 60, 0.2); color:var(--danger)" onclick="AppController.confirmStop()">STOP</button>
         </div>
     </div>
 </div>
 
-<!-- ✅ Bottom Navigation -->
 <nav class="bottom-nav">
-    <button class="nav-item active" onclick="openTab('home', this)">
+    <button class="nav-item active" onclick="UIController.openTab('home', this)">
         <div class="nav-icon">🏠</div>
         <div class="nav-label">Home</div>
     </button>
-    <button class="nav-item" onclick="openTab('training', this)">
+    <button class="nav-item" onclick="UIController.openTab('training', this)">
         <div class="nav-icon">📅</div>
         <div class="nav-label">Training</div>
     </button>
-    <button class="nav-item" onclick="openTab('profile', this)">
+    <button class="nav-item" onclick="UIController.openTab('profile', this)">
         <div class="nav-icon">👤</div>
         <div class="nav-label">Profiel</div>
     </button>
@@ -500,690 +492,180 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    // --- DATABASE ---
-    const DB_NAME = "JellyLegsDB";
-    const DB_VERSION = 1;
-    let db;
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-    request.onupgradeneeded = (e) => {
-        db = e.target.result;
-        if (!db.objectStoreNames.contains("runs")) db.createObjectStore("runs", { keyPath: "id", autoIncrement: true });
-    };
-    request.onsuccess = (e) => { db = e.target.result; migrateData(); init(); };
-    request.onerror = (e) => { console.error("IndexedDB fout:", e.target.error); };
-
-    function migrateData() {
-        try {
-            const oldData = localStorage.getItem('strive_ult_h');
-            if (oldData) {
-                const runs = JSON.parse(oldData);
-                if (Array.isArray(runs)) {
-                    const tx = db.transaction("runs", "readwrite");
-                    runs.forEach(run => tx.objectStore("runs").add(run));
-                    tx.oncomplete = () => localStorage.removeItem('strive_ult_h');
-                }
-            }
-        } catch (e) {
-            console.warn("Migratie mislukt, oude data genegeerd:", e);
-            localStorage.removeItem('strive_ult_h');
-        }
-    }
-
-    let activePlanKey, activeWeekIdx, activeType;
-
-    function toggleManualComplete(plan, week, type) {
-        const key = `done_${plan}_${week}_${type}`;
-        const isDone = localStorage.getItem(key) === "true";
-        localStorage.setItem(key, !isDone);
-        renderPlan();
-    }
-
-    const allSchemas = {
-        conditie: { name: "Basis Conditie (0-3km)", weeks: [
-            { w: 1, t1: { label: "W1: Eerste Stap", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:60, s:"Hardlopen", m:"run"}, {t:90, s:"Wandelen", m:"walk"}, {t:60, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W1: Ritme Vinden", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:120, s:"Hardlopen", m:"run"}, {t:60, s:"Wandelen", m:"walk"}, {t:120, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-            { w: 2, t1: { label: "W2: De 3-Minuten", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:180, s:"Hardlopen", m:"run"}, {t:60, s:"Wandelen", m:"walk"}, {t:180, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W2: Uithouding", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:300, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"}, {t:300, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-            { w: 3, t1: { label: "W3: Verlengen", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:420, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"}, {t:420, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W3: Stabiel Tempo", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:600, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"}, {t:300, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-            { w: 4, t1: { label: "W4: De Helft", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:720, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"}, {t:720, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W4: Constante Run", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:900, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-            { w: 5, t1: { label: "W5: Kracht Opbouw", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:480, s:"Hardlopen", m:"run"}, {t:60, s:"Wandelen", m:"walk"}, {t:480, s:"Hardlopen", m:"run"}, {t:60, s:"Wandelen", m:"walk"}, {t:480, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W5: De 20 Minuten", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:1200, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-            { w: 6, t1: { label: "W6: Lange Intervallen", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:600, s:"Hardlopen", m:"run"}, {t:60, s:"Wandelen", m:"walk"}, {t:600, s:"Hardlopen", m:"run"}, {t:60, s:"Wandelen", m:"walk"}, {t:600, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W6: Focus Run", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:1500, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-            { w: 7, t1: { label: "W7: Laatste Loodjes", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:900, s:"Hardlopen", m:"run"}, {t:60, s:"Wandelen", m:"walk"}, {t:900, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W7: Grens Verleggen", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:1800, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-            { w: 8, t1: { label: "W8: Activatie", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:600, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"}, {t:600, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "🏁 DE 3KM FINISH", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:2100, s:"3KM POGING", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } }
-        ]},
-        gevorderd5k: { name: "Beginner 5KM Plan", weeks: [
-            { w: 1, t1: { label: "W1: Start-Stop", b: [
-                {t:300, s:"Warming-up", m:"warmup"},
-                {t:180, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
-                {t:180, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
-                {t:180, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
-                {t:180, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
-                {t:180, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
-                {t:180, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
-                {t:180, s:"Hardlopen", m:"run"},
-                {t:300, s:"Cool-down", m:"warmup"}
-            ]}, t2: { label: "W1: Opbouw", b: [
-                {t:300, s:"Warming-up", m:"warmup"},
-                {t:180, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
-                {t:180, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
-                {t:180, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
-                {t:180, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
-                {t:180, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
-                {t:180, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
-                {t:180, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
-                {t:180, s:"Hardlopen", m:"run"},
-                {t:300, s:"Cool-down", m:"warmup"}
-            ]} },
-            { w: 2, t1: { label: "W2: 4/2 Interval", b: [
-                {t:300, s:"Warming-up", m:"warmup"},
-                {t:240, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
-                {t:240, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
-                {t:240, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
-                {t:240, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
-                {t:240, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
-                {t:240, s:"Hardlopen", m:"run"},
-                {t:300, s:"Cool-down", m:"warmup"}
-            ]}, t2: { label: "W2: Opbouw", b: [
-                {t:300, s:"Warming-up", m:"warmup"},
-                {t:240, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
-                {t:240, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
-                {t:240, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
-                {t:240, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
-                {t:240, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
-                {t:240, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
-                {t:240, s:"Hardlopen", m:"run"},
-                {t:300, s:"Cool-down", m:"warmup"}
-            ]} },
-            { w: 3, t1: { label: "W3: 5/3 Interval", b: [
-                {t:300, s:"Warming-up", m:"warmup"},
-                {t:300, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
-                {t:300, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
-                {t:300, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
-                {t:300, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
-                {t:300, s:"Hardlopen", m:"run"},
-                {t:300, s:"Cool-down", m:"warmup"}
-            ]}, t2: { label: "W3: Opbouw", b: [
-                {t:300, s:"Warming-up", m:"warmup"},
-                {t:300, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
-                {t:300, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
-                {t:300, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
-                {t:300, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
-                {t:300, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
-                {t:300, s:"Hardlopen", m:"run"},
-                {t:300, s:"Cool-down", m:"warmup"}
-            ]} },
-            { w: 4, t1: { label: "W4: 7/3 Interval", b: [
-                {t:300, s:"Warming-up", m:"warmup"},
-                {t:420, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
-                {t:420, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
-                {t:420, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
-                {t:420, s:"Hardlopen", m:"run"},
-                {t:300, s:"Cool-down", m:"warmup"}
-            ]}, t2: { label: "W4: Opbouw", b: [
-                {t:300, s:"Warming-up", m:"warmup"},
-                {t:420, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
-                {t:420, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
-                {t:420, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
-                {t:420, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
-                {t:420, s:"Hardlopen", m:"run"},
-                {t:300, s:"Cool-down", m:"warmup"}
-            ]} },
-            { w: 5, t1: { label: "W5: 10/3 Interval", b: [
-                {t:300, s:"Warming-up", m:"warmup"},
-                {t:600, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
-                {t:600, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
-                {t:600, s:"Hardlopen", m:"run"},
-                {t:300, s:"Cool-down", m:"warmup"}
-            ]}, t2: { label: "W5: Opbouw", b: [
-                {t:300, s:"Warming-up", m:"warmup"},
-                {t:600, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
-                {t:600, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
-                {t:600, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
-                {t:600, s:"Hardlopen", m:"run"},
-                {t:300, s:"Cool-down", m:"warmup"}
-            ]} },
-            { w: 6, t1: { label: "W6: 15/2 Interval", b: [
-                {t:300, s:"Warming-up", m:"warmup"},
-                {t:900, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
-                {t:900, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
-                {t:900, s:"Hardlopen", m:"run"},
-                {t:300, s:"Cool-down", m:"warmup"}
-            ]}, t2: { label: "W6: Opbouw", b: [
-                {t:300, s:"Warming-up", m:"warmup"},
-                {t:900, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
-                {t:900, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
-                {t:900, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
-                {t:900, s:"Hardlopen", m:"run"},
-                {t:300, s:"Cool-down", m:"warmup"}
-            ]} },
-            { w: 7, t1: { label: "W7: 25 Minuten Continuous", b: [
-                {t:300, s:"Warming-up", m:"warmup"},
-                {t:1500, s:"Hardlopen", m:"run"},
-                {t:300, s:"Cool-down", m:"warmup"}
-            ]}, t2: { label: "W7: 30 Minuten Continuous", b: [
-                {t:300, s:"Warming-up", m:"warmup"},
-                {t:1800, s:"Hardlopen", m:"run"},
-                {t:300, s:"Cool-down", m:"warmup"}
-            ]} },
-            { w: 8, t1: { label: "W8: Tapering", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:600, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"}, {t:600, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "🏁 DE 5KM FINISH", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:2100, s:"5KM POGING", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } }
-        ]},
-        gevorderd5k_ervaren: { name: "Ervaren Loper 5KM Plan (Snelheid)", weeks: [
-            { w: 1, t1: { label: "W1: Tempo Blokken", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:300, s:"Steady Tempo", m:"run"}, {t:120, s:"Actief Herstel", m:"run"}, {t:300, s:"Steady Tempo", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W1: Lange Duurloop", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:2400, s:"Rustig Tempo", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-            { w: 2, t1: { label: "W2: 1km Intervallen", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:300, s:"Vlot Tempo", m:"run"}, {t:120, s:"Joggen", m:"run"}, {t:300, s:"Vlot Tempo", m:"run"}, {t:120, s:"Joggen", m:"run"}, {t:300, s:"Vlot Tempo", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W2: Steady Run", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:2700, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-            { w: 3, t1: { label: "W3: Drempel Training", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:1200, s:"Drempel Tempo", m:"run"}, {t:180, s:"Joggen", m:"run"}, {t:600, s:"Drempel Tempo", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W3: Lange Run", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:3000, s:"Rustig", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-            { w: 4, t1: { label: "W4: 800m Herhalingen", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:240, s:"Snel Tempo", m:"run"}, {t:120, s:"Joggen", m:"run"}, {t:240, s:"Snel Tempo", m:"run"}, {t:120, s:"Joggen", m:"run"}, {t:240, s:"Snel Tempo", m:"run"}, {t:240, s:"Snel Tempo", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W4: Steady 35m", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:2100, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-            { w: 5, t1: { label: "W5: 1km Tempo", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:300, s:"Vlot", m:"run"}, {t:90, s:"Joggen", m:"run"}, {t:300, s:"Vlot", m:"run"}, {t:90, s:"Joggen", m:"run"}, {t:300, s:"Vlot", m:"run"}, {t:90, s:"Joggen", m:"run"}, {t:300, s:"Vlot", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W5: Lange Run", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:3300, s:"Rustig", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-            { w: 6, t1: { label: "W6: Drempel Blokken", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:900, s:"Drempel Tempo", m:"run"}, {t:120, s:"Joggen", m:"run"}, {t:600, s:"Drempel Tempo", m:"run"}, {t:120, s:"Joggen", m:"run"}, {t:600, s:"Drempel Tempo", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W6: Steady 40m", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:2400, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-            { w: 7, t1: { label: "W7: Tapering", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:600, s:"Steady", m:"run"}, {t:180, s:"Joggen", m:"run"}, {t:600, s:"Steady", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W7: Activatie", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:1200, s:"Rustig", m:"run"}, {t:60, s:"Sprint", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-            { w: 8, t1: { label: "W8: Race Week", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:300, s:"Steady", m:"run"}, {t:60, s:"Sprint", m:"run"}, {t:300, s:"Steady", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "🏁 5KM RACE POGING", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:1800, s:"5KM MAX TEMPO", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } }
-        ]},
-        intervallen10k: { name: "10KM Interval Focus", weeks: [
-            { w: 1, t1: { label: "W1: Basis Interval", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:600, s:"Run", m:"run"}, {t:120, s:"Wandelen", m:"walk"}, {t:600, s:"Run", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W1: Duurloop 40m", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:2400, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-            { w: 2, t1: { label: "W2: Kracht", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:900, s:"Vlot", m:"run"}, {t:180, s:"Wandelen", m:"walk"}, {t:900, s:"Vlot", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W2: Duurloop 45m", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:2700, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-            { w: 3, t1: { label: "W3: Snelheid 400s", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:120, s:"Snel", m:"run"}, {t:60, s:"Wandelen", m:"walk"}, {t:120, s:"Snel", m:"run"}, {t:60, s:"Wandelen", m:"walk"}, {t:120, s:"Snel", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W3: Duurloop 50m", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:3000, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-            { w: 4, t1: { label: "W4: Drempel Run", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:1500, s:"Drempel", m:"run"}, {t:120, s:"Wandelen", m:"walk"}, {t:600, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W4: Herstel 30m", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:1800, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-            { w: 5, t1: { label: "W5: Lange Intervallen", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:1200, s:"Tempo", m:"run"}, {t:180, s:"Wandelen", m:"walk"}, {t:1200, s:"Tempo", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W5: Duurloop 55m", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:3300, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-            { w: 6, t1: { label: "W6: 1km Herhalingen", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:300, s:"Snel", m:"run"}, {t:120, s:"Wandelen", m:"walk"}, {t:300, s:"Snel", m:"run"}, {t:120, s:"Wandelen", m:"walk"}, {t:300, s:"Snel", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W6: Duurloop 60m", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:3600, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-            { w: 7, t1: { label: "W7: Tempo Wissel", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:600, s:"Vlot", m:"run"}, {t:600, s:"Snel", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W7: Pre-10K Run", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:2400, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-            { w: 8, t1: { label: "W8: Activatie", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:900, s:"Joggen", m:"run"}, {t:60, s:"Sprint", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "🏁 DE 10KM TEST", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:3600, s:"10KM POGING", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } }
-        ]},
-        halveMarathon: { name: "Halve Marathon (21.1km)", weeks: [
-            { w: 1, t1: { label: "W1: Basis Opbouw", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:1200, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"}, {t:1200, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W1: Lange Duurloop", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:3600, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-            { w: 2, t1: { label: "W2: Tempo Intervallen", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:900, s:"Tempo", m:"run"}, {t:120, s:"Wandelen", m:"walk"}, {t:900, s:"Tempo", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W2: 8km Run", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:4200, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-            { w: 3, t1: { label: "W3: Lange Intervallen", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:1200, s:"Vlot", m:"run"}, {t:120, s:"Wandelen", m:"walk"}, {t:1200, s:"Vlot", m:"run"}, {t:120, s:"Wandelen", m:"walk"}, {t:1200, s:"Vlot", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W3: 10km Run", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:4800, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-            { w: 4, t1: { label: "W4: Drempel Training", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:1800, s:"Drempel", m:"run"}, {t:120, s:"Wandelen", m:"walk"}, {t:1200, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W4: 12km Run", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:5400, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-            { w: 5, t1: { label: "W5: Snelheid Werk", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:300, s:"Snel", m:"run"}, {t:60, s:"Wandelen", m:"walk"}, {t:300, s:"Snel", m:"run"}, {t:60, s:"Wandelen", m:"walk"}, {t:300, s:"Snel", m:"run"}, {t:60, s:"Wandelen", m:"walk"}, {t:300, s:"Snel", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W5: 14km Run", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:6300, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-            { w: 6, t1: { label: "W6: Tempo Blokken", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:1200, s:"Tempo", m:"run"}, {t:90, s:"Wandelen", m:"walk"}, {t:1200, s:"Tempo", m:"run"}, {t:90, s:"Wandelen", m:"walk"}, {t:1200, s:"Tempo", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W6: 16km Run", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:7200, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-            { w: 7, t1: { label: "W7: Tapering", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:900, s:"Licht", m:"run"}, {t:120, s:"Wandelen", m:"walk"}, {t:600, s:"Licht", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W7: 12km Test", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:5400, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
-            { w: 8, t1: { label: "W8: Activatie", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:600, s:"Joggen", m:"run"}, {t:30, s:"Sprint", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "🏁 HALVE MARATHON", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:8400, s:"21.1KM POGING", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } }
-        ]}
-    };
-
     // ==============================================
-    // STATE MACHINE - Single Source Of Truth
+    // 1. DATA MODEL (DataController)
     // ==============================================
-    const AppState = {
-        IDLE:      'IDLE',
-        COUNTDOWN: 'COUNTDOWN',
-        RUNNING:   'RUNNING',
-        PAUSED:    'PAUSED',
-        FINISHED:  'FINISHED'
-    };
+    const DataController = {
+        DB_NAME: "JellyLegsDB",
+        DB_VERSION: 1,
+        db: null,
 
-    let currentState = AppState.IDLE;
-    let timerId, watchId, voices = [], mapInstance = null, wakeLock = null;
-
-    // ✅ FIX: Missing global variables (these were referenced but never declared)
-    let sessionBlocks = [], currentBIdx = 0, blockRem = 0, totalRem = 0;
-    let totalDist = 0, currentRoute = [], paceData = [], lastKMSpeech = 0, lastPaceTime = 0, startTime = null, isPaused = false;
-
-    // All session data in single state object
-    const session = {
-        blocks: [],
-        currentBlockIndex: 0,
-        blockRemaining: 0,
-        totalRemaining: 0,
-        calories: 0,
-        currentPace: 0,
-        lastGpsTime: 0,
-        lastGpsPosition: null,
-        smoothedDistance: 0,
-        speedEMA: 0
-    };
-
-    // Only allowed state transitions
-    function canTransitionTo(newState) {
-        const allowed = {
-            [AppState.IDLE]:      [AppState.COUNTDOWN],
-            [AppState.COUNTDOWN]: [AppState.RUNNING, AppState.IDLE],
-            [AppState.RUNNING]:   [AppState.PAUSED, AppState.FINISHED],
-            [AppState.PAUSED]:    [AppState.RUNNING, AppState.FINISHED],
-            [AppState.FINISHED]:  [AppState.IDLE]
-        };
-        return allowed[currentState].includes(newState);
-    }
-
-    function setState(newState) {
-        if (!canTransitionTo(newState)) {
-            console.warn(`⛔ Invalid state transition: ${currentState} → ${newState}, ignored`);
-            return false;
-        }
-        console.log(`✅ State changed: ${currentState} → ${newState}`);
-        currentState = newState;
-        return true;
-    }
-    const synth = window.speechSynthesis;
-    
-    // ✅ Officiële Harris-Benedict formule voor BMR + MET waarde voor hardlopen
-    function calculateCalories(distanceKm, durationMin) {
-        const weightKg = parseInt(localStorage.getItem('user_weight')) || 75;
-        const heightCm = parseInt(localStorage.getItem('user_height')) || 175;
-        const age = parseInt(localStorage.getItem('user_age')) || 30;
-        const gender = localStorage.getItem('user_gender') || 'male';
-        const metValue = 9.8; // MET value voor hardlopen 9km/h
-        
-        // Basal Metabolic Rate berekening
-        let bmr;
-        if(gender === 'male') {
-            bmr = 88.362 + (13.397 * weightKg) + (4.799 * heightCm) - (5.677 * age);
-        } else {
-            bmr = 447.593 + (9.247 * weightKg) + (3.098 * heightCm) - (4.330 * age);
-        }
-        
-        const activityMultiplier = 1.375; // Licht actief
-        const dailyCalories = bmr * activityMultiplier;
-        const perMinuteCalories = dailyCalories / 1440;
-        
-        return Math.round(perMinuteCalories * durationMin + (metValue * weightKg * (durationMin / 60)));
-    }
-    
-    // Vibrate device for feedback
-    function vibrate(pattern = [200, 100, 200]) {
-        if ('vibrate' in navigator) {
-            navigator.vibrate(pattern);
-        }
-    }
-    
-    // Export all run history as JSON file
-    function exportHistory() {
-        const tx = db.transaction("runs", "readonly");
-        const req = tx.objectStore("runs").getAll();
-        req.onsuccess = () => {
-            const data = JSON.stringify(req.result, null, 2);
-            const blob = new Blob([data], {type: 'application/json'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `strive-runs-${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-        };
-    }
-    
-    // Calculate weekly statistics
-    function calculateWeeklyStats(runs) {
-        const today = new Date();
-        const weekStart = new Date(today);
-        weekStart.setDate(today.getDate() - today.getDay());
-        weekStart.setHours(0,0,0,0);
-        
-        const thisWeekRuns = runs.filter(r => {
-            const parts = r.d.split(/[.-]/);
-            const runDate = new Date(parts[2], parts[1] - 1, parts[0]);
-            return runDate >= weekStart;
-        });
-        
-        return {
-            count: thisWeekRuns.length,
-            distance: thisWeekRuns.reduce((a,b) => a + parseFloat(b.dist), 0).toFixed(1),
-            calories: thisWeekRuns.reduce((sum, r) => {
-                const dur = parseFloat(r.dist) * 7; // estimate 7min/km average
-                return sum + calculateCalories(parseFloat(r.dist), dur);
-            }, 0)
-        };
-    }
-
-    async function requestWakeLock() { 
-        try { 
-            if ('wakeLock' in navigator) {
-                wakeLock = await navigator.wakeLock.request('screen'); 
-            }
-        } catch (err) {} 
-    }
-
-    document.addEventListener('visibilitychange', async () => {
-        if (wakeLock !== null && document.visibilityState === 'visible') {
-            await requestWakeLock();
-        }
-    });
-
-    function releaseWakeLock() { if (wakeLock) { wakeLock.release(); wakeLock = null; } }
-    
-    function speak(t) {
-        if (!t) return;
-        if (synth.speaking) synth.cancel();
-        
-        const u = new SpeechSynthesisUtterance(t);
-        u.voice = voices.find(v => v.name === document.getElementById('voice-select').value) || null;
-        u.lang = 'nl-NL';
-        u.rate = 0.95;
-        u.volume = 1.0;
-        
-        synth.speak(u);
-    }
-
-    function applyTheme(isLight) { 
-        document.body.classList.toggle('light-mode', isLight); 
-        document.getElementById('theme-btn').innerText = isLight ? "☀️" : "🌙"; 
-        localStorage.setItem('strive_theme', isLight ? 'light' : 'dark');
-        // Dynamische Theme Color voor statusbalk
-        document.querySelector('meta[name="theme-color"]').setAttribute('content', isLight ? '#f0f2f5' : '#121214');
-    }
-    function toggleTheme() { applyTheme(!document.body.classList.contains('light-mode')); }
-    function formatT(s) { return Math.floor(s/60)+":"+(s%60).toString().padStart(2,'0'); }
-    function calcDist(l1,ln1,l2,ln2) { const R=6371; const dLat=(l2-l1)*Math.PI/180; const dLon=(ln2-ln1)*Math.PI/180; const a=Math.sin(dLat/2)**2 + Math.cos(l1*Math.PI/180)*Math.cos(l2*Math.PI/180)*Math.sin(dLon/2)**2; return R*2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); }
-
-    // FIX: Streak uses 7-day window (was 8), which is the standard weekly streak logic
-    function calculateStreak(runs) {
-        if (!runs || runs.length === 0) return 0;
-        const sortedRuns = runs.map(r => {
-            const parts = r.d.split(/[.-]/);
-            return { ...r, dateObj: new Date(parts[2], parts[1] - 1, parts[0]) };
-        }).sort((a, b) => a.dateObj - b.dateObj);
-        const today = new Date(); today.setHours(0, 0, 0, 0);
-        // If the last run was more than 7 days ago, streak is broken
-        if (Math.floor((today - sortedRuns[sortedRuns.length - 1].dateObj) / 86400000) > 7) return 0;
-        let streak = 0, lastDate = null;
-        for (let r of sortedRuns) {
-            if (lastDate) {
-                const diff = Math.floor((r.dateObj - lastDate) / 86400000);
-                if (diff <= 7) streak++; else streak = 1;
-            } else streak = 1;
-            lastDate = r.dateObj;
-        }
-        return streak;
-    }
-
-    // Calculate best pace for a given minimum distance from run history
-    function calcPRForDistance(runs, minKm) {
-        let best = null;
-        for (const run of runs) {
-            if (parseFloat(run.dist) >= minKm && run.pace && parseFloat(run.pace) > 0) {
-                const p = parseFloat(run.pace);
-                if (best === null || p < best) best = p;
-            }
-        }
-        if (best === null) return '--';
-        const mins = Math.floor(best);
-        const secs = Math.round((best - mins) * 60);
-        return `${mins}:${secs.toString().padStart(2,'0')}`;
-    }
-
-    function realStart() {
-        requestWakeLock();
-        document.getElementById('preview-overlay').style.display = 'none';
-        document.getElementById('timer-display').style.display = 'block';
-        document.getElementById('app-list').style.display = 'none';
-        
-        // Verberg Baseline Test blok tijdens training (alleen zichtbaar in overzicht en baseline test)
-        if(!document.getElementById('pre-title').innerText.includes('BASELINE') && !document.getElementById('pre-title').innerText.includes('Baseline')) {
-            document.getElementById('baseline-card').style.display = 'none';
-        }
-        let count = 5; speak("Training begint over 5 seconden");
-        const cdInterval = setInterval(() => {
-            count--; document.getElementById('timer-time').innerText = "00:0" + count;
-            if(count > 0) speak(count.toString());
-            if(count <= 0) { clearInterval(cdInterval); totalDist = 0; currentRoute = []; paceData = []; lastKMSpeech = 0; lastPaceTime = Date.now(); startTime = Date.now(); isPaused = false; currentBIdx = 0; totalRem = sessionBlocks.reduce((a,b)=>a+b.t, 0); initLiveMap(); startGPS(); startBlock(); }
-        }, 1000);
-    }
-
-    function startGPS() {
-        watchId = navigator.geolocation.watchPosition(p => {
-            // FIX: Tightened accuracy filter from 40m to 25m for better GPS quality
-            if(isPaused || p.coords.accuracy > 25) return;
-            const lat=p.coords.latitude, lng=p.coords.longitude;
-            const now = Date.now();
-            
-            if(currentRoute.length > 0) {
-                const last=currentRoute[currentRoute.length-1];
-                const d = calcDist(last[0], last[1], lat, lng);
-                totalDist += d;
-                    
-                // ✅ Kilometer Milestones Functionaliteit
-                const currentKM = Math.floor(totalDist);
-                if(currentKM > lastKMSpeech && currentKM > 0) { 
-                    lastKMSpeech = currentKM; 
-                    vibrate([300, 100, 300, 100, 300]);
-                    speak(`${currentKM} kilometer gerend! Goed bezig!`);
+        init: function(callback) {
+            const request = indexedDB.open(this.DB_NAME, this.DB_VERSION);
+            request.onupgradeneeded = (e) => {
+                this.db = e.target.result;
+                if (!this.db.objectStoreNames.contains("runs")) {
+                    this.db.createObjectStore("runs", { keyPath: "id", autoIncrement: true });
                 }
-                
-                // ✅ Huidige en gemiddelde pace berekenen
-                const elapsedMinutes = (now - startTime) / 60000;
-                
-                // Gemiddelde pace
-                if(totalDist > 0.05) {
-                    const avgPace = elapsedMinutes / totalDist;
-                    const avgMins = Math.floor(avgPace);
-                    const avgSecs = Math.round((avgPace - avgMins) * 60);
-                    document.getElementById('avg-pace').innerText = `${avgMins}:${avgSecs.toString().padStart(2, '0')}`;
-                    
-                    // Pace sampling voor grafiek
-                    if (now - lastPaceTime >= 30000) {
-                        lastPaceTime = now;
-                        paceData.push(avgPace.toFixed(2));
+            };
+            request.onsuccess = (e) => {
+                this.db = e.target.result;
+                this.migrateData();
+                if (callback) callback();
+            };
+            request.onerror = (e) => console.error("IndexedDB fout:", e.target.error);
+        },
+
+        migrateData: function() {
+            try {
+                const oldData = localStorage.getItem('strive_ult_h');
+                if (oldData) {
+                    const runs = JSON.parse(oldData);
+                    if (Array.isArray(runs)) {
+                        const tx = this.db.transaction("runs", "readwrite");
+                        runs.forEach(run => tx.objectStore("runs").add(run));
+                        tx.oncomplete = () => localStorage.removeItem('strive_ult_h');
                     }
                 }
-                
-                // Huidige pace (laatste punt)
-                const timeDiff = (now - session.lastGpsTime) / 1000;
-                if(session.lastGpsTime && timeDiff > 0 && timeDiff < 30) {
-                    const speed = d / (timeDiff / 3600); // km/h
-                    const currentPace = 60 / speed; // min/km
-                    
-                    if(currentPace > 2 && currentPace < 20) { // Realistische grenzen
-                        session.speedEMA = session.speedEMA * 0.7 + currentPace * 0.3;
-                        const currMins = Math.floor(session.speedEMA);
-                        const currSecs = Math.round((session.speedEMA - currMins) * 60);
-                        document.getElementById('live-pace').innerText = `${currMins}:${currSecs.toString().padStart(2, '0')}`;
-                    }
-                }
-                
-                document.getElementById('live-dist').innerText = totalDist.toFixed(2) + " km";
-                
-                session.lastGpsTime = now;
-            } else {
-                session.lastGpsTime = now;
-            }
-            currentRoute.push([lat, lng]);
-            
-            // ✅ Update de live kaart DIRECT na elk nieuw GPS punt
-            updateLiveMap(currentRoute);
-        }, null, {enableHighAccuracy: true});
-    }
-
-    function startBlock() {
-        if(currentBIdx >= sessionBlocks.length) return finishTraining();
-        const b = sessionBlocks[currentBIdx]; blockRem = b.t; document.getElementById('timer-status').innerText = b.s; speak("Begin met " + b.s);
-        if (timerId) clearInterval(timerId);
-        timerId = setInterval(() => {
-            if(isPaused) return; blockRem--; totalRem--;
-            document.getElementById('timer-time').innerText = formatT(blockRem); document.getElementById('total-time-left').innerText = formatT(totalRem);
-            if(blockRem <= 0) { clearInterval(timerId); currentBIdx++; startBlock(); }
-        }, 1000);
-    }
-
-    function skipBlock() {
-        clearInterval(timerId);
-        totalRem -= blockRem;
-        currentBIdx++;
-        startBlock();
-    }
-
-    async function finishTraining() {
-        releaseWakeLock(); clearInterval(timerId); navigator.geolocation.clearWatch(watchId);
-        
-        // ✅ FIX: Toon baseline blok weer na afloop sessie
-        document.getElementById('baseline-card').style.display = 'block';
-        document.getElementById('app-list').style.display = 'block';
-
-        const totalDurationMs = Date.now() - startTime;
-        const durationMin = totalDurationMs / 60000;
-        const totalSeconds = Math.round(totalDurationMs / 1000);
-        const pace = totalDist > 0.1 ? (durationMin / totalDist).toFixed(2) : "0.00";
-        const calories = calculateCalories(totalDist, durationMin);
-
-        // ✅ ✅ ✅ Vul ALLE resultaat velden
-        document.getElementById('res-d').innerText = totalDist.toFixed(2);
-        document.getElementById('res-p').innerText = pace;
-        document.getElementById('res-time').innerText = formatT(totalSeconds);
-        document.getElementById('res-cal').innerText = calories;
-        
-        // ✅ Training Breakdown statistieken op basis van PACE
-        // Bedenk zelf welke pace onder welke valt:
-        // Running: < 6:30 min/km (sneller dan 9.2 km/h)
-        // Jogging: 6:30 - 9:00 min/km (6.6 - 9.2 km/h)
-        // Walking: > 9:00 min/km (langzamer dan 6.6 km/h)
-        
-        let runSeconds = 0;
-        let jogSeconds = 0;
-        let walkSeconds = 0;
-
-        if (paceData && paceData.length > 0) {
-            // Elke datapunt in paceData vertegenwoordigt 30 seconden (zie startGPS sampling)
-            paceData.forEach(pStr => {
-                const p = parseFloat(pStr);
-                if (p < 6.5) runSeconds += 30;
-                else if (p < 9.0) jogSeconds += 30;
-                else walkSeconds += 30;
-            });
-            
-            // Corrigeer voor de werkelijke totale tijd als de som afwijkt door afronding/sampling
-            const totalSampled = runSeconds + jogSeconds + walkSeconds;
-            if (totalSampled > 0) {
-                const ratio = totalSeconds / totalSampled;
-                runSeconds *= ratio;
-                jogSeconds *= ratio;
-                walkSeconds *= ratio;
-            }
-        } else {
-            // Fallback als er geen pace data is (bijv. te korte sessie)
-            const avgPace = parseFloat(pace);
-            if (avgPace < 6.5) runSeconds = totalSeconds;
-            else if (avgPace < 9.0) jogSeconds = totalSeconds;
-            else walkSeconds = totalSeconds;
-        }
-
-        const totalCalculated = runSeconds + jogSeconds + walkSeconds;
-        const runPercent = totalCalculated > 0 ? Math.round((runSeconds / totalCalculated) * 100) : 0;
-        const jogPercent = totalCalculated > 0 ? Math.round((jogSeconds / totalCalculated) * 100) : 0;
-        const walkPercent = totalCalculated > 0 ? Math.max(0, 100 - runPercent - jogPercent) : 0;
-        
-        document.getElementById('stat-run-percent').innerText = runPercent + '%';
-        document.getElementById('stat-jog-percent').innerText = jogPercent + '%';
-        document.getElementById('stat-walk-percent').innerText = walkPercent + '%';
-        
-        document.getElementById('stat-run-bar').style.width = runPercent + '%';
-        document.getElementById('stat-jog-bar').style.width = jogPercent + '%';
-        document.getElementById('stat-walk-bar').style.width = walkPercent + '%';
-        
-        document.getElementById('stat-run-time').innerText = formatT(Math.round(runSeconds));
-        document.getElementById('stat-jog-time').innerText = formatT(Math.round(jogSeconds));
-        document.getElementById('stat-walk-time').innerText = formatT(Math.round(walkSeconds));
-
-        if(activePlanKey !== undefined) localStorage.setItem(`done_${activePlanKey}_${activeWeekIdx}_${activeType}`, "true");
-        const run = { 
-            d: new Date().toLocaleDateString('nl-NL'), 
-            n: document.getElementById('pre-title').innerText, 
-            dist: totalDist.toFixed(2), 
-            pace, 
-            duration: totalSeconds,
-            calories,
-            route: currentRoute, 
-            paceHistory: paceData 
-        };
-        const tx = db.transaction("runs", "readwrite");
-        tx.objectStore("runs").add(run);
-        tx.oncomplete = () => {
-            document.getElementById('res-btn').onclick = () => location.reload();
-            document.getElementById('result-screen').style.display='flex';
-            setTimeout(() => { initMap(currentRoute); renderPaceChart(paceData); }, 100);
-        };
-    }
-
-    function renderPlan() {
-        const planKey = document.getElementById('plan-select').value;
-        const list = document.getElementById('app-list');
-        list.innerHTML = '';
-        allSchemas[planKey].weeks.forEach((w, i) => {
-            const card = document.createElement('div'); card.className = 'card';
-            card.innerHTML = `<span class="dash-label">Week ${w.w}</span>`;
-            
-            // Find all training sessions for this week (supports any number t1, t2, t3, t4, t5)
-            const sessions = Object.keys(w).filter(k => k.match(/^t\d+$/)).sort();
-            
-            sessions.forEach(t => {
-                const isDone = localStorage.getItem(`done_${planKey}_${i}_${t}`) === "true";
-                const row = document.createElement('div'); 
-                row.className = `training-row ${isDone ? 'is-done' : ''}`;
-                row.innerHTML = `
-                    <div style="display:flex; align-items:center">
-                        <div class="check-circle ${isDone ? 'checked' : ''}" onclick="toggleManualComplete('${planKey}', ${i}, '${t}')">
-                            ${isDone ? '✓' : ''}
-                        </div>
-                        <div style="font-weight:800">${w[t].label}</div>
-                    </div>
-                    <button class="btn btn-primary" style="width:auto" onclick="openPreview('${planKey}', ${i}, '${t}')">START</button>`;
-                card.appendChild(row);
-            });
-            list.appendChild(card);
-        });
-    }
-
-    function openPreview(plan, wIdx, type) {
-        activePlanKey = plan; activeWeekIdx = wIdx; activeType = type;
-        const training = allSchemas[plan].weeks[wIdx][type];
-        sessionBlocks = training.b;
-        document.getElementById('pre-title').innerText = training.label;
-        const totalMin = Math.round(sessionBlocks.reduce((a,b)=>a+b.t, 0)/60);
-        document.getElementById('pre-time').innerText = totalMin + " min";
-        document.getElementById('pre-type').innerText = allSchemas[plan].name;
-        const maxTime = Math.max(...sessionBlocks.map(b => b.t));
-        const chart = document.getElementById('pre-chart');
-        chart.innerHTML = sessionBlocks.map(b => `
-            <div class="bar ${b.m}" style="height:${Math.max(15, (b.t/maxTime)*100)}%">
-                <span>${Math.round(b.t/60)}m</span>
-            </div>`).join('');
-        document.getElementById('preview-overlay').style.display = 'flex';
-    }
-
-    async function init() {
-        
-        // Service Worker registratie voor PWA
-        if ('serviceWorker' in navigator) {
-            try {
-                await navigator.serviceWorker.register('/sw.js');
-                console.log('✅ Service Worker geregistreerd (Full PWA mode)');
-            } catch (err) {
-                console.warn('⚠️ Service Worker registratie mislukt:', err);
-            }
-        }
-        
-        // FIX: Removed requestWakeLock() from init — wake lock is only needed during active training
-        applyTheme(localStorage.getItem("strive_theme") === "light");
-        const ps = document.getElementById("plan-select");
-
-        // ✅ Load custom plan from localStorage
-        const customPlanJson = localStorage.getItem("jellylegs_custom_plan");
-        if (customPlanJson) {
-            try {
-                const customPlanData = JSON.parse(customPlanJson);
-                allSchemas["custom"] = customPlanData;
             } catch (e) {
-                console.error("Fout bij het laden van aangepast plan uit localStorage:", e);
-                localStorage.removeItem("jellylegs_custom_plan"); // Verwijder ongeldige data
+                console.warn("Migratie mislukt, oude data genegeerd:", e);
+                localStorage.removeItem('strive_ult_h');
+            }
+        },
+
+        getAllRuns: function(callback) {
+            const tx = this.db.transaction("runs", "readonly");
+            const req = tx.objectStore("runs").getAll();
+            req.onsuccess = () => callback(req.result);
+        },
+
+        getRun: function(id, callback) {
+            const tx = this.db.transaction("runs", "readonly");
+            const req = tx.objectStore("runs").get(id);
+            req.onsuccess = () => callback(req.result);
+        },
+
+        addRun: function(run, callback) {
+            const tx = this.db.transaction("runs", "readwrite");
+            tx.objectStore("runs").add(run);
+            tx.oncomplete = () => { if(callback) callback(); };
+        },
+
+        deleteRun: function(e, id) {
+            e.stopPropagation();
+            if(confirm("Wissen?")) {
+                const tx = this.db.transaction("runs", "readwrite");
+                tx.objectStore("runs").delete(id);
+                tx.oncomplete = () => AppController.init();
+            }
+        },
+
+        clearAllHistory: function() {
+            if(confirm("Alles wissen?")) {
+                const tx = this.db.transaction("runs", "readwrite");
+                tx.objectStore("runs").clear();
+                tx.oncomplete = () => AppController.init();
+            }
+        },
+
+        saveUserProfile: function() {
+            localStorage.setItem('user_weight', document.getElementById('user-weight').value);
+            localStorage.setItem('user_height', document.getElementById('user-height').value);
+            localStorage.setItem('user_age', document.getElementById('user-age').value);
+            localStorage.setItem('user_gender', document.getElementById('user-gender').value);
+            
+            AppController.vibrate([50]);
+            const feedback = document.getElementById('save-feedback');
+            feedback.style.opacity = '1';
+            feedback.style.transform = 'translateY(0)';
+            setTimeout(() => { 
+                feedback.style.opacity = '0'; 
+                feedback.style.transform = 'translateY(10px)';
+            }, 1700);
+        },
+
+        updateWarmupCoolDown: function() {
+            const warmupMin = parseInt(document.getElementById('warmup-time').value);
+            const cooldownMin = parseInt(document.getElementById('cooldown-time').value);
+            document.getElementById('warmup-val').innerText = warmupMin;
+            document.getElementById('cooldown-val').innerText = cooldownMin;
+            localStorage.setItem('warmup_time', warmupMin);
+            localStorage.setItem('cooldown_time', cooldownMin);
+        },
+
+        getCustomPlan: function() {
+            const planJson = localStorage.getItem("jellylegs_custom_plan");
+            return planJson ? JSON.parse(planJson) : null;
+        },
+
+        deletePersonalPlan: function() {
+            if (confirm("Weet je zeker dat je dit persoonlijke plan wilt verwijderen?")) {
+                delete AppState.allSchemas['custom'];
+                const ps = document.getElementById('plan-select');
+                const customOption = ps.querySelector('option[value="custom"]');
+                if (customOption) customOption.remove();
+                localStorage.removeItem("jellylegs_custom_plan");
+
+                ps.value = Object.keys(AppState.allSchemas)[0];
+                localStorage.setItem("strive_selected_plan", ps.value);
+                
+                const deleteBtn = document.getElementById("delete-plan-btn");
+                if (deleteBtn) deleteBtn.remove();
+                
+                UIController.renderPlan();
+                AppController.speak("Persoonlijk plan verwijderd");
             }
         }
+    };
 
-        ps.innerHTML = Object.keys(allSchemas).map(k => `<option value="${k}">${allSchemas[k].name}</option>`).join("");
-        const savedPlan = localStorage.getItem("strive_selected_plan"); 
-        if (savedPlan && allSchemas[savedPlan]) { // Check if saved plan still exists (e.g. if custom was deleted)
-            ps.value = savedPlan;
-        } else {
-            // Default to first available plan if saved plan is invalid or missing
-            ps.value = Object.keys(allSchemas)[0];
-            localStorage.setItem("strive_selected_plan", ps.value);
-        }
-        
-        const tx = db.transaction("runs", "readonly");
-        const store = tx.objectStore("runs");
-        const req = store.getAll();
-        req.onsuccess = () => {
-            const allRuns = req.result;
-            const h = allRuns.slice().sort((a,b) => b.id - a.id);
+    // ==============================================
+    // 2. VIEW CONTROLLER (UIController)
+    // ==============================================
+    const UIController = {
+        mapInstance: null,
+        liveMapInstance: null,
+        livePolyline: null,
+        paceChartObj: null,
+        liveMapEnabled: localStorage.getItem('live_map_enabled') === 'true',
 
-            // Total KM
-            document.getElementById("dash-total").innerText = allRuns.reduce((a,b)=>a+parseFloat(b.dist),0).toFixed(1);
+        applyTheme: function(isLight) { 
+            document.body.classList.toggle('light-mode', isLight); 
+            document.getElementById('theme-btn').innerText = isLight ? "☀️" : "🌙"; 
+            localStorage.setItem('strive_theme', isLight ? 'light' : 'dark');
+            document.querySelector('meta[name="theme-color"]').setAttribute('content', isLight ? '#f0f2f5' : '#121214');
+        },
 
-            // FIX: Populate best pace (dash-pb)
-            const validPaces = allRuns.map(r => parseFloat(r.pace)).filter(p => p > 0);
+        toggleTheme: function() { 
+            this.applyTheme(!document.body.classList.contains('light-mode')); 
+        },
+
+        toggleLiveMap: function() {
+            this.liveMapEnabled = !this.liveMapEnabled;
+            localStorage.setItem('live_map_enabled', this.liveMapEnabled);
+            document.getElementById('live-map-toggle').classList.toggle('active', this.liveMapEnabled);
+            AppController.vibrate([50]);
+        },
+
+        openTab: function(tabName, element) {
+            const switchTab = () => {
+                document.querySelectorAll('.tab-view').forEach(tab => tab.classList.remove('active'));
+                document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+                document.getElementById(`tab-${tabName}`).classList.add('active');
+                element.classList.add('active');
+                AppController.vibrate([30]);
+            };
+
+            if ('startViewTransition' in document) {
+                document.startViewTransition(switchTab);
+            } else {
+                switchTab();
+            }
+        },
+
+        renderDashboard: function(runs) {
+            document.getElementById("dash-total").innerText = runs.reduce((a,b)=>a+parseFloat(b.dist),0).toFixed(1);
+
+            const validPaces = runs.map(r => parseFloat(r.pace)).filter(p => p > 0);
             if (validPaces.length > 0) {
                 const best = Math.min(...validPaces);
                 const mins = Math.floor(best);
@@ -1193,13 +675,11 @@
                 document.getElementById("dash-pb").innerText = "--";
             }
 
-            // FIX: Populate Personal Records (PR cards)
-            document.getElementById("pr-1k").innerText = calcPRForDistance(allRuns, 1);
-            document.getElementById("pr-3k").innerText = calcPRForDistance(allRuns, 3);
-            document.getElementById("pr-5k").innerText = calcPRForDistance(allRuns, 5);
+            document.getElementById("pr-1k").innerText = AppController.calcPRForDistance(runs, 1);
+            document.getElementById("pr-3k").innerText = AppController.calcPRForDistance(runs, 3);
+            document.getElementById("pr-5k").innerText = AppController.calcPRForDistance(runs, 5);
 
-            // Streak
-            const streak = calculateStreak(allRuns);
+            const streak = AppController.calculateStreak(runs);
             const streakCont = document.getElementById("streak-container");
             if(streak > 0) {
                 streakCont.style.display = "inline-flex";
@@ -1208,59 +688,760 @@
                 streakCont.style.display = "none";
             }
 
-            // History list
+            const h = runs.slice().sort((a,b) => b.id - a.id);
             document.getElementById("history-list").innerHTML = h.slice(0, 10).map((r) => `
-                <div class="history-item" onclick="viewRun(${r.id})">
+                <div class="history-item" onclick="AppController.viewRun(${r.id})">
                     <div style="flex-grow:1"><div style="font-weight:800">${r.n}</div><div style="font-size:12px; color:var(--text-muted)">${r.d} • ${r.dist}km</div></div>
-                    <button class="delete-btn" onclick="deleteRun(event, ${r.id})">🗑️</button>
+                    <button class="delete-btn" onclick="DataController.deleteRun(event, ${r.id})">🗑️</button>
                 </div>`).join("") || 
                 `<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:10px">Nog geen activiteiten</div>`;
-        };
-        renderPlan();
-        
-        // Add delete plan button after init
-        setTimeout(addDeletePlanButton, 100);
-    }
+        },
 
-    function renderPaceChart(data) {
-        const ctx = document.getElementById('paceChart').getContext('2d');
-        if (window.paceChartObj) window.paceChartObj.destroy();
-        // FIX: Handle empty paceData gracefully
-        if (!data || data.length === 0) {
-            ctx.canvas.parentElement.style.display = 'none';
-            return;
+        renderPlan: function() {
+            const planKey = document.getElementById('plan-select').value;
+            const list = document.getElementById('app-list');
+            list.innerHTML = '';
+            
+            if(!AppState.allSchemas[planKey]) return;
+
+            AppState.allSchemas[planKey].weeks.forEach((w, i) => {
+                const card = document.createElement('div'); card.className = 'card';
+                card.innerHTML = `<span class="dash-label">Week ${w.w}</span>`;
+                
+                const sessions = Object.keys(w).filter(k => k.match(/^t\d+$/)).sort();
+                
+                sessions.forEach(t => {
+                    const isDone = localStorage.getItem(`done_${planKey}_${i}_${t}`) === "true";
+                    const row = document.createElement('div'); 
+                    row.className = `training-row ${isDone ? 'is-done' : ''}`;
+                    row.innerHTML = `
+                        <div style="display:flex; align-items:center">
+                            <div class="check-circle ${isDone ? 'checked' : ''}" onclick="AppController.toggleManualComplete('${planKey}', ${i}, '${t}')">
+                                ${isDone ? '✓' : ''}
+                            </div>
+                            <div style="font-weight:800">${w[t].label}</div>
+                        </div>
+                        <button class="btn btn-primary" style="width:auto" onclick="UIController.openPreview('${planKey}', ${i}, '${t}')">START</button>`;
+                    card.appendChild(row);
+                });
+                list.appendChild(card);
+            });
+        },
+
+        openPreview: function(plan, wIdx, type) {
+            AppState.activePlanKey = plan; 
+            AppState.activeWeekIdx = wIdx; 
+            AppState.activeType = type;
+            
+            let training = AppState.allSchemas[plan].weeks[wIdx][type];
+            AppState.sessionBlocks = AppController.applyCustomTimings(training.b);
+            
+            document.getElementById('pre-title').innerText = training.label;
+            const totalMin = Math.round(AppState.sessionBlocks.reduce((a,b)=>a+b.t, 0)/60);
+            document.getElementById('pre-time').innerText = totalMin + " min";
+            document.getElementById('pre-type').innerText = AppState.allSchemas[plan].name;
+            
+            const maxTime = Math.max(...AppState.sessionBlocks.map(b => b.t));
+            const chart = document.getElementById('pre-chart');
+            chart.innerHTML = AppState.sessionBlocks.map(b => `
+                <div class="bar ${b.m}" style="height:${Math.max(15, (b.t/maxTime)*100)}%">
+                    <span>${Math.round(b.t/60)}m</span>
+                </div>`).join('');
+            document.getElementById('preview-overlay').style.display = 'flex';
+        },
+
+        hidePreview: function() {
+            document.getElementById('preview-overlay').style.display='none';
+        },
+
+        initLiveMap: function() {
+            if (!this.liveMapEnabled) return;
+            const mapElement = document.getElementById('live-training-map');
+            mapElement.style.display = 'block';
+            
+            if (this.liveMapInstance) this.liveMapInstance.remove();
+            
+            this.liveMapInstance = L.map('live-training-map', {zoomControl: false, attributionControl: false});
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(this.liveMapInstance);
+            this.livePolyline = L.polyline([], {color: '#2ecc71', weight: 5}).addTo(this.liveMapInstance);
+        },
+
+        updateLiveMap: function(route) {
+            if (!this.liveMapEnabled || !this.liveMapInstance || !this.livePolyline) return;
+            
+            // Transformeer array van [lat, lng, pace] terug naar simpele lat/lng voor live lijn
+            const latLngs = route.map(p => [p[0], p[1]]);
+            this.livePolyline.setLatLngs(latLngs);
+            
+            if (latLngs.length >= 2) {
+                const bounds = this.livePolyline.getBounds();
+                if (bounds.isValid()) {
+                    this.liveMapInstance.fitBounds(bounds, {padding: [30, 30], maxZoom: 16});
+                }
+            } else if (latLngs.length === 1) {
+                this.liveMapInstance.setView(latLngs[0], 16);
+            }
+        },
+
+        // GEKLEURDE KAART IMPLEMENTATIE VOOR RESULTAAT SCHERM
+        renderResultMap: function(route) {
+            if (this.mapInstance) this.mapInstance.remove();
+            
+            this.mapInstance = L.map('map', {zoomControl: false});
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(this.mapInstance);
+            
+            if(!route || route.length === 0) {
+                this.mapInstance.setView([52.1, 5.2], 14);
+                return;
+            }
+
+            this.mapInstance.setView([route[0][0], route[0][1]], 14);
+
+            if(route.length > 1) {
+                const bounds = [];
+                // Check of route data pace info bevat (nieuwe structuur: [lat, lng, pace])
+                const hasPaceData = route[0].length >= 3;
+
+                if (hasPaceData) {
+                    for (let i = 0; i < route.length - 1; i++) {
+                        const p1 = route[i];
+                        const p2 = route[i+1];
+                        const pace = p2[2] || p1[2] || 0; 
+                        
+                        let segColor = 'var(--primary)'; // Groen (Hardlopen)
+                        if (pace === 0 || pace >= 9.0) segColor = 'var(--danger)'; // Rood (Wandelen)
+                        else if (pace >= 6.5) segColor = 'var(--warning)'; // Oranje (Joggen)
+
+                        const segment = L.polyline([[p1[0], p1[1]], [p2[0], p2[1]]], {color: segColor, weight: 5});
+                        segment.addTo(this.mapInstance);
+                    }
+                } else {
+                    // Terugval voor oude sessies zonder opgeslagen pace
+                    L.polyline(route, {color: '#2ecc71', weight: 4}).addTo(this.mapInstance);
+                }
+
+                route.forEach(p => bounds.push([p[0], p[1]]));
+                this.mapInstance.fitBounds(L.latLngBounds(bounds), {padding: [20, 20]});
+            }
+        },
+
+        renderPaceChart: function(data) {
+            const ctx = document.getElementById('paceChart').getContext('2d');
+            if (this.paceChartObj) this.paceChartObj.destroy();
+            if (!data || data.length === 0) {
+                ctx.canvas.parentElement.style.display = 'none';
+                return;
+            }
+            ctx.canvas.parentElement.style.display = '';
+            this.paceChartObj = new Chart(ctx, { 
+                type: 'line', 
+                data: { labels: data.map((_, i) => i + 1), datasets: [{ label: 'Pace', data: data, borderColor: '#2ecc71', backgroundColor: 'rgba(46, 204, 113, 0.1)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0 }] }, 
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { reverse: true }, x: { display: false } }, plugins: { legend: { display: false } } } 
+            });
+        },
+
+        showChangelog: function() {
+            const existing = document.getElementById('changelog-overlay');
+            if (existing) existing.remove();
+            
+            const overlay = document.createElement('div');
+            overlay.id = 'changelog-overlay';
+            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(5px);z-index:5000;display:flex;align-items:center;padding:20px;overflow-y:auto;';
+            
+            const content = document.createElement('div');
+            content.className = 'card';
+            content.style.cssText = 'width:100%;max-width:480px;margin:auto;max-height:80vh;overflow-y:auto;';
+            
+            let html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px"><h2 style="margin:0">📜 Wijzigingslog</h2><button class="clear-history-btn" onclick="this.closest(\'#changelog-overlay\').remove()">✕ Sluiten</button></div>';
+            
+            AppController.CHANGELOG.forEach(entry => {
+                html += `<div style="margin-bottom:20px;padding-bottom:15px;border-bottom:1px solid rgba(255,255,255,0.1)">`;
+                html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">`;
+                html += `<span style="font-size:16px;font-weight:900;color:var(--primary)">v${entry.version}</span>`;
+                html += `<span style="font-size:11px;font-weight:700;color:var(--text-muted)">${entry.date}</span>`;
+                html += `</div><ul style="margin:0;padding-left:20px">`;
+                entry.changes.forEach(change => {
+                    html += `<li style="font-size:13px;margin-bottom:4px;line-height:1.5">${change}</li>`;
+                });
+                html += `</ul></div>`;
+            });
+            
+            content.innerHTML = html;
+            overlay.appendChild(content);
+            document.body.appendChild(overlay);
         }
-        ctx.canvas.parentElement.style.display = '';
-        window.paceChartObj = new Chart(ctx, { type: 'line', data: { labels: data.map((_, i) => i + 1), datasets: [{ label: 'Pace', data: data, borderColor: '#2ecc71', backgroundColor: 'rgba(46, 204, 113, 0.1)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { reverse: true }, x: { display: false } }, plugins: { legend: { display: false } } } });
-    }
+    };
 
-    function initMap(route) { if (mapInstance) mapInstance.remove(); mapInstance = L.map('map', {zoomControl: false}).setView(route[0] || [52.1, 5.2], 14); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapInstance); if(route.length > 1) { const poly = L.polyline(route, {color: '#2ecc71', weight: 4}).addTo(mapInstance); mapInstance.fitBounds(poly.getBounds(), {padding: [20, 20]}); } }
+    // ==============================================
+    // 3. APP LOGIC CONTROLLER (AppController)
+    // ==============================================
+    const AppState = {
+        STATUS: { IDLE: 'IDLE', RUNNING: 'RUNNING', PAUSED: 'PAUSED', FINISHED: 'FINISHED' },
+        currentState: 'IDLE',
+        activePlanKey: undefined,
+        activeWeekIdx: undefined,
+        activeType: undefined,
+        sessionBlocks: [],
+        currentBIdx: 0,
+        blockRem: 0,
+        totalRem: 0,
+        totalDist: 0,
+        currentRoute: [],
+        paceData: [],
+        lastKMSpeech: 0,
+        lastPaceTime: 0,
+        startTime: null,
+        isPaused: false,
+        timerId: null,
+        watchId: null,
+        wakeLock: null,
+        synth: window.speechSynthesis,
+        voices: [],
+        heartRateDevice: null,
+        heartRateCharacteristic: null,
+        currentHeartRate: 0,
+        session: { lastGpsTime: 0, speedEMA: 0 },
+        allSchemas: {
+            conditie: { name: "Basis Conditie (0-3km)", weeks: [
+                { w: 1, t1: { label: "W1: Eerste Stap", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:60, s:"Hardlopen", m:"run"}, {t:90, s:"Wandelen", m:"walk"}, {t:60, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W1: Ritme Vinden", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:120, s:"Hardlopen", m:"run"}, {t:60, s:"Wandelen", m:"walk"}, {t:120, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 2, t1: { label: "W2: De 3-Minuten", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:180, s:"Hardlopen", m:"run"}, {t:60, s:"Wandelen", m:"walk"}, {t:180, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W2: Uithouding", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:300, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"}, {t:300, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 3, t1: { label: "W3: Verlengen", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:420, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"}, {t:420, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W3: Stabiel Tempo", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:600, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"}, {t:300, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 4, t1: { label: "W4: De Helft", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:720, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"}, {t:720, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W4: Constante Run", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:900, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 5, t1: { label: "W5: Kracht Opbouw", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:480, s:"Hardlopen", m:"run"}, {t:60, s:"Wandelen", m:"walk"}, {t:480, s:"Hardlopen", m:"run"}, {t:60, s:"Wandelen", m:"walk"}, {t:480, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W5: De 20 Minuten", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:1200, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 6, t1: { label: "W6: Lange Intervallen", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:600, s:"Hardlopen", m:"run"}, {t:60, s:"Wandelen", m:"walk"}, {t:600, s:"Hardlopen", m:"run"}, {t:60, s:"Wandelen", m:"walk"}, {t:600, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W6: Focus Run", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:1500, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 7, t1: { label: "W7: Laatste Loodjes", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:900, s:"Hardlopen", m:"run"}, {t:60, s:"Wandelen", m:"walk"}, {t:900, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W7: Grens Verleggen", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:1800, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 8, t1: { label: "W8: Activatie", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:600, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"}, {t:600, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "🏁 DE 3KM FINISH", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:2100, s:"3KM POGING", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } }
+            ]},
+            gevorderd5k: { name: "Beginner 5KM Plan", weeks: [
+                { w: 1, t1: { label: "W1: Start-Stop", b: [
+                    {t:300, s:"Warming-up", m:"warmup"},
+                    {t:180, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
+                    {t:180, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
+                    {t:180, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
+                    {t:180, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
+                    {t:180, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
+                    {t:180, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
+                    {t:180, s:"Hardlopen", m:"run"},
+                    {t:300, s:"Cool-down", m:"warmup"}
+                ]}, t2: { label: "W1: Opbouw", b: [
+                    {t:300, s:"Warming-up", m:"warmup"},
+                    {t:180, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
+                    {t:180, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
+                    {t:180, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
+                    {t:180, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
+                    {t:180, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
+                    {t:180, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
+                    {t:180, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
+                    {t:180, s:"Hardlopen", m:"run"},
+                    {t:300, s:"Cool-down", m:"warmup"}
+                ]} },
+                { w: 2, t1: { label: "W2: 4/2 Interval", b: [
+                    {t:300, s:"Warming-up", m:"warmup"},
+                    {t:240, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
+                    {t:240, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
+                    {t:240, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
+                    {t:240, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
+                    {t:240, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
+                    {t:240, s:"Hardlopen", m:"run"},
+                    {t:300, s:"Cool-down", m:"warmup"}
+                ]}, t2: { label: "W2: Opbouw", b: [
+                    {t:300, s:"Warming-up", m:"warmup"},
+                    {t:240, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
+                    {t:240, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
+                    {t:240, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
+                    {t:240, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
+                    {t:240, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
+                    {t:240, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
+                    {t:240, s:"Hardlopen", m:"run"},
+                    {t:300, s:"Cool-down", m:"warmup"}
+                ]} },
+                { w: 3, t1: { label: "W3: 5/3 Interval", b: [
+                    {t:300, s:"Warming-up", m:"warmup"},
+                    {t:300, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
+                    {t:300, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
+                    {t:300, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
+                    {t:300, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
+                    {t:300, s:"Hardlopen", m:"run"},
+                    {t:300, s:"Cool-down", m:"warmup"}
+                ]}, t2: { label: "W3: Opbouw", b: [
+                    {t:300, s:"Warming-up", m:"warmup"},
+                    {t:300, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
+                    {t:300, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
+                    {t:300, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
+                    {t:300, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
+                    {t:300, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
+                    {t:300, s:"Hardlopen", m:"run"},
+                    {t:300, s:"Cool-down", m:"warmup"}
+                ]} },
+                { w: 4, t1: { label: "W4: 7/3 Interval", b: [
+                    {t:300, s:"Warming-up", m:"warmup"},
+                    {t:420, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
+                    {t:420, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
+                    {t:420, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
+                    {t:420, s:"Hardlopen", m:"run"},
+                    {t:300, s:"Cool-down", m:"warmup"}
+                ]}, t2: { label: "W4: Opbouw", b: [
+                    {t:300, s:"Warming-up", m:"warmup"},
+                    {t:420, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
+                    {t:420, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
+                    {t:420, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
+                    {t:420, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
+                    {t:420, s:"Hardlopen", m:"run"},
+                    {t:300, s:"Cool-down", m:"warmup"}
+                ]} },
+                { w: 5, t1: { label: "W5: 10/3 Interval", b: [
+                    {t:300, s:"Warming-up", m:"warmup"},
+                    {t:600, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
+                    {t:600, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
+                    {t:600, s:"Hardlopen", m:"run"},
+                    {t:300, s:"Cool-down", m:"warmup"}
+                ]}, t2: { label: "W5: Opbouw", b: [
+                    {t:300, s:"Warming-up", m:"warmup"},
+                    {t:600, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
+                    {t:600, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
+                    {t:600, s:"Hardlopen", m:"run"}, {t:180, s:"Wandelen", m:"walk"},
+                    {t:600, s:"Hardlopen", m:"run"},
+                    {t:300, s:"Cool-down", m:"warmup"}
+                ]} },
+                { w: 6, t1: { label: "W6: 15/2 Interval", b: [
+                    {t:300, s:"Warming-up", m:"warmup"},
+                    {t:900, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
+                    {t:900, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
+                    {t:900, s:"Hardlopen", m:"run"},
+                    {t:300, s:"Cool-down", m:"warmup"}
+                ]}, t2: { label: "W6: Opbouw", b: [
+                    {t:300, s:"Warming-up", m:"warmup"},
+                    {t:900, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
+                    {t:900, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
+                    {t:900, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"},
+                    {t:900, s:"Hardlopen", m:"run"},
+                    {t:300, s:"Cool-down", m:"warmup"}
+                ]} },
+                { w: 7, t1: { label: "W7: 25 Minuten Continuous", b: [
+                    {t:300, s:"Warming-up", m:"warmup"},
+                    {t:1500, s:"Hardlopen", m:"run"},
+                    {t:300, s:"Cool-down", m:"warmup"}
+                ]}, t2: { label: "W7: 30 Minuten Continuous", b: [
+                    {t:300, s:"Warming-up", m:"warmup"},
+                    {t:1800, s:"Hardlopen", m:"run"},
+                    {t:300, s:"Cool-down", m:"warmup"}
+                ]} },
+                { w: 8, t1: { label: "W8: Tapering", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:600, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"}, {t:600, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "🏁 DE 5KM FINISH", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:2100, s:"5KM POGING", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } }
+            ]},
+            gevorderd5k_ervaren: { name: "Ervaren Loper 5KM Plan (Snelheid)", weeks: [
+                { w: 1, t1: { label: "W1: Tempo Blokken", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:300, s:"Steady Tempo", m:"run"}, {t:120, s:"Actief Herstel", m:"run"}, {t:300, s:"Steady Tempo", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W1: Lange Duurloop", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:2400, s:"Rustig Tempo", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 2, t1: { label: "W2: 1km Intervallen", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:300, s:"Vlot Tempo", m:"run"}, {t:120, s:"Joggen", m:"run"}, {t:300, s:"Vlot Tempo", m:"run"}, {t:120, s:"Joggen", m:"run"}, {t:300, s:"Vlot Tempo", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W2: Steady Run", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:2700, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 3, t1: { label: "W3: Drempel Training", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:1200, s:"Drempel Tempo", m:"run"}, {t:180, s:"Joggen", m:"run"}, {t:600, s:"Drempel Tempo", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W3: Lange Run", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:3000, s:"Rustig", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 4, t1: { label: "W4: 800m Herhalingen", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:240, s:"Snel Tempo", m:"run"}, {t:120, s:"Joggen", m:"run"}, {t:240, s:"Snel Tempo", m:"run"}, {t:120, s:"Joggen", m:"run"}, {t:240, s:"Snel Tempo", m:"run"}, {t:240, s:"Snel Tempo", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W4: Steady 35m", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:2100, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 5, t1: { label: "W5: 1km Tempo", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:300, s:"Vlot", m:"run"}, {t:90, s:"Joggen", m:"run"}, {t:300, s:"Vlot", m:"run"}, {t:90, s:"Joggen", m:"run"}, {t:300, s:"Vlot", m:"run"}, {t:90, s:"Joggen", m:"run"}, {t:300, s:"Vlot", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W5: Lange Run", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:3300, s:"Rustig", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 6, t1: { label: "W6: Drempel Blokken", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:900, s:"Drempel Tempo", m:"run"}, {t:120, s:"Joggen", m:"run"}, {t:600, s:"Drempel Tempo", m:"run"}, {t:120, s:"Joggen", m:"run"}, {t:600, s:"Drempel Tempo", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W6: Steady 40m", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:2400, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 7, t1: { label: "W7: Tapering", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:600, s:"Steady", m:"run"}, {t:180, s:"Joggen", m:"run"}, {t:600, s:"Steady", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W7: Activatie", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:1200, s:"Rustig", m:"run"}, {t:60, s:"Sprint", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 8, t1: { label: "W8: Race Week", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:300, s:"Steady", m:"run"}, {t:60, s:"Sprint", m:"run"}, {t:300, s:"Steady", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "🏁 5KM RACE POGING", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:1800, s:"5KM MAX TEMPO", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } }
+            ]},
+            intervallen10k: { name: "10KM Interval Focus", weeks: [
+                { w: 1, t1: { label: "W1: Basis Interval", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:600, s:"Run", m:"run"}, {t:120, s:"Wandelen", m:"walk"}, {t:600, s:"Run", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W1: Duurloop 40m", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:2400, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 2, t1: { label: "W2: Kracht", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:900, s:"Vlot", m:"run"}, {t:180, s:"Wandelen", m:"walk"}, {t:900, s:"Vlot", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W2: Duurloop 45m", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:2700, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 3, t1: { label: "W3: Snelheid 400s", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:120, s:"Snel", m:"run"}, {t:60, s:"Wandelen", m:"walk"}, {t:120, s:"Snel", m:"run"}, {t:60, s:"Wandelen", m:"walk"}, {t:120, s:"Snel", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W3: Duurloop 50m", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:3000, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 4, t1: { label: "W4: Drempel Run", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:1500, s:"Drempel", m:"run"}, {t:120, s:"Wandelen", m:"walk"}, {t:600, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W4: Herstel 30m", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:1800, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 5, t1: { label: "W5: Lange Intervallen", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:1200, s:"Tempo", m:"run"}, {t:180, s:"Wandelen", m:"walk"}, {t:1200, s:"Tempo", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W5: Duurloop 55m", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:3300, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 6, t1: { label: "W6: 1km Herhalingen", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:300, s:"Snel", m:"run"}, {t:120, s:"Wandelen", m:"walk"}, {t:300, s:"Snel", m:"run"}, {t:120, s:"Wandelen", m:"walk"}, {t:300, s:"Snel", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W6: Duurloop 60m", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:3600, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 7, t1: { label: "W7: Tempo Wissel", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:600, s:"Vlot", m:"run"}, {t:600, s:"Snel", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W7: Pre-10K Run", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:2400, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 8, t1: { label: "W8: Activatie", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:900, s:"Joggen", m:"run"}, {t:60, s:"Sprint", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "🏁 DE 10KM TEST", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:3600, s:"10KM POGING", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } }
+            ]},
+            halveMarathon: { name: "Halve Marathon (21.1km)", weeks: [
+                { w: 1, t1: { label: "W1: Basis Opbouw", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:1200, s:"Hardlopen", m:"run"}, {t:120, s:"Wandelen", m:"walk"}, {t:1200, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W1: Lange Duurloop", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:3600, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 2, t1: { label: "W2: Tempo Intervallen", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:900, s:"Tempo", m:"run"}, {t:120, s:"Wandelen", m:"walk"}, {t:900, s:"Tempo", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W2: 8km Run", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:4200, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 3, t1: { label: "W3: Lange Intervallen", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:1200, s:"Vlot", m:"run"}, {t:120, s:"Wandelen", m:"walk"}, {t:1200, s:"Vlot", m:"run"}, {t:120, s:"Wandelen", m:"walk"}, {t:1200, s:"Vlot", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W3: 10km Run", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:4800, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 4, t1: { label: "W4: Drempel Training", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:1800, s:"Drempel", m:"run"}, {t:120, s:"Wandelen", m:"walk"}, {t:1200, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W4: 12km Run", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:5400, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 5, t1: { label: "W5: Snelheid Werk", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:300, s:"Snel", m:"run"}, {t:60, s:"Wandelen", m:"walk"}, {t:300, s:"Snel", m:"run"}, {t:60, s:"Wandelen", m:"walk"}, {t:300, s:"Snel", m:"run"}, {t:60, s:"Wandelen", m:"walk"}, {t:300, s:"Snel", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W5: 14km Run", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:6300, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 6, t1: { label: "W6: Tempo Blokken", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:1200, s:"Tempo", m:"run"}, {t:90, s:"Wandelen", m:"walk"}, {t:1200, s:"Tempo", m:"run"}, {t:90, s:"Wandelen", m:"walk"}, {t:1200, s:"Tempo", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W6: 16km Run", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:7200, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 7, t1: { label: "W7: Tapering", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:900, s:"Licht", m:"run"}, {t:120, s:"Wandelen", m:"walk"}, {t:600, s:"Licht", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "W7: 12km Test", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:5400, s:"Hardlopen", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } },
+                { w: 8, t1: { label: "W8: Activatie", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:600, s:"Joggen", m:"run"}, {t:30, s:"Sprint", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] }, t2: { label: "🏁 HALVE MARATHON", b: [{t:300, s:"Warming-up", m:"warmup"}, {t:8400, s:"21.1KM POGING", m:"run"}, {t:300, s:"Cool-down", m:"warmup"}] } }
+            ]}
+        }
+    };
 
-    // FIX: viewRun now safely handles runs without paceHistory (older records)
-    function viewRun(id) {
-        const tx = db.transaction("runs", "readonly");
-        const req = tx.objectStore("runs").get(id);
-        req.onsuccess = () => {
-            const run = req.result;
-            document.getElementById('res-title').innerText = run.n;
-            document.getElementById('res-d').innerText = run.dist;
-            document.getElementById('res-p').innerText = run.pace;
-            document.getElementById('res-time').innerText = formatT(run.duration || 0);
-            document.getElementById('res-cal').innerText = run.calories || 0;
-            document.getElementById('res-btn').innerText = "SLUITEN";
-            document.getElementById('res-btn').onclick = () => document.getElementById('result-screen').style.display='none';
-            document.getElementById('result-screen').style.display='flex';
+    const AppController = {
+        CHANGELOG: [
+            { version: "1.1.0", date: "08-05-2026", changes: [
+                "✨ Controller-patroon refactor voor data, weergave en logica scheiding",
+                "🎨 PACE-GEKLEURDE KAART: Route op de kaart krijgt kleuren obv gelopen tempo",
+                "✨ Kaart in resultatenscherm is nu licht (OpenStreetMap) i.p.v. donker",
+                "🐛 Donkere flits bij laden kaart verholpen (CSS achtergrond naar wit)",
+                "📦 Versiebeheer systeem toegevoegd met changelog",
+                "🔊 Audio ducking verwijderd",
+                "🗺️ Route-minimap toegevoegd aan share afbeelding"
+            ]},
+            { version: "1.0.0", date: "01-05-2026", changes: [
+                "🎉 Eerste volledige release van JellyLegs",
+                "🏃 Training schema's voor 3km, 5km, 10km en halve marathon",
+                "📍 GPS tracking met live kaart tijdens het hardlopen",
+                "📊 Gedetailleerde resultaten met pace grafiek",
+                "🔥 Streak tracking en persoonlijke records",
+                "❤️ Bluetooth hartslagmeter ondersteuning",
+                "📤 Deel resultaten via social media"
+            ]}
+        ],
+
+        init: async function() {
+            if ('serviceWorker' in navigator) {
+                try {
+                    await navigator.serviceWorker.register('/sw.js');
+                } catch (err) {}
+            }
             
-            // ✅ Training Breakdown statistieken voor historische run
-            const totalSeconds = run.duration || 0;
-            const paceData = run.paceHistory || [];
+            UIController.applyTheme(localStorage.getItem("strive_theme") === "light");
             
-            let runSeconds = 0;
-            let jogSeconds = 0;
-            let walkSeconds = 0;
+            const customPlan = DataController.getCustomPlan();
+            if (customPlan) AppState.allSchemas["custom"] = customPlan;
 
-            if (paceData.length > 0) {
-                paceData.forEach(pStr => {
+            const ps = document.getElementById("plan-select");
+            ps.innerHTML = Object.keys(AppState.allSchemas).map(k => `<option value="${k}">${AppState.allSchemas[k].name}</option>`).join("");
+            
+            const savedPlan = localStorage.getItem("strive_selected_plan"); 
+            if (savedPlan && AppState.allSchemas[savedPlan]) { 
+                ps.value = savedPlan;
+            } else {
+                ps.value = Object.keys(AppState.allSchemas)[0];
+                localStorage.setItem("strive_selected_plan", ps.value);
+            }
+
+            this.loadSettings();
+
+            DataController.getAllRuns((runs) => {
+                UIController.renderDashboard(runs);
+            });
+
+            UIController.renderPlan();
+            setTimeout(() => this.addDeletePlanButton(), 100);
+
+            // WakeLock Event Listener
+            document.addEventListener('visibilitychange', async () => {
+                if (AppState.wakeLock !== null && document.visibilityState === 'visible') {
+                    await this.requestWakeLock();
+                }
+            });
+
+            // Speech Synthesis
+            window.speechSynthesis.onvoiceschanged = () => { 
+                AppState.voices = window.speechSynthesis.getVoices(); 
+                const dutch = AppState.voices.filter(v => v.lang.includes('nl')); 
+                const select = document.getElementById('voice-select'); 
+                if(select) select.innerHTML = dutch.map(v => `<option value="${v.name}">${v.name}</option>`).join('') || '<option>Standaard Stem</option>'; 
+            };
+        },
+
+        loadSettings: function() {
+            const savedWarmup = localStorage.getItem('warmup_time');
+            const savedCooldown = localStorage.getItem('cooldown_time');
+            const savedWeight = localStorage.getItem('user_weight');
+            const savedHeight = localStorage.getItem('user_height');
+            const savedAge = localStorage.getItem('user_age');
+            const savedGender = localStorage.getItem('user_gender');
+            
+            if(savedWarmup) document.getElementById('warmup-time').value = savedWarmup;
+            if(savedCooldown) document.getElementById('cooldown-time').value = savedCooldown;
+            if(savedWeight) document.getElementById('user-weight').value = savedWeight;
+            if(savedHeight) document.getElementById('user-height').value = savedHeight;
+            if(savedAge) document.getElementById('user-age').value = savedAge;
+            if(savedGender) document.getElementById('user-gender').value = savedGender;
+            
+            if (localStorage.getItem('live_map_enabled') === 'true') {
+                document.getElementById('live-map-toggle').classList.add('active');
+            }
+            
+            DataController.updateWarmupCoolDown();
+        },
+
+        applyCustomTimings: function(blocks) {
+            const warmupSec = (parseInt(localStorage.getItem('warmup_time')) || 5) * 60;
+            const cooldownSec = (parseInt(localStorage.getItem('cooldown_time')) || 5) * 60;
+            
+            let newBlocks = [...blocks];
+            if(newBlocks.length > 0 && newBlocks[0].m === 'warmup') {
+                newBlocks[0] = {...newBlocks[0], t: warmupSec};
+            }
+            if(newBlocks.length > 0 && newBlocks[newBlocks.length-1].m === 'warmup' && newBlocks[newBlocks.length-1].s.toLowerCase().includes('cool')) {
+                newBlocks[newBlocks.length-1] = {...newBlocks[newBlocks.length-1], t: cooldownSec};
+            }
+            return newBlocks;
+        },
+
+        saveSelectedPlan: function() { 
+            localStorage.setItem('strive_selected_plan', document.getElementById('plan-select').value); 
+            UIController.renderPlan();
+            this.addDeletePlanButton();
+        },
+
+        addDeletePlanButton: function() {
+            const planSelect = document.getElementById('plan-select');
+            const selectedPlan = planSelect.value;
+            
+            const existingBtn = document.getElementById('delete-plan-btn');
+            if (existingBtn) existingBtn.remove();
+            
+            if (selectedPlan === 'custom' && AppState.allSchemas['custom']) {
+                const deleteBtn = document.createElement('button');
+                deleteBtn.id = 'delete-plan-btn';
+                deleteBtn.className = 'clear-history-btn';
+                deleteBtn.style.marginTop = '10px';
+                deleteBtn.style.float = 'right';
+                deleteBtn.innerText = '🗑️ VERWIJDER PLAN';
+                deleteBtn.onclick = () => DataController.deletePersonalPlan();
+                planSelect.parentElement.appendChild(deleteBtn);
+            }
+        },
+
+        toggleManualComplete: function(plan, week, type) {
+            const key = `done_${plan}_${week}_${type}`;
+            const isDone = localStorage.getItem(key) === "true";
+            localStorage.setItem(key, !isDone);
+            UIController.renderPlan();
+        },
+
+        formatT: function(s) { return Math.floor(s/60)+":"+(s%60).toString().padStart(2,'0'); },
+        
+        calcDist: function(l1,ln1,l2,ln2) { const R=6371; const dLat=(l2-l1)*Math.PI/180; const dLon=(ln2-ln1)*Math.PI/180; const a=Math.sin(dLat/2)**2 + Math.cos(l1*Math.PI/180)*Math.cos(l2*Math.PI/180)*Math.sin(dLon/2)**2; return R*2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); },
+
+        calculateStreak: function(runs) {
+            if (!runs || runs.length === 0) return 0;
+            const sortedRuns = runs.map(r => {
+                const parts = r.d.split(/[.-]/);
+                return { ...r, dateObj: new Date(parts[2], parts[1] - 1, parts[0]) };
+            }).sort((a, b) => a.dateObj - b.dateObj);
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            if (Math.floor((today - sortedRuns[sortedRuns.length - 1].dateObj) / 86400000) > 7) return 0;
+            let streak = 0, lastDate = null;
+            for (let r of sortedRuns) {
+                if (lastDate) {
+                    const diff = Math.floor((r.dateObj - lastDate) / 86400000);
+                    if (diff <= 7) streak++; else streak = 1;
+                } else streak = 1;
+                lastDate = r.dateObj;
+            }
+            return streak;
+        },
+
+        calcPRForDistance: function(runs, minKm) {
+            let best = null;
+            for (const run of runs) {
+                if (parseFloat(run.dist) >= minKm && run.pace && parseFloat(run.pace) > 0) {
+                    const p = parseFloat(run.pace);
+                    if (best === null || p < best) best = p;
+                }
+            }
+            if (best === null) return '--';
+            const mins = Math.floor(best);
+            const secs = Math.round((best - mins) * 60);
+            return `${mins}:${secs.toString().padStart(2,'0')}`;
+        },
+
+        calculateCalories: function(distanceKm, durationMin) {
+            const weightKg = parseInt(localStorage.getItem('user_weight')) || 75;
+            const heightCm = parseInt(localStorage.getItem('user_height')) || 175;
+            const age = parseInt(localStorage.getItem('user_age')) || 30;
+            const gender = localStorage.getItem('user_gender') || 'male';
+            const metValue = 9.8;
+            
+            let bmr;
+            if(gender === 'male') {
+                bmr = 88.362 + (13.397 * weightKg) + (4.799 * heightCm) - (5.677 * age);
+            } else {
+                bmr = 447.593 + (9.247 * weightKg) + (3.098 * heightCm) - (4.330 * age);
+            }
+            
+            const activityMultiplier = 1.375;
+            const dailyCalories = bmr * activityMultiplier;
+            const perMinuteCalories = dailyCalories / 1440;
+            
+            return Math.round(perMinuteCalories * durationMin + (metValue * weightKg * (durationMin / 60)));
+        },
+
+        vibrate: function(pattern = [200, 100, 200]) {
+            if ('vibrate' in navigator) navigator.vibrate(pattern);
+        },
+
+        speak: function(t) {
+            if (!t) return;
+            if (AppState.synth.speaking) AppState.synth.cancel();
+            const u = new SpeechSynthesisUtterance(t);
+            u.voice = AppState.voices.find(v => v.name === document.getElementById('voice-select').value) || null;
+            u.lang = 'nl-NL';
+            u.rate = 0.95;
+            u.volume = 1.0;
+            AppState.synth.speak(u);
+        },
+
+        async requestWakeLock() { 
+            try { 
+                if ('wakeLock' in navigator) {
+                    AppState.wakeLock = await navigator.wakeLock.request('screen'); 
+                }
+            } catch (err) {} 
+        },
+
+        releaseWakeLock: function() { 
+            if (AppState.wakeLock) { AppState.wakeLock.release(); AppState.wakeLock = null; } 
+        },
+
+        realStart: function() {
+            this.requestWakeLock();
+            UIController.hidePreview();
+            document.getElementById('timer-display').style.display = 'block';
+            document.getElementById('app-list').style.display = 'none';
+            
+            if(!document.getElementById('pre-title').innerText.includes('BASELINE') && !document.getElementById('pre-title').innerText.includes('Baseline')) {
+                document.getElementById('baseline-card').style.display = 'none';
+            }
+            let count = 5; this.speak("Training begint over 5 seconden");
+            const cdInterval = setInterval(() => {
+                count--; document.getElementById('timer-time').innerText = "00:0" + count;
+                if(count > 0) this.speak(count.toString());
+                if(count <= 0) { 
+                    clearInterval(cdInterval); 
+                    AppState.totalDist = 0; 
+                    AppState.currentRoute = []; 
+                    AppState.paceData = []; 
+                    AppState.lastKMSpeech = 0; 
+                    AppState.lastPaceTime = Date.now(); 
+                    AppState.startTime = Date.now(); 
+                    AppState.isPaused = false; 
+                    AppState.currentBIdx = 0; 
+                    AppState.totalRem = AppState.sessionBlocks.reduce((a,b)=>a+b.t, 0); 
+                    
+                    UIController.initLiveMap(); 
+                    this.startGPS(); 
+                    this.startBlock(); 
+                }
+            }, 1000);
+        },
+
+        startGPS: function() {
+            AppState.watchId = navigator.geolocation.watchPosition(p => {
+                if(AppState.isPaused || p.coords.accuracy > 25) return;
+                const lat=p.coords.latitude, lng=p.coords.longitude;
+                const now = Date.now();
+                
+                let pointPace = 0;
+
+                if(AppState.currentRoute.length > 0) {
+                    const last = AppState.currentRoute[AppState.currentRoute.length-1];
+                    const d = this.calcDist(last[0], last[1], lat, lng);
+                    AppState.totalDist += d;
+                        
+                    const currentKM = Math.floor(AppState.totalDist);
+                    if(currentKM > AppState.lastKMSpeech && currentKM > 0) { 
+                        AppState.lastKMSpeech = currentKM; 
+                        this.vibrate([300, 100, 300, 100, 300]);
+                        this.speak(`${currentKM} kilometer gerend! Goed bezig!`);
+                    }
+                    
+                    const elapsedMinutes = (now - AppState.startTime) / 60000;
+                    
+                    if(AppState.totalDist > 0.05) {
+                        const avgPace = elapsedMinutes / AppState.totalDist;
+                        const avgMins = Math.floor(avgPace);
+                        const avgSecs = Math.round((avgPace - avgMins) * 60);
+                        document.getElementById('avg-pace').innerText = `${avgMins}:${avgSecs.toString().padStart(2, '0')}`;
+                        
+                        if (now - AppState.lastPaceTime >= 30000) {
+                            AppState.lastPaceTime = now;
+                            AppState.paceData.push(avgPace.toFixed(2));
+                        }
+                    }
+                    
+                    const timeDiff = (now - AppState.session.lastGpsTime) / 1000;
+                    if(AppState.session.lastGpsTime && timeDiff > 0 && timeDiff < 30) {
+                        const speed = d / (timeDiff / 3600); // km/h
+                        const currentPace = 60 / speed; // min/km
+                        
+                        if(currentPace > 2 && currentPace < 20) {
+                            AppState.session.speedEMA = AppState.session.speedEMA * 0.7 + currentPace * 0.3;
+                            const currMins = Math.floor(AppState.session.speedEMA);
+                            const currSecs = Math.round((AppState.session.speedEMA - currMins) * 60);
+                            document.getElementById('live-pace').innerText = `${currMins}:${currSecs.toString().padStart(2, '0')}`;
+                        }
+                    }
+                    pointPace = AppState.session.speedEMA;
+                    document.getElementById('live-dist').innerText = AppState.totalDist.toFixed(2) + " km";
+                    AppState.session.lastGpsTime = now;
+                } else {
+                    AppState.session.lastGpsTime = now;
+                }
+                
+                // NIEUW: Bewaar pace bij het coördinaat voor de ingekleurde kaart
+                AppState.currentRoute.push([lat, lng, pointPace]);
+                UIController.updateLiveMap(AppState.currentRoute);
+
+            }, null, {enableHighAccuracy: true});
+        },
+
+        startBlock: function() {
+            if(AppState.currentBIdx >= AppState.sessionBlocks.length) return this.finishTraining();
+            const b = AppState.sessionBlocks[AppState.currentBIdx]; 
+            AppState.blockRem = b.t; 
+            document.getElementById('timer-status').innerText = b.s; 
+            this.speak("Begin met " + b.s);
+            if (AppState.timerId) clearInterval(AppState.timerId);
+            AppState.timerId = setInterval(() => {
+                if(AppState.isPaused) return; 
+                AppState.blockRem--; 
+                AppState.totalRem--;
+                document.getElementById('timer-time').innerText = this.formatT(AppState.blockRem); 
+                document.getElementById('total-time-left').innerText = this.formatT(AppState.totalRem);
+                if(AppState.blockRem <= 0) { 
+                    clearInterval(AppState.timerId); 
+                    AppState.currentBIdx++; 
+                    this.startBlock(); 
+                }
+            }, 1000);
+        },
+
+        skipBlock: function() {
+            clearInterval(AppState.timerId);
+            AppState.totalRem -= AppState.blockRem;
+            AppState.currentBIdx++;
+            this.startBlock();
+        },
+
+        togglePause: function() { 
+            AppState.isPaused = !AppState.isPaused; 
+            document.getElementById('btn-pause').innerText = AppState.isPaused ? "HERVAT" : "PAUZE"; 
+            this.speak(AppState.isPaused ? "Gepauzeerd" : "We gaan weer verder"); 
+        },
+
+        confirmStop: function() {
+            if (!AppState.startTime) return;
+            if(confirm("Stoppen?")) {
+                document.getElementById('baseline-card').style.display = 'block';
+                document.getElementById('app-list').style.display = 'block';
+                this.finishTraining();
+            }
+        },
+
+        finishTraining: async function() {
+            this.releaseWakeLock(); 
+            clearInterval(AppState.timerId); 
+            navigator.geolocation.clearWatch(AppState.watchId);
+            
+            document.getElementById('baseline-card').style.display = 'block';
+            document.getElementById('app-list').style.display = 'block';
+
+            const totalDurationMs = Date.now() - AppState.startTime;
+            const durationMin = totalDurationMs / 60000;
+            const totalSeconds = Math.round(totalDurationMs / 1000);
+            const pace = AppState.totalDist > 0.1 ? (durationMin / AppState.totalDist).toFixed(2) : "0.00";
+            const calories = this.calculateCalories(AppState.totalDist, durationMin);
+
+            document.getElementById('res-d').innerText = AppState.totalDist.toFixed(2);
+            document.getElementById('res-p').innerText = pace;
+            document.getElementById('res-time').innerText = this.formatT(totalSeconds);
+            document.getElementById('res-cal').innerText = calories;
+            
+            let runSeconds = 0; let jogSeconds = 0; let walkSeconds = 0;
+
+            if (AppState.paceData && AppState.paceData.length > 0) {
+                AppState.paceData.forEach(pStr => {
                     const p = parseFloat(pStr);
                     if (p < 6.5) runSeconds += 30;
                     else if (p < 9.0) jogSeconds += 30;
@@ -1272,7 +1453,7 @@
                     runSeconds *= ratio; jogSeconds *= ratio; walkSeconds *= ratio;
                 }
             } else {
-                const avgPace = parseFloat(run.pace);
+                const avgPace = parseFloat(pace);
                 if (avgPace < 6.5) runSeconds = totalSeconds;
                 else if (avgPace < 9.0) jogSeconds = totalSeconds;
                 else walkSeconds = totalSeconds;
@@ -1289,775 +1470,392 @@
             document.getElementById('stat-run-bar').style.width = runPercent + '%';
             document.getElementById('stat-jog-bar').style.width = jogPercent + '%';
             document.getElementById('stat-walk-bar').style.width = walkPercent + '%';
-            document.getElementById('stat-run-time').innerText = formatT(Math.round(runSeconds));
-            document.getElementById('stat-jog-time').innerText = formatT(Math.round(jogSeconds));
-            document.getElementById('stat-walk-time').innerText = formatT(Math.round(walkSeconds));
+            document.getElementById('stat-run-time').innerText = this.formatT(Math.round(runSeconds));
+            document.getElementById('stat-jog-time').innerText = this.formatT(Math.round(jogSeconds));
+            document.getElementById('stat-walk-time').innerText = this.formatT(Math.round(walkSeconds));
 
-            setTimeout(() => {
-                initMap(run.route || []);
-                renderPaceChart(run.paceHistory || []);
-            }, 100);
-        };
-    }
-
-    function deleteRun(e, id) { e.stopPropagation(); if(confirm("Wissen?")) { const tx = db.transaction("runs", "readwrite"); tx.objectStore("runs").delete(id); tx.oncomplete = init; } }
-    function clearAllHistory() { if(confirm("Alles wissen?")) { const tx = db.transaction("runs", "readwrite"); tx.objectStore("runs").clear(); tx.oncomplete = init; } }
-    function saveSelectedPlan() { 
-        localStorage.setItem('strive_selected_plan', document.getElementById('plan-select').value); 
-        renderPlan();
-        addDeletePlanButton();
-    }
-    
-    function addDeletePlanButton() {
-        const planSelect = document.getElementById('plan-select');
-        const selectedPlan = planSelect.value;
-        
-        // Remove existing delete button if present
-        const existingBtn = document.getElementById('delete-plan-btn');
-        if (existingBtn) existingBtn.remove();
-        
-        // Only show delete button for custom personal plans
-        if (selectedPlan === 'custom' && allSchemas['custom']) {
-            const deleteBtn = document.createElement('button');
-            deleteBtn.id = 'delete-plan-btn';
-            deleteBtn.className = 'clear-history-btn';
-            deleteBtn.style.marginTop = '10px';
-            deleteBtn.style.float = 'right';
-            deleteBtn.innerText = '🗑️ VERWIJDER PLAN';
-            deleteBtn.onclick = deletePersonalPlan;
+            if(AppState.activePlanKey !== undefined) localStorage.setItem(`done_${AppState.activePlanKey}_${AppState.activeWeekIdx}_${AppState.activeType}`, "true");
             
-            const planCard = planSelect.parentElement;
-            planCard.appendChild(deleteBtn);
-        }
-    }
-    
-    function deletePersonalPlan() {
-        if (confirm("Weet je zeker dat je dit persoonlijke plan wilt verwijderen?")) {
-            // Remove custom plan from schemas
-            delete allSchemas['custom'];
+            const run = { 
+                d: new Date().toLocaleDateString('nl-NL'), 
+                n: document.getElementById('pre-title').innerText, 
+                dist: AppState.totalDist.toFixed(2), 
+                pace, 
+                duration: totalSeconds,
+                calories,
+                route: AppState.currentRoute, 
+                paceHistory: AppState.paceData 
+            };
             
-            // Remove from select dropdown
-            const ps = document.getElementById('plan-select');
-            const customOption = ps.querySelector('option[value="custom"]');
-            if (customOption) customOption.remove();
-            
-            // Remove custom plan from localStorage
-            localStorage.removeItem("jellylegs_custom_plan");
+            DataController.addRun(run, () => {
+                document.getElementById('res-btn').onclick = () => location.reload();
+                document.getElementById('result-screen').style.display='flex';
+                setTimeout(() => { 
+                    UIController.renderResultMap(AppState.currentRoute); 
+                    UIController.renderPaceChart(AppState.paceData); 
+                }, 100);
+            });
+        },
 
-            // Switch back to first available plan
-            ps.value = Object.keys(allSchemas)[0];
-            localStorage.setItem("strive_selected_plan", ps.value);
-            
-            // Remove delete button
-            const deleteBtn = document.getElementById("delete-plan-btn");
-            if (deleteBtn) deleteBtn.remove();
-            
-            renderPlan();
-            speak("Persoonlijk plan verwijderd");
-        }
-    }
-    function togglePause() { isPaused = !isPaused; document.getElementById('btn-pause').innerText = isPaused ? "HERVAT" : "PAUZE"; speak(isPaused ? "Gepauzeerd" : "We gaan weer verder"); }
-
-    // FIX: confirmStop only calls finishTraining if a session is actually active
-    function confirmStop() {
-        if (!startTime) return;
-        if(confirm("Stoppen?")) {
-            // ✅ FIX: Toon baseline blok weer bij stoppen sessie
-            document.getElementById('baseline-card').style.display = 'block';
-            document.getElementById('app-list').style.display = 'block';
-            finishTraining();
-        }
-    }
-
-    function updateWarmupCoolDown() {
-        const warmupMin = parseInt(document.getElementById('warmup-time').value);
-        const cooldownMin = parseInt(document.getElementById('cooldown-time').value);
-        document.getElementById('warmup-val').innerText = warmupMin;
-        document.getElementById('cooldown-val').innerText = cooldownMin;
-        localStorage.setItem('warmup_time', warmupMin);
-        localStorage.setItem('cooldown_time', cooldownMin);
-    }
-    
-    // Apply custom warmup/cooldown times to any training plan
-    function applyCustomTimings(blocks) {
-        const warmupSec = (parseInt(localStorage.getItem('warmup_time')) || 5) * 60;
-        const cooldownSec = (parseInt(localStorage.getItem('cooldown_time')) || 5) * 60;
-        
-        let newBlocks = [...blocks];
-        
-        // Replace first block if it's warmup
-        if(newBlocks.length > 0 && newBlocks[0].m === 'warmup') {
-            newBlocks[0] = {...newBlocks[0], t: warmupSec};
-        }
-        
-        // Replace last block if it's cooldown
-        if(newBlocks.length > 0 && newBlocks[newBlocks.length-1].m === 'warmup' && newBlocks[newBlocks.length-1].s.toLowerCase().includes('cool')) {
-            newBlocks[newBlocks.length-1] = {...newBlocks[newBlocks.length-1], t: cooldownSec};
-        }
-        
-        return newBlocks;
-    }
-    
-    // Override openPreview to use custom timings
-    const originalOpenPreview = openPreview;
-    openPreview = function(plan, wIdx, type) {
-        originalOpenPreview(plan, wIdx, type);
-        sessionBlocks = applyCustomTimings(sessionBlocks);
-        
-        // Update preview with new timings
-        const totalMin = Math.round(sessionBlocks.reduce((a,b)=>a+b.t, 0)/60);
-        document.getElementById('pre-time').innerText = totalMin + " min";
-        
-        const maxTime = Math.max(...sessionBlocks.map(b => b.t));
-        const chart = document.getElementById('pre-chart');
-        chart.innerHTML = sessionBlocks.map(b => `
-            <div class="bar ${b.m}" style="height:${Math.max(15, (b.t/maxTime)*100)}%">
-                <span>${Math.round(b.t/60)}m</span>
-            </div>`).join('');
-    };
-    
-    function saveUserProfile() {
-        localStorage.setItem('user_weight', document.getElementById('user-weight').value);
-        localStorage.setItem('user_height', document.getElementById('user-height').value);
-        localStorage.setItem('user_age', document.getElementById('user-age').value);
-        localStorage.setItem('user_gender', document.getElementById('user-gender').value);
-        
-        // Visuele feedback aan gebruiker
-        vibrate([50]);
-        const feedback = document.getElementById('save-feedback');
-        feedback.style.opacity = '1';
-        feedback.style.transform = 'translateY(0)';
-        setTimeout(() => { 
-            feedback.style.opacity = '0'; 
-            feedback.style.transform = 'translateY(10px)';
-        }, 1700);
-    }
-    
-    // Load saved values on init
-    document.addEventListener('DOMContentLoaded', () => {
-        const savedWarmup = localStorage.getItem('warmup_time');
-        const savedCooldown = localStorage.getItem('cooldown_time');
-        const savedWeight = localStorage.getItem('user_weight');
-        const savedHeight = localStorage.getItem('user_height');
-        const savedAge = localStorage.getItem('user_age');
-        const savedGender = localStorage.getItem('user_gender');
-        
-        if(savedWarmup) document.getElementById('warmup-time').value = savedWarmup;
-        if(savedCooldown) document.getElementById('cooldown-time').value = savedCooldown;
-        if(savedWeight) document.getElementById('user-weight').value = savedWeight;
-        if(savedHeight) document.getElementById('user-height').value = savedHeight;
-        if(savedAge) document.getElementById('user-age').value = savedAge;
-        if(savedGender) document.getElementById('user-gender').value = savedGender;
-        
-        // ✅ Initialiseer live map toggle status
-        if (localStorage.getItem('live_map_enabled') === 'true') {
-            document.getElementById('live-map-toggle').classList.add('active');
-        }
-        
-        
-        updateWarmupCoolDown();
-    });
-
-    // 30 Minute Baseline Test
-    function startBaselineTest() {
-        activePlanKey = 'baseline';
-        activeWeekIdx = 0;
-        activeType = 't1';
-        
-        const warmupSec = (parseInt(localStorage.getItem('warmup_time')) || 5) * 60;
-        const cooldownSec = (parseInt(localStorage.getItem('cooldown_time')) || 5) * 60;
-        
-        sessionBlocks = [
-            {t: warmupSec, s:"Warming-up", m:"warmup"},
-            {t: 1800, s:"Loop op je eigen tempo", m:"run"},
-            {t: cooldownSec, s:"Cool-down", m:"warmup"}
-        ];
-        
-        document.getElementById('pre-title').innerText = "📊 30 Minuten Baseline Test";
-        const totalMin = Math.round(sessionBlocks.reduce((a,b)=>a+b.t, 0)/60);
-        document.getElementById('pre-time').innerText = totalMin + " min";
-        document.getElementById('pre-type').innerText = "Basis Test";
-        
-        const maxTime = Math.max(...sessionBlocks.map(b => b.t));
-        const chart = document.getElementById('pre-chart');
-        chart.innerHTML = sessionBlocks.map(b => `
-            <div class="bar ${b.m}" style="height:${Math.max(15, (b.t/maxTime)*100)}%">
-                <span>${Math.round(b.t/60)}m</span>
-            </div>`).join('');
-            
-        document.getElementById('preview-overlay').style.display = 'flex';
-    }
-    
-    // ✅ ACWR Helper Functie: Berekent Chronic Load voor veilige opbouw
-    function calculateChronicLoad(historyRuns, userBaseVolume) {
-        const twentyEightDaysAgo = new Date();
-        twentyEightDaysAgo.setDate(twentyEightDaysAgo.getDate() - 28);
-        
-        let weeklyTotals = [0,0,0,0]; // 4 weken
-
-        historyRuns.forEach(run => {
-            try {
-                const parts = run.d.split(/[.-]/);
-                const runDate = new Date(parts[2], parts[1] - 1, parts[0]);
+        viewRun: function(id) {
+            DataController.getRun(id, (run) => {
+                document.getElementById('res-title').innerText = run.n;
+                document.getElementById('res-d').innerText = run.dist;
+                document.getElementById('res-p').innerText = run.pace;
+                document.getElementById('res-time').innerText = this.formatT(run.duration || 0);
+                document.getElementById('res-cal').innerText = run.calories || 0;
+                document.getElementById('res-btn').innerText = "SLUITEN";
+                document.getElementById('res-btn').onclick = () => document.getElementById('result-screen').style.display='none';
+                document.getElementById('result-screen').style.display='flex';
                 
-                if(runDate >= twentyEightDaysAgo) {
-                    const daysAgo = Math.floor((new Date() - runDate) / 86400000);
-                    const weekIndex = Math.floor(daysAgo / 7);
-                    if(weekIndex >= 0 && weekIndex < 4) {
-                        weeklyTotals[weekIndex] += parseFloat(run.dist) || 0;
+                const totalSeconds = run.duration || 0;
+                const paceData = run.paceHistory || [];
+                let runSeconds = 0; let jogSeconds = 0; let walkSeconds = 0;
+
+                if (paceData.length > 0) {
+                    paceData.forEach(pStr => {
+                        const p = parseFloat(pStr);
+                        if (p < 6.5) runSeconds += 30;
+                        else if (p < 9.0) jogSeconds += 30;
+                        else walkSeconds += 30;
+                    });
+                    const totalSampled = runSeconds + jogSeconds + walkSeconds;
+                    if (totalSampled > 0) {
+                        const ratio = totalSeconds / totalSampled;
+                        runSeconds *= ratio; jogSeconds *= ratio; walkSeconds *= ratio;
+                    }
+                } else {
+                    const avgPace = parseFloat(run.pace);
+                    if (avgPace < 6.5) runSeconds = totalSeconds;
+                    else if (avgPace < 9.0) jogSeconds = totalSeconds;
+                    else walkSeconds = totalSeconds;
+                }
+
+                const totalCalculated = runSeconds + jogSeconds + walkSeconds;
+                const runPercent = totalCalculated > 0 ? Math.round((runSeconds / totalCalculated) * 100) : 0;
+                const jogPercent = totalCalculated > 0 ? Math.round((jogSeconds / totalCalculated) * 100) : 0;
+                const walkPercent = totalCalculated > 0 ? Math.max(0, 100 - runPercent - jogPercent) : 0;
+                
+                document.getElementById('stat-run-percent').innerText = runPercent + '%';
+                document.getElementById('stat-jog-percent').innerText = jogPercent + '%';
+                document.getElementById('stat-walk-percent').innerText = walkPercent + '%';
+                document.getElementById('stat-run-bar').style.width = runPercent + '%';
+                document.getElementById('stat-jog-bar').style.width = jogPercent + '%';
+                document.getElementById('stat-walk-bar').style.width = walkPercent + '%';
+                document.getElementById('stat-run-time').innerText = this.formatT(Math.round(runSeconds));
+                document.getElementById('stat-jog-time').innerText = this.formatT(Math.round(jogSeconds));
+                document.getElementById('stat-walk-time').innerText = this.formatT(Math.round(walkSeconds));
+
+                setTimeout(() => {
+                    UIController.renderResultMap(run.route || []);
+                    UIController.renderPaceChart(run.paceHistory || []);
+                }, 100);
+            });
+        },
+
+        startBaselineTest: function() {
+            AppState.activePlanKey = 'baseline';
+            AppState.activeWeekIdx = 0;
+            AppState.activeType = 't1';
+            
+            const warmupSec = (parseInt(localStorage.getItem('warmup_time')) || 5) * 60;
+            const cooldownSec = (parseInt(localStorage.getItem('cooldown_time')) || 5) * 60;
+            
+            AppState.sessionBlocks = [
+                {t: warmupSec, s:"Warming-up", m:"warmup"},
+                {t: 1800, s:"Loop op je eigen tempo", m:"run"},
+                {t: cooldownSec, s:"Cool-down", m:"warmup"}
+            ];
+            
+            document.getElementById('pre-title').innerText = "📊 30 Minuten Baseline Test";
+            const totalMin = Math.round(AppState.sessionBlocks.reduce((a,b)=>a+b.t, 0)/60);
+            document.getElementById('pre-time').innerText = totalMin + " min";
+            document.getElementById('pre-type').innerText = "Basis Test";
+            
+            const maxTime = Math.max(...AppState.sessionBlocks.map(b => b.t));
+            const chart = document.getElementById('pre-chart');
+            chart.innerHTML = AppState.sessionBlocks.map(b => `
+                <div class="bar ${b.m}" style="height:${Math.max(15, (b.t/maxTime)*100)}%">
+                    <span>${Math.round(b.t/60)}m</span>
+                </div>`).join('');
+                
+            document.getElementById('preview-overlay').style.display = 'flex';
+        },
+
+        calculateChronicLoad: function(historyRuns, userBaseVolume) {
+            const twentyEightDaysAgo = new Date();
+            twentyEightDaysAgo.setDate(twentyEightDaysAgo.getDate() - 28);
+            let weeklyTotals = [0,0,0,0];
+
+            historyRuns.forEach(run => {
+                try {
+                    const parts = run.d.split(/[.-]/);
+                    const runDate = new Date(parts[2], parts[1] - 1, parts[0]);
+                    if(runDate >= twentyEightDaysAgo) {
+                        const daysAgo = Math.floor((new Date() - runDate) / 86400000);
+                        const weekIndex = Math.floor(daysAgo / 7);
+                        if(weekIndex >= 0 && weekIndex < 4) {
+                            weeklyTotals[weekIndex] += parseFloat(run.dist) || 0;
+                        }
+                    }
+                } catch(e) {}
+            });
+
+            const validWeeks = weeklyTotals.filter(w => w > 0);
+            if(validWeeks.length >= 2) return validWeeks.reduce((a,b) => a + b, 0) / validWeeks.length;
+            else return parseFloat(userBaseVolume) || 5;
+        },
+
+        generateLITSession: function(durationMin, weekNum) {
+            const warmup = (parseInt(localStorage.getItem('warmup_time')) || 5)*60;
+            const cooldown = (parseInt(localStorage.getItem('cooldown_time')) || 5)*60;
+            const runTime = (durationMin * 60) - warmup - cooldown;
+
+            const blocks = [{t: warmup, s:"Warming-up", m:"warmup"}];
+            blocks.push({t: runTime, s:"Zone 2 Duurloop (Rustig Tempo)", m:"run"});
+            blocks.push({t: cooldown, s:"Cool-down", m:"warmup"});
+            return { label: `W${weekNum}: ✅ LIT Duurloop`, b: blocks };
+        },
+
+        generateHITSession: function(durationMin, weekNum) {
+            const warmup = (parseInt(localStorage.getItem('warmup_time')) || 5)*60;
+            const cooldown = (parseInt(localStorage.getItem('cooldown_time')) || 5)*60;
+            const workTime = (durationMin * 60) - warmup - cooldown;
+
+            const blocks = [{t: warmup, s:"Warming-up", m:"warmup"}];
+            const intervalCycle = 120;
+            const cycles = Math.floor(workTime / intervalCycle);
+            
+            for(let i = 0; i < cycles; i++) {
+                blocks.push({t: 60, s:"🔴 HIT Snel Tempo", m:"run"});
+                blocks.push({t: 60, s:"🟢 Actief Herstel", m:"walk"});
+            }
+
+            blocks.push({t: cooldown, s:"Cool-down", m:"warmup"});
+            return { label: `W${weekNum}: ⚡ HIT Interval Training`, b: blocks };
+        },
+
+        generateCustomPlan: function() {
+            const frequency = parseInt(document.getElementById('train-frequency').value);
+            const goal = document.getElementById('train-goal').value;
+            const userBaseVolume = parseFloat(document.getElementById('user-base-volume').value) || 5;
+            
+            DataController.getAllRuns((runs) => {
+                const chronicLoad = this.calculateChronicLoad(runs, userBaseVolume);
+                const weeklyVolumes = [];
+                let currentVolume = chronicLoad * 1.25;
+                
+                for(let week = 1; week <= 8; week++) {
+                    weeklyVolumes.push(Math.round(currentVolume * 10) / 10);
+                    if(week < 8) {
+                        const increase = 1.1 + (Math.random() * 0.1);
+                        currentVolume = currentVolume * increase;
                     }
                 }
-            } catch(e) {}
-        });
 
-        const validWeeks = weeklyTotals.filter(w => w > 0);
-        
-        if(validWeeks.length >= 2) {
-            return validWeeks.reduce((a,b) => a + b, 0) / validWeeks.length;
-        } else {
-            return parseFloat(userBaseVolume) || 5;
-        }
-    }
+                let baselinePace = 7.0;
+                const baselineRun = runs.find(r => r.n.includes("Baseline") && r.pace);
+                if(baselineRun) baselinePace = parseFloat(baselineRun.pace);
 
-    // ✅ 80/20 Gepolariseerd Trainen Generator
-    function generateLITSession(durationMin, weekNum) {
-        const warmup = (parseInt(localStorage.getItem('warmup_time')) || 5)*60;
-        const cooldown = (parseInt(localStorage.getItem('cooldown_time')) || 5)*60;
-        const runTime = (durationMin * 60) - warmup - cooldown;
+                const customWeeks = [];
+                const avgPace = baselinePace;
 
-        const blocks = [{t: warmup, s:"Warming-up", m:"warmup"}];
-        blocks.push({t: runTime, s:"Zone 2 Duurloop (Rustig Tempo)", m:"run"});
-        blocks.push({t: cooldown, s:"Cool-down", m:"warmup"});
-        
-        return { label: `W${weekNum}: ✅ LIT Duurloop`, b: blocks };
-    }
+                for(let week = 1; week <= 8; week++) {
+                    const weekData = { w: week };
+                    const totalWeekKm = weeklyVolumes[week - 1];
+                    const totalWeekMin = totalWeekKm * avgPace;
+                    const perSessionMin = totalWeekMin / frequency;
 
-    function generateHITSession(durationMin, weekNum) {
-        const warmup = (parseInt(localStorage.getItem('warmup_time')) || 5)*60;
-        const cooldown = (parseInt(localStorage.getItem('cooldown_time')) || 5)*60;
-        const workTime = (durationMin * 60) - warmup - cooldown;
+                    const hitSessions = frequency === 2 ? 1 : Math.ceil(frequency * 0.2);
+                    const litSessions = frequency - hitSessions;
 
-        const blocks = [{t: warmup, s:"Warming-up", m:"warmup"}];
-        
-        // 1 minuut snel / 1 minuut wandelen interval structuur
-        const intervalCycle = 120; // 60 run + 60 walk
-        const cycles = Math.floor(workTime / intervalCycle);
-        
-        for(let i = 0; i < cycles; i++) {
-            blocks.push({t: 60, s:"🔴 HIT Snel Tempo", m:"run"});
-            blocks.push({t: 60, s:"🟢 Actief Herstel", m:"walk"});
-        }
-
-        blocks.push({t: cooldown, s:"Cool-down", m:"warmup"});
-        
-        return { label: `W${weekNum}: ⚡ HIT Interval Training`, b: blocks };
-    }
-
-    // ✅ Geüpdatete Custom Plan Generator met ACWR + 80/20 Regel
-    function generateCustomPlan() {
-        const frequency = parseInt(document.getElementById('train-frequency').value);
-        const goal = document.getElementById('train-goal').value;
-        const userBaseVolume = parseFloat(document.getElementById('user-base-volume').value) || 5;
-        
-        const tx = db.transaction("runs", "readonly");
-        tx.objectStore("runs").getAll().onsuccess = (e) => {
-            const runs = e.target.result;
-
-            // ✅ Stap 1: Bepaal veilige basis via ACWR
-            const chronicLoad = calculateChronicLoad(runs, userBaseVolume);
-            
-            // ✅ Stap 2: Bereken volume progressie volgens ACWR normen
-            const weeklyVolumes = [];
-            let currentVolume = chronicLoad * 1.25; // Week 1: 1.2x - 1.3x Chronic Load
-            
-            for(let week = 1; week <= 8; week++) {
-                weeklyVolumes.push(Math.round(currentVolume * 10) / 10);
+                    let sessionCounter = 1;
+                    for(let i = 0; i < litSessions; i++) {
+                        weekData[`t${sessionCounter}`] = this.generateLITSession(perSessionMin, week);
+                        sessionCounter++;
+                    }
+                    for(let i = 0; i < hitSessions; i++) {
+                        weekData[`t${sessionCounter}`] = this.generateHITSession(perSessionMin, week);
+                        sessionCounter++;
+                    }
+                    customWeeks.push(weekData);
+                }
                 
-                // Week 2 t/m 8: max 1.1x - 1.2x per week verhoging
-                if(week < 8) {
-                    const increase = 1.1 + (Math.random() * 0.1); // 1.1 tot 1.2
-                    currentVolume = currentVolume * increase;
+                const customPlanData = {
+                    name: `🎯 Wetenschappelijk Plan: ${goal} (${frequency}x/week)`,
+                    weeks: customWeeks
+                };
+                
+                AppState.allSchemas["custom"] = customPlanData;
+                localStorage.setItem("jellylegs_custom_plan", JSON.stringify(customPlanData));
+                
+                const ps = document.getElementById("plan-select");
+                if(!ps.querySelector("option[value=\"custom\"]")) {
+                    ps.innerHTML += `<option value="custom">${AppState.allSchemas["custom"].name}</option>`;
                 }
-            }
-
-            // ✅ Gebruik werkelijke baseline pace als die beschikbaar is
-            let baselinePace = 7.0; // default 7min/km
-            const baselineRun = runs.find(r => r.n.includes("Baseline") && r.pace);
-            if(baselineRun) {
-                baselinePace = parseFloat(baselineRun.pace);
-            }
-
-            // ✅ Stap 3: Genereer 8 week plan met 80/20 verdeling
-            const customWeeks = [];
-            const goalDistances = { '3km': 3, '5km': 5, '10km': 10, 'halve': 21.1 };
-            const avgPace = baselinePace;
-
-            for(let week = 1; week <= 8; week++) {
-                const weekData = { w: week };
-                const totalWeekKm = weeklyVolumes[week - 1];
-                const totalWeekMin = totalWeekKm * avgPace;
-                const perSessionMin = totalWeekMin / frequency;
-
-                // ✅ 80/20 Verdeelsleutel op basis van trainingsfrequentie
-                const hitSessions = frequency === 2 ? 1 : Math.ceil(frequency * 0.2);
-                const litSessions = frequency - hitSessions;
-
-                let sessionCounter = 1;
-
-                // Voeg eerst alle LIT sessies toe (80%)
-                for(let i = 0; i < litSessions; i++) {
-                    weekData[`t${sessionCounter}`] = generateLITSession(perSessionMin, week);
-                    sessionCounter++;
-                }
-
-                // Voeg daarna HIT sessies toe (20%)
-                for(let i = 0; i < hitSessions; i++) {
-                    weekData[`t${sessionCounter}`] = generateHITSession(perSessionMin, week);
-                    sessionCounter++;
-                }
-
-                customWeeks.push(weekData);
-            }
-            
-            // ✅ Opslaan in schema lijst en localStorage
-            const customPlanData = {
-                name: `🎯 Wetenschappelijk Plan: ${goal} (${frequency}x/week)`,
-                weeks: customWeeks
-            };
-            allSchemas["custom"] = customPlanData;
-            localStorage.setItem("jellylegs_custom_plan", JSON.stringify(customPlanData));
-            
-            // Update plan selector
-            const ps = document.getElementById("plan-select");
-            if(!ps.querySelector("option[value=\"custom\"]")) {
-                ps.innerHTML += `<option value="custom">${allSchemas["custom"].name}</option>`;
-            }
-            ps.value = "custom";
-            
-            localStorage.setItem("strive_selected_plan", "custom");
-            renderPlan();
-            
-            speak("Je wetenschappelijk gevalideerde trainingsschema is gegenereerd!");
-        };
-    }
-
-    // ✅ Bottom Navigation Tab Switching
-    function openTab(tabName, element) {
-        // Hide all tabs
-        document.querySelectorAll('.tab-view').forEach(tab => tab.classList.remove('active'));
-        // Remove active state from nav items
-        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-        
-        // Show selected tab
-        document.getElementById(`tab-${tabName}`).classList.add('active');
-        // Mark nav item as active
-        element.classList.add('active');
-        vibrate([30]);
-    }
-
-    window.speechSynthesis.onvoiceschanged = () => { voices = window.speechSynthesis.getVoices(); const dutch = voices.filter(v => v.lang.includes('nl')); const select = document.getElementById('voice-select'); if(select) select.innerHTML = dutch.map(v => `<option value="${v.name}">${v.name}</option>`).join('') || '<option>Standaard Stem</option>'; };
-
-    // ==============================================
-    // ✅ VERSIEBEHEER
-    // ==============================================
-    const APP_VERSION = "1.1.0";
-    const APP_VERSION_DATE = "08-05-2026";
-    const CHANGELOG = [
-        { version: "1.1.0", date: "08-05-2026", changes: [
-            "✨ Kaart in resultatenscherm is nu licht (OpenStreetMap) i.p.v. donker",
-            "🐛 Donkere flits bij laden kaart verholpen (CSS achtergrond naar wit)",
-            "📦 Versiebeheer systeem toegevoegd met changelog",
-            "🔊 Audio ducking verwijderd (veroorzaakte irritante klik, werkte niet goed)",
-            "🗺️ Route-minimap toegevoegd aan share afbeelding"
-        ]},
-        { version: "1.0.0", date: "01-05-2026", changes: [
-            "🎉 Eerste volledige release van JellyLegs",
-            "🏃 Training schema's voor 3km, 5km, 10km en halve marathon",
-            "📍 GPS tracking met live kaart tijdens het hardlopen",
-            "📊 Gedetailleerde resultaten met pace grafiek",
-            "🔥 Streak tracking en persoonlijke records",
-            "❤️ Bluetooth hartslagmeter ondersteuning",
-            "📤 Deel resultaten via social media",
-            "🖼️ Generate share afbeelding voor Instagram",
-            "📍 GPX export voor Strava/Garmin",
-            "🎯 Wetenschappelijk 80/20 trainingsplan generator met ACWR"
-        ]}
-    ];
-
-    function showChangelog() {
-        const existing = document.getElementById('changelog-overlay');
-        if (existing) existing.remove();
-        
-        const overlay = document.createElement('div');
-        overlay.id = 'changelog-overlay';
-        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(5px);z-index:5000;display:flex;align-items:center;padding:20px;overflow-y:auto;';
-        
-        const content = document.createElement('div');
-        content.className = 'card';
-        content.style.cssText = 'width:100%;max-width:480px;margin:auto;max-height:80vh;overflow-y:auto;';
-        
-        let html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px"><h2 style="margin:0">📜 Wijzigingslog</h2><button class="clear-history-btn" onclick="this.closest(\'#changelog-overlay\').remove()">✕ Sluiten</button></div>';
-        
-        CHANGELOG.forEach(entry => {
-            html += `<div style="margin-bottom:20px;padding-bottom:15px;border-bottom:1px solid rgba(255,255,255,0.1)">`;
-            html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">`;
-            html += `<span style="font-size:16px;font-weight:900;color:var(--primary)">v${entry.version}</span>`;
-            html += `<span style="font-size:11px;font-weight:700;color:var(--text-muted)">${entry.date}</span>`;
-            html += `</div><ul style="margin:0;padding-left:20px">`;
-            entry.changes.forEach(change => {
-                html += `<li style="font-size:13px;margin-bottom:4px;line-height:1.5">${change}</li>`;
+                ps.value = "custom";
+                localStorage.setItem("strive_selected_plan", "custom");
+                
+                UIController.renderPlan();
+                this.speak("Je wetenschappelijk gevalideerde trainingsschema is gegenereerd!");
             });
-            html += `</ul></div>`;
-        });
-        
-        content.innerHTML = html;
-        overlay.appendChild(content);
-        document.body.appendChild(overlay);
-    }
-    
-    // ==============================================
-    // ✅ NIEUWE FEATURES: Web Bluetooth, Web Share, View Transitions, GPX Export
-    // ==============================================
+        },
 
-    // 1. ❤️ Hartslagmeter via Web Bluetooth API
-    let heartRateDevice = null;
-    let heartRateCharacteristic = null;
-    let currentHeartRate = 0;
+        connectHeartRateMonitor: async function() {
+            try {
+                if (!navigator.bluetooth) {
+                    alert("Hartslagmeter wordt niet ondersteund in deze browser");
+                    return;
+                }
+                this.vibrate([100,50,100]);
+                AppState.heartRateDevice = await navigator.bluetooth.requestDevice({
+                    filters: [{ services: ['heart_rate'] }],
+                    optionalServices: ['battery_service']
+                });
+                const server = await AppState.heartRateDevice.gatt.connect();
+                const service = await server.getPrimaryService('heart_rate');
+                AppState.heartRateCharacteristic = await service.getCharacteristic('heart_rate_measurement');
+                
+                await AppState.heartRateCharacteristic.startNotifications();
+                AppState.heartRateCharacteristic.addEventListener('characteristicvaluechanged', (e) => {
+                    const value = e.target.value;
+                    const flags = value.getUint8(0);
+                    const rate16Bits = flags & 0x1;
+                    AppState.currentHeartRate = rate16Bits ? value.getUint16(1, true) : value.getUint8(1);
+                    if (AppState.currentHeartRate > 175) {
+                        this.speak(`Je hartslag is nu ${AppState.currentHeartRate}, probeer iets rustiger te lopen.`);
+                    } else if (AppState.currentHeartRate > 165) {
+                        this.speak(`Goed bezig, hartslag op ${AppState.currentHeartRate}`);
+                    }
+                });
+                
+                this.speak("Hartslagmeter verbonden!");
+                alert("✅ Hartslagmeter succesvol verbonden!");
+            } catch (err) {
+                console.warn("Hartslagmeter fout:", err);
+                this.speak("Kon geen verbinding maken met de hartslagmeter");
+            }
+        },
 
-    async function connectHeartRateMonitor() {
-        try {
-            if (!navigator.bluetooth) {
-                alert("Hartslagmeter wordt niet ondersteund in deze browser");
+        shareResult: async function() {
+            if (!navigator.share) {
+                alert("Delen wordt niet ondersteund in deze browser");
                 return;
             }
-
-            vibrate([100,50,100]);
-            heartRateDevice = await navigator.bluetooth.requestDevice({
-                filters: [{ services: ['heart_rate'] }],
-                optionalServices: ['battery_service']
-            });
-
-            const server = await heartRateDevice.gatt.connect();
-            const service = await server.getPrimaryService('heart_rate');
-            heartRateCharacteristic = await service.getCharacteristic('heart_rate_measurement');
-            
-            await heartRateCharacteristic.startNotifications();
-            heartRateCharacteristic.addEventListener('characteristicvaluechanged', handleHeartRateUpdate);
-            
-            speak("Hartslagmeter verbonden!");
-            alert("✅ Hartslagmeter succesvol verbonden!");
-
-        } catch (err) {
-            console.warn("Hartslagmeter fout:", err);
-            speak("Kon geen verbinding maken met de hartslagmeter");
-        }
-    }
-
-    function handleHeartRateUpdate(event) {
-        const value = event.target.value;
-        const flags = value.getUint8(0);
-        const rate16Bits = flags & 0x1;
-        currentHeartRate = rate16Bits ? value.getUint16(1, true) : value.getUint8(1);
-        
-        // Audio coach feedback
-        if (currentHeartRate > 175) {
-            speak(`Je hartslag is nu ${currentHeartRate}, probeer iets rustiger te lopen.`);
-        } else if (currentHeartRate > 165) {
-            speak(`Goed bezig, hartslag op ${currentHeartRate}`);
-        }
-    }
-
-    // 2. 📤 Web Share API voor het delen van resultaten
-    async function shareResult() {
-        if (!navigator.share) {
-            alert("Delen wordt niet ondersteund in deze browser");
-            return;
-        }
-
-        try {
-            await navigator.share({
-                title: "🏃 Mijn Strive run!",
-                text: `Ik heb net ${document.getElementById('res-d').innerText} km gerund in ${document.getElementById('res-time').innerText}! Gemiddeld tempo: ${document.getElementById('res-p').innerText} min/km`,
-                url: window.location.href
-            });
-        } catch (err) {
-            console.log("Delen geannuleerd");
-        }
-    }
-
-    // ✅ 🖼️ Share Afbeelding Generator (Instagram / Strava formaat 1080x1080)
-    async function generateShareImage() {
-        try {
-            // Maak vierkante canvas 1080x1080 perfect voor Instagram
-            const canvas = document.createElement('canvas');
-            canvas.width = 1080;
-            canvas.height = 1080;
-            const ctx = canvas.getContext('2d');
-            
-            // Donkere gradient achtergrond
-            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            gradient.addColorStop(0, '#0f0f11');
-            gradient.addColorStop(1, '#1a1a1c');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Logo
-            ctx.font = 'bold 88px Inter, sans-serif';
-            ctx.fillStyle = '#27ae60';
-            ctx.textAlign = 'center';
-            ctx.fillText('JELLYLEGS', canvas.width/2, 140);
-            
-            // Subtitel
-            ctx.font = 'normal 34px Inter, sans-serif';
-            ctx.fillStyle = '#a4b0be';
-            ctx.fillText('Hardloop Training Voltooid!', canvas.width/2, 200);
-
-            // --- Route Minimap ---
-            if (currentRoute && currentRoute.length >= 2) {
-                const mapY = 250;
-                const mapH = 250;
-                const mapW = 500;
-                const mapX = (canvas.width - mapW) / 2;
-                
-                // Map background
-                ctx.fillStyle = '#1e1e24';
-                ctx.beginPath();
-                ctx.roundRect(mapX, mapY, mapW, mapH, 16);
-                ctx.fill();
-                
-                // Grid lines for map feel
-                ctx.strokeStyle = 'rgba(255,255,255,0.04)';
-                ctx.lineWidth = 1;
-                for (let i = 0; i <= 8; i++) {
-                    const x = mapX + (mapW / 8) * i;
-                    const y = mapY + (mapH / 8) * i;
-                    ctx.beginPath(); ctx.moveTo(x, mapY); ctx.lineTo(x, mapY + mapH); ctx.stroke();
-                    ctx.beginPath(); ctx.moveTo(mapX, y); ctx.lineTo(mapX + mapW, y); ctx.stroke();
-                }
-                
-                // Calculate bounds
-                let minLat = Infinity, maxLat = -Infinity, minLng = Infinity, maxLng = -Infinity;
-                currentRoute.forEach(p => {
-                    if (p[0] < minLat) minLat = p[0];
-                    if (p[0] > maxLat) maxLat = p[0];
-                    if (p[1] < minLng) minLng = p[1];
-                    if (p[1] > maxLng) maxLng = p[1];
+            try {
+                await navigator.share({
+                    title: "🏃 Mijn Strive run!",
+                    text: `Ik heb net ${document.getElementById('res-d').innerText} km gerund in ${document.getElementById('res-time').innerText}! Gemiddeld tempo: ${document.getElementById('res-p').innerText} min/km`,
+                    url: window.location.href
                 });
+            } catch (err) { console.log("Delen geannuleerd"); }
+        },
+
+        generateShareImage: async function() {
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = 1080; canvas.height = 1080;
+                const ctx = canvas.getContext('2d');
                 
-                const padding = 0.001;
-                minLat -= padding; maxLat += padding;
-                minLng -= padding; maxLng += padding;
-                const latRange = maxLat - minLat || 0.001;
-                const lngRange = maxLng - minLng || 0.001;
+                const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                gradient.addColorStop(0, '#0f0f11'); gradient.addColorStop(1, '#1a1a1c');
+                ctx.fillStyle = gradient; ctx.fillRect(0, 0, canvas.width, canvas.height);
                 
-                // Project route to canvas using simple Mercator-like projection
-                const projectLat = (lat) => {
-                    const clamped = Math.max(-85, Math.min(85, lat));
-                    return Math.log(Math.tan(Math.PI/4 + (clamped * Math.PI/180)/2));
-                };
-                const projMinLat = projectLat(minLat);
-                const projMaxLat = projectLat(maxLat);
-                const projLatRange = projMaxLat - projMinLat || 0.001;
+                ctx.font = 'bold 88px Inter, sans-serif'; ctx.fillStyle = '#27ae60'; ctx.textAlign = 'center';
+                ctx.fillText('JELLYLEGS', canvas.width/2, 140);
                 
-                const paddingPx = 20;
-                const drawW = mapW - paddingPx * 2;
-                const drawH = mapH - paddingPx * 2;
-                const drawX = mapX + paddingPx;
-                const drawY = mapY + paddingPx;
-                
-                // Draw route polyline
-                const points = currentRoute.map(p => {
-                    const x = drawX + ((p[1] - minLng) / lngRange) * drawW;
-                    const y = drawY + drawH - ((projectLat(p[0]) - projMinLat) / projLatRange) * drawH;
-                    return { x, y };
-                });
-                
-                // Glow effect
-                ctx.shadowColor = '#2ecc71';
-                ctx.shadowBlur = 12;
-                ctx.beginPath();
-                ctx.moveTo(points[0].x, points[0].y);
-                for (let i = 1; i < points.length; i++) {
-                    ctx.lineTo(points[i].x, points[i].y);
-                }
-                ctx.strokeStyle = '#2ecc71';
-                ctx.lineWidth = 4;
-                ctx.stroke();
-                ctx.shadowBlur = 0;
-                
-                // Start marker (green circle)
-                if (points.length > 0) {
-                    ctx.beginPath();
-                    ctx.arc(points[0].x, points[0].y, 8, 0, Math.PI * 2);
-                    ctx.fillStyle = '#27ae60';
-                    ctx.fill();
-                    ctx.strokeStyle = '#ffffff';
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
+                ctx.font = 'normal 34px Inter, sans-serif'; ctx.fillStyle = '#a4b0be';
+                ctx.fillText('Hardloop Training Voltooid!', canvas.width/2, 200);
+
+                if (AppState.currentRoute && AppState.currentRoute.length >= 2) {
+                    const mapY = 250, mapH = 250, mapW = 500, mapX = (canvas.width - mapW) / 2;
+                    ctx.fillStyle = '#1e1e24'; ctx.beginPath(); ctx.roundRect(mapX, mapY, mapW, mapH, 16); ctx.fill();
                     
-                    ctx.font = 'bold 14px Inter, sans-serif';
-                    ctx.fillStyle = '#27ae60';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('START', points[0].x, points[0].y - 16);
+                    ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth = 1;
+                    for (let i = 0; i <= 8; i++) {
+                        const x = mapX + (mapW / 8) * i; const y = mapY + (mapH / 8) * i;
+                        ctx.beginPath(); ctx.moveTo(x, mapY); ctx.lineTo(x, mapY + mapH); ctx.stroke();
+                        ctx.beginPath(); ctx.moveTo(mapX, y); ctx.lineTo(mapX + mapW, y); ctx.stroke();
+                    }
+                    
+                    let minLat = Infinity, maxLat = -Infinity, minLng = Infinity, maxLng = -Infinity;
+                    AppState.currentRoute.forEach(p => {
+                        if (p[0] < minLat) minLat = p[0]; if (p[0] > maxLat) maxLat = p[0];
+                        if (p[1] < minLng) minLng = p[1]; if (p[1] > maxLng) maxLng = p[1];
+                    });
+                    
+                    const padding = 0.001; minLat -= padding; maxLat += padding; minLng -= padding; maxLng += padding;
+                    const lngRange = maxLng - minLng || 0.001;
+                    
+                    const projectLat = (lat) => Math.log(Math.tan(Math.PI/4 + (Math.max(-85, Math.min(85, lat)) * Math.PI/180)/2));
+                    const projMinLat = projectLat(minLat); const projLatRange = projectLat(maxLat) - projMinLat || 0.001;
+                    
+                    const drawW = mapW - 40, drawH = mapH - 40, drawX = mapX + 20, drawY = mapY + 20;
+                    const points = AppState.currentRoute.map(p => {
+                        return { x: drawX + ((p[1] - minLng) / lngRange) * drawW, y: drawY + drawH - ((projectLat(p[0]) - projMinLat) / projLatRange) * drawH };
+                    });
+                    
+                    ctx.shadowColor = '#2ecc71'; ctx.shadowBlur = 12; ctx.beginPath(); ctx.moveTo(points[0].x, points[0].y);
+                    for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
+                    ctx.strokeStyle = '#2ecc71'; ctx.lineWidth = 4; ctx.stroke(); ctx.shadowBlur = 0;
+                    
+                    if (points.length > 0) {
+                        ctx.beginPath(); ctx.arc(points[0].x, points[0].y, 8, 0, Math.PI * 2); ctx.fillStyle = '#27ae60'; ctx.fill();
+                        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke();
+                        ctx.font = 'bold 14px Inter, sans-serif'; ctx.fillStyle = '#27ae60'; ctx.textAlign = 'center'; ctx.fillText('START', points[0].x, points[0].y - 16);
+                    }
+                    if (points.length > 1) {
+                        const last = points[points.length - 1];
+                        ctx.beginPath(); ctx.arc(last.x, last.y, 8, 0, Math.PI * 2); ctx.fillStyle = '#e74c3c'; ctx.fill();
+                        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke();
+                        ctx.font = 'bold 14px Inter, sans-serif'; ctx.fillStyle = '#e74c3c'; ctx.textAlign = 'center'; ctx.fillText('FINISH', last.x, last.y - 16);
+                    }
                 }
                 
-                // End marker (flag/checkered)
-                if (points.length > 1) {
-                    const last = points[points.length - 1];
-                    ctx.beginPath();
-                    ctx.arc(last.x, last.y, 8, 0, Math.PI * 2);
-                    ctx.fillStyle = '#e74c3c';
-                    ctx.fill();
-                    ctx.strokeStyle = '#ffffff';
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
-                    
-                    ctx.font = 'bold 14px Inter, sans-serif';
-                    ctx.fillStyle = '#e74c3c';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('FINISH', last.x, last.y - 16);
-                }
+                ctx.font = 'bold 72px Inter, sans-serif'; ctx.fillStyle = '#ffffff';
+                ctx.fillText(document.getElementById('res-d').innerText + ' KM', canvas.width/2, 560);
+                ctx.font = 'normal 32px Inter, sans-serif'; ctx.fillStyle = '#a4b0be';
+                ctx.fillText(`Pace: ${document.getElementById('res-p').innerText} min/km`, canvas.width/2, 610);
+                
+                ctx.beginPath(); ctx.arc(canvas.width/2, 820, 170, 0, Math.PI * 2); ctx.strokeStyle = '#27ae60'; ctx.lineWidth = 4; ctx.stroke();
+                ctx.font = 'bold 88px Inter, sans-serif'; ctx.fillStyle = '#ffffff';
+                ctx.fillText(document.getElementById('res-time').innerText, canvas.width/2, 845);
+                
+                ctx.font = 'normal 28px Inter, sans-serif'; ctx.fillStyle = '#27ae60';
+                ctx.fillText('https://jellylegs.app', canvas.width/2, canvas.height - 60);
+                
+                const link = document.createElement('a');
+                link.download = `strive-run-${new Date().toISOString().split('T')[0]}.png`;
+                link.href = canvas.toDataURL('image/png'); link.click();
+                
+                this.vibrate([100, 50, 100]); this.speak("Share afbeelding gegenereerd!");
+            } catch (err) {
+                console.warn("Share afbeelding fout:", err); alert("Kon geen afbeelding genereren");
             }
-            // --- End Route Minimap ---
+        },
+
+        exportAsGPX: function() {
+            if (!AppState.currentRoute || AppState.currentRoute.length < 2) {
+                alert("Geen GPS data aanwezig om te exporteren"); return;
+            }
+            let gpxContent = `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="JellyLegs Hardloop App" xmlns="http://www.topografix.com/GPX/1/1">\n  <trk>\n    <name>${document.getElementById('res-title').innerText}</name>\n    <trkseg>\n`;
+            AppState.currentRoute.forEach((point) => { gpxContent += `      <trkpt lat="${point[0]}" lon="${point[1]}"></trkpt>\n`; });
+            gpxContent += `    </trkseg>\n  </trk>\n</gpx>`;
             
-            // Stats
-            ctx.font = 'bold 72px Inter, sans-serif';
-            ctx.fillStyle = '#ffffff';
-            ctx.fillText(document.getElementById('res-d').innerText + ' KM', canvas.width/2, 560);
-            
-            // Stats rij
-            ctx.font = 'normal 32px Inter, sans-serif';
-            ctx.fillStyle = '#a4b0be';
-            ctx.fillText(`Pace: ${document.getElementById('res-p').innerText} min/km`, canvas.width/2, 610);
-            
-            // Ronde cirkel decoratie
-            ctx.beginPath();
-            ctx.arc(canvas.width/2, 820, 170, 0, Math.PI * 2);
-            ctx.strokeStyle = '#27ae60';
-            ctx.lineWidth = 4;
-            ctx.stroke();
-            
-            // Tijd in het midden
-            ctx.font = 'bold 88px Inter, sans-serif';
-            ctx.fillStyle = '#ffffff';
-            ctx.fillText(document.getElementById('res-time').innerText, canvas.width/2, 845);
-            
-            // Footer branding
-            ctx.font = 'normal 28px Inter, sans-serif';
-            ctx.fillStyle = '#27ae60';
-            ctx.fillText('https://jellylegs.app', canvas.width/2, canvas.height - 60);
-            
-            // Download afbeelding
-            const link = document.createElement('a');
-            link.download = `strive-run-${new Date().toISOString().split('T')[0]}.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-            
-            vibrate([100, 50, 100]);
-            speak("Share afbeelding gegenereerd!");
-            
-        } catch (err) {
-            console.warn("Share afbeelding fout:", err);
-            alert("Kon geen afbeelding genereren");
+            const blob = new Blob([gpxContent], {type: 'application/gpx+xml'});
+            const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url;
+            a.download = `strive-run-${new Date().toISOString().split('T')[0]}.gpx`;
+            a.click(); URL.revokeObjectURL(url);
         }
-    }
+    };
 
-    // 3. ✨ View Transitions API voor vloeiende tab animaties
-    function openTab(tabName, element) {
-        const switchTab = () => {
-            // Hide all tabs
-            document.querySelectorAll('.tab-view').forEach(tab => tab.classList.remove('active'));
-            // Remove active state from nav items
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            
-            // Show selected tab
-            document.getElementById(`tab-${tabName}`).classList.add('active');
-            // Mark nav item as active
-            element.classList.add('active');
-            vibrate([30]);
-        };
-
-        if ('startViewTransition' in document) {
-            document.startViewTransition(switchTab);
-        } else {
-            switchTab();
-        }
-    }
-
-    // 4. 📍 GPX File Export (voor Strava, Garmin, etc)
-    function exportAsGPX(route) {
-        if (!route || route.length < 2) {
-            alert("Geen GPS data aanwezig om te exporteren");
-            return;
-        }
-
-        let gpxContent = `<?xml version="1.0" encoding="UTF-8"?>
-<gpx version="1.1" creator="JellyLegs Hardloop App" xmlns="http://www.topografix.com/GPX/1/1">
-  <trk>
-    <name>${document.getElementById('res-title').innerText}</name>
-    <trkseg>
-`;
-
-        route.forEach((point, index) => {
-            gpxContent += `      <trkpt lat="${point[0]}" lon="${point[1]}"></trkpt>\n`;
+    // BOOTSTRAP APP
+    document.addEventListener('DOMContentLoaded', () => {
+        DataController.init(() => {
+            AppController.init();
         });
+    });
 
-        gpxContent += `    </trkseg>
-  </trk>
-</gpx>`;
-
-        const blob = new Blob([gpxContent], {type: 'application/gpx+xml'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `strive-run-${new Date().toISOString().split('T')[0]}.gpx`;
-        a.click();
-        URL.revokeObjectURL(url);
-    }
-
-    // ✅ LIVE KAART FUNCTIE
-    let liveMapEnabled = localStorage.getItem('live_map_enabled') === 'true';
-    let liveMapInstance = null;
-    let livePolyline = null;
-
-    function toggleLiveMap() {
-        liveMapEnabled = !liveMapEnabled;
-        localStorage.setItem('live_map_enabled', liveMapEnabled);
-        document.getElementById('live-map-toggle').classList.toggle('active', liveMapEnabled);
-        vibrate([50]);
-    }
-
-    function initLiveMap() {
-        if (!liveMapEnabled) return;
-        
-        const mapElement = document.getElementById('live-training-map');
-        mapElement.style.display = 'block';
-        
-        if (liveMapInstance) liveMapInstance.remove();
-        
-        liveMapInstance = L.map('live-training-map', {zoomControl: false, attributionControl: false});
-        
-        // ✅ Standaard OpenStreetMap tiles (precies zoals voorbeeld)
-        const tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-            
-        L.tileLayer(tileUrl).addTo(liveMapInstance);
-        livePolyline = L.polyline([], {color: '#2ecc71', weight: 5}).addTo(liveMapInstance);
-    }
-
-    function updateLiveMap(route) {
-        if (!liveMapEnabled || !liveMapInstance || !livePolyline) return;
-        
-        livePolyline.setLatLngs(route);
-        
-        if (route.length >= 2) {
-            const bounds = livePolyline.getBounds();
-            if (bounds.isValid()) {
-                liveMapInstance.fitBounds(bounds, {padding: [30, 30], maxZoom: 16});
-            }
-        } else if (route.length === 1) {
-            liveMapInstance.setView(route[0], 16);
-        }
-    }
 </script>
 </body>
 </html>
