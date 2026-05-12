@@ -85,7 +85,7 @@
 
         #result-screen { position: fixed; inset: 0; background: var(--bg-dark); z-index: 4000; display: none; flex-direction: column; overflow-y: auto; }
         #map { width: 100%; min-height: 300px; background: #ffffff; flex-shrink: 0; }
-        .chart-container { height: 200px; padding: 10px; margin-bottom: 20px; }
+        .chart-container { height: 180px; padding: 0; margin: 0; }
 
         .clear-history-btn {
             background: rgba(231, 76, 60, 0.1);
@@ -300,7 +300,11 @@
             </div>
         </div>
 
-        <div class="chart-container card"><canvas id="paceChart"></canvas></div>
+        <div class="card">
+            <span class="dash-label">📈 Pace Verloop (min/km)</span>
+            <div class="chart-container"><canvas id="paceChart"></canvas></div>
+        </div>
+        
         <button id="res-btn" class="btn btn-primary" onclick="location.reload()">OPSLAAN & SLUITEN</button>
         <button class="btn" style="margin-top: 10px; background: rgba(52, 152, 219, 0.2); color: var(--accent)" onclick="AppController.shareResult()">📤 Deel resultaat</button>
         <button class="btn" style="margin-top: 10px; background: rgba(46, 204, 113, 0.2); color: var(--primary)" onclick="AppController.generateShareImage()">🖼️ Genereer Share Afbeelding</button>
@@ -769,7 +773,6 @@
         updateLiveMap: function(route) {
             if (!this.liveMapEnabled || !this.liveMapInstance || !this.livePolyline) return;
             
-            // Transformeer array van [lat, lng, pace] terug naar simpele lat/lng voor live lijn
             const latLngs = route.map(p => [p[0], p[1]]);
             this.livePolyline.setLatLngs(latLngs);
             
@@ -783,7 +786,7 @@
             }
         },
 
-        // GEKLEURDE KAART IMPLEMENTATIE VOOR RESULTAAT SCHERM
+        // ✅ Koppel kleuren van map aan de grafiek / labels
         renderResultMap: function(route) {
             if (this.mapInstance) this.mapInstance.remove();
             
@@ -799,7 +802,6 @@
 
             if(route.length > 1) {
                 const bounds = [];
-                // Check of route data pace info bevat (nieuwe structuur: [lat, lng, pace])
                 const hasPaceData = route[0].length >= 3;
 
                 if (hasPaceData) {
@@ -809,14 +811,13 @@
                         const pace = p2[2] || p1[2] || 0; 
                         
                         let segColor = 'var(--primary)'; // Groen (Hardlopen)
-                        if (pace === 0 || pace >= 9.0) segColor = 'var(--danger)'; // Rood (Wandelen)
-                        else if (pace >= 6.5) segColor = 'var(--warning)'; // Oranje (Joggen)
+                        if (pace === 0 || pace >= 9.0) segColor = 'var(--warning)'; // Oranje (Wandelen)
+                        else if (pace >= 6.5) segColor = 'var(--accent)'; // Blauw (Joggen)
 
                         const segment = L.polyline([[p1[0], p1[1]], [p2[0], p2[1]]], {color: segColor, weight: 5});
                         segment.addTo(this.mapInstance);
                     }
                 } else {
-                    // Terugval voor oude sessies zonder opgeslagen pace
                     L.polyline(route, {color: '#2ecc71', weight: 4}).addTo(this.mapInstance);
                 }
 
@@ -825,18 +826,54 @@
             }
         },
 
+        // ✅ Zorg voor betere tooltips zodat de grafiek logisch wordt
         renderPaceChart: function(data) {
             const ctx = document.getElementById('paceChart').getContext('2d');
             if (this.paceChartObj) this.paceChartObj.destroy();
+            
             if (!data || data.length === 0) {
-                ctx.canvas.parentElement.style.display = 'none';
+                ctx.canvas.parentElement.parentElement.style.display = 'none';
                 return;
             }
-            ctx.canvas.parentElement.style.display = '';
+            
+            ctx.canvas.parentElement.parentElement.style.display = '';
+            
             this.paceChartObj = new Chart(ctx, { 
                 type: 'line', 
-                data: { labels: data.map((_, i) => i + 1), datasets: [{ label: 'Pace', data: data, borderColor: '#2ecc71', backgroundColor: 'rgba(46, 204, 113, 0.1)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0 }] }, 
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { reverse: true }, x: { display: false } }, plugins: { legend: { display: false } } } 
+                data: { 
+                    labels: data.map((_, i) => i + 1), 
+                    datasets: [{ 
+                        label: 'Pace', 
+                        data: data, 
+                        borderColor: '#2ecc71', 
+                        backgroundColor: 'rgba(46, 204, 113, 0.1)', 
+                        fill: true, 
+                        tension: 0.4, 
+                        borderWidth: 2, 
+                        pointRadius: 0 
+                    }] 
+                }, 
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    scales: { 
+                        y: { reverse: true }, 
+                        x: { display: false } 
+                    }, 
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const val = context.raw;
+                                    const mins = Math.floor(val);
+                                    const secs = Math.round((val - mins) * 60).toString().padStart(2, '0');
+                                    return `Pace: ${mins}:${secs} min/km`;
+                                }
+                            }
+                        }
+                    } 
+                } 
             });
         },
 
@@ -1063,6 +1100,10 @@
 
     const AppController = {
         CHANGELOG: [
+            { version: "1.1.1", date: "12-05-2026", changes: [
+                "🎨 Pace-kleuren aangepast: hardlopen=groen, joggen=blauw, wandelen=oranje",
+                "📈 Pace grafiek heeft nu een duidelijke titel en verbeterde tooltips (bijv. 5:30 min/km)"
+            ]},
             { version: "1.1.0", date: "08-05-2026", changes: [
                 "✨ Controller-patroon refactor voor data, weergave en logica scheiding",
                 "🎨 PACE-GEKLEURDE KAART: Route op de kaart krijgt kleuren obv gelopen tempo",
@@ -1369,7 +1410,6 @@
                     AppState.session.lastGpsTime = now;
                 }
                 
-                // NIEUW: Bewaar pace bij het coördinaat voor de ingekleurde kaart
                 AppState.currentRoute.push([lat, lng, pointPace]);
                 UIController.updateLiveMap(AppState.currentRoute);
 
